@@ -91,7 +91,7 @@ Markdown.parse(Main.BenchmarkTables.startup_markdown())
 The Julia numbers assume precompiled packages; precompiling Ristretto itself once takes about
 two minutes more. For BART every call is a fresh process, so its first and warm solves are the
 same and include the process start and file I/O that the tables below leave out. The first solve
-in a Julia session is therefore one to two orders of magnitude slower than the warm one, which
+in a Julia session is therefore two to three orders of magnitude slower than the warm one, which
 matters for a script that reconstructs one image and hardly at all for a session that
 reconstructs many.
 
