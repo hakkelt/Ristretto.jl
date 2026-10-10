@@ -19,17 +19,13 @@ Install Julia with [juliaup](https://github.com/JuliaLang/juliaup)
 
 ```julia
 using Pkg
-Pkg.add(url = "https://github.com/hakkelt/Ristretto.jl")
+Pkg.add("Ristretto")
 ```
-
-Ristretto is not registered yet: the versions of AbstractOperators, ProximalOperators,
-ProximalAlgorithms and StructuredOptimization it needs are under review upstream, so they ship
-inside the package for now.
 
 ## Examples
 
 `kspace` is `(kx, ky, coil)` k-space, `smaps` the matching sensitivity maps, `mask` the acquired
-phase encodes; an MRD file goes in as `AcquisitionInfo(raw)` with `using MRIBase`.
+phase encodes; an MRD file read with MRIFiles goes in as `AcquisitionInfo(raw)`.
 
 ```julia
 using Ristretto
@@ -45,8 +41,8 @@ img = reconstruct(acq, IterativeReconstruction(; maxit = 30))
 img = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(2.0f-3), TotalVariation2D(1.0f-3); maxit = 50))
 ```
 
-The result is a `ReconImage` carrying the acquisition's geometry, which `write_nifti`,
-`write_dicom` and `write_mrd` export. Underneath, the encoding operator and a
+The result is a `ReconImage` carrying the acquisition's geometry, which FileIO's `save` writes to
+NIfTI, DICOM or MRD (`save("recon.nii", img)`). Underneath, the encoding operator and a
 [StructuredOptimization](https://github.com/JuliaFirstOrder/StructuredOptimization.jl) problem
 are a few lines away:
 
@@ -57,6 +53,7 @@ using Ristretto.WaveletOperators: WaveletOp
 
 A = get_encoding_operator(acq)                            # mask ∘ FFT ∘ coil maps
 W = WaveletOp(ComplexF32, wavelet(WT.db4), size(smaps)[1:2])
+# The variable being optimized, initialized with the adjoint (zero-filled) image A'y.
 x = Variable(A' * acq.kspace_data)
 @minimize ls(A * x - acq.kspace_data) + 2.0f-3 * norm(W * x, 1) with FISTA(maxit = 50)
 img = ~x
@@ -88,14 +85,6 @@ for the method, every case and the GPU numbers.
 | torso cine 8 coils Cartesian | Locally Low-Rank (NRMSE≤0.0603) | **2.8 s** | 17.5 s | — | 5.5 s | — | — |
 | torso cine 8 coils Cartesian | Temporal TV (NRMSE≤0.01589) | **1.5 s** | 3.3 s | 13.7 s | — | — | — |
 | torso cine 8 coils radial | Global Low-Rank (NRMSE≤0.1248) | **2.5 s** | 4.4 s | 63.7 s | 3.7 s | 146.5 s | 13.0 s |
-
-## Documentation
-
-The [documentation](https://hakkelt.github.io/Ristretto.jl/dev/) has twelve tutorials (each also
-a Jupyter notebook), from a first reconstruction to real scanner data, the reference for every
-part of `reconstruct`, the low-level interface, and the theory. [`examples/`](examples/README.md)
-reconstructs one dataset of each data type in the [MRITestData](https://github.com/hakkelt/MRITestData.jl)
-catalog: mridata.org, OCMR, CMRxRecon, USC Speech, M4Raw and fastMRI.
 
 ## Citation
 

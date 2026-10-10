@@ -135,7 +135,9 @@ sites are up, and the low-level pages and tutorial 12 link them. **Tier:** P2.
   Pages enabled as of 2026-10-08), and Ristretto's docs and notebooks link there.
 
 ### 29. Faster test suite
-**Status:** done (`p2`, 2026-10-10); the CI time on the `p2` PR is the figure to confirm. Baseline
+**Status:** done (`p2`, 2026-10-10). On CI (PR #4, warm package cache) the test job took 19 min 34 s,
+of which the test step 17 min 53 s and the `:extension` coverage rerun 43 s: 1.1× faster than the
+22 min baseline, short of the 2× target (the first run, with a cold cache, took 34 min 37 s). Baseline
 2026-10-09: CI test job 22 min with coverage; locally 214 items, 3567 s summed on 4 workers.
 Measured item by item in one process as CI runs them (1 thread, no GPU): 3909 s with
 `--code-coverage=user`, 2393 s after (225 items), which includes ~350 s of one-off precompilation
@@ -186,24 +188,26 @@ page (item 23), and what is not implemented becomes roadmap items. Then delete t
 
 ### 7. Metadata header and result type
 **Status:** done on `p2` (2026-10-09). `Header` is a dictionary whose known keys are typed fields;
-it is optional on `AcquisitionInfo`, shared by its copies, and filled from MRD by the MRIBase
+it is optional on `AcquisitionInfo`, shared by its copies, and filled from MRD by the MRIFiles
 extension. `reconstruct` returns a `ReconImage` with its own copy; keyword slicing moves `offset`.
-`DecomposedImage` is gone: a `ReconImage` holds the components. Geometry is stored in LPS. **Tier:** P2.
+`DecomposedImage` is gone: a `ReconImage` holds the components as plain arrays, sliced with it
+and released by `drop_components`. Geometry is stored in LPS. **Tier:** P2.
 
 - `AcquisitionInfo` gets a header holding arbitrary key/value metadata.
 - `reconstruct` returns a type that is a subtype of `AbstractArray`, carrying geometry (FOV, voxel
   size, orientation, position) and the header forwarded from `AcquisitionInfo`.
 - Tags can be added on both `AcquisitionInfo` and the result image.
-- Header contents come from the MRD header (MRIBase extension) or other acquisition metadata, and
+- Header contents come from the MRD header (MRIFiles extension) or other acquisition metadata, and
   feed the export formats of item 8.
 
 The design note written before the implementation (reviewed 2026-10-09) now lives in the
 `Header` and `ReconImage` docstrings and the acquisition-data, reconstruction and export pages.
 
 ### 8. Export to NIfTI, DICOM, MRD
-**Status:** done on `p2` (2026-10-10). `write_nifti` (NIfTI extension; RAS `sform`, BIDS-style JSON
-sidecar), `write_dicom` (DICOM extension; magnitude MR image series, 16-bit with a rescale slope,
-tags in `ImageComments`) and `write_mrd` (MRIFiles extension; ISMRMRD HDF5 images, tags as meta
+**Status:** done on `p2` (2026-10-10). Saving follows the FileIO convention: `save("x.nii", img)`
+(FileIO + NIfTI extension; RAS `sform`, BIDS-style JSON sidecar), `save("x.dcm", img)` (FileIO +
+DICOM extension; magnitude MR image series, 16-bit with a rescale slope, tags in `ImageComments`)
+and `save(ISMRMRDFile("x.h5"), img)` (MRIFiles extension; ISMRMRD HDF5 images, tags as meta
 attributes). Each file was read back by nibabel, pydicom and the `ismrmrd` Python package with the
 same geometry; docs page `high-level/export.md`. **Tier:** P2. **After:** 7.
 
