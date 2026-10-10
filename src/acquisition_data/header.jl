@@ -225,14 +225,6 @@ function header end
 header(h::Header) = h
 
 """
-    image_size(x) -> Tuple
-
-The size of the spatial axes of an [`AcquisitionInfo`](@ref) (the reconstruction matrix) or of a
-[`ReconImage`](@ref).
-"""
-function image_size end
-
-"""
     settag!(x, key, value) -> x
 
 Attach a tag to an [`AcquisitionInfo`](@ref) or a [`ReconImage`](@ref). Tags live in the header,

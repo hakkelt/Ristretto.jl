@@ -9,7 +9,7 @@
         info = AcquisitionInfo(ksp; trajectory, image_size = (8, 8))
         @test info isa NonCartesianAcquisitionInfo
         @test info.is3D == false
-        @test Ristretto.image_size(info) == (8, 8)
+        @test info.image_size == (8, 8)
         @test info.trajectory === trajectory
         @test isnothing(info.dcf)
         @test isnothing(info.sensitivity_maps)
@@ -21,7 +21,7 @@
         info = AcquisitionInfo(ksp; trajectory, image_size = (8, 8, 8))
         @test info isa NonCartesianAcquisitionInfo
         @test info.is3D == true
-        @test Ristretto.image_size(info) == (8, 8, 8)
+        @test info.image_size == (8, 8, 8)
     end
 
     @testset "With DCF" begin
@@ -102,7 +102,7 @@ end
         @test c1 isa CartesianAcquisitionInfo
         @test c1.kspace_data === new_ksp
         @test c1.is3D === orig.is3D
-        @test Ristretto.image_size(c1) === Ristretto.image_size(orig)
+        @test c1.image_size === orig.image_size
         @test c1.sensitivity_maps === orig.sensitivity_maps
         @test c1.subsampling === orig.subsampling
         @test c1.shifted_kspace_dims === orig.shifted_kspace_dims
@@ -113,13 +113,13 @@ end
         c2 = CartesianAcquisitionInfo(orig; sensitivity_maps = new_smaps)
         @test c2.sensitivity_maps === new_smaps
         @test c2.kspace_data === orig.kspace_data
-        @test Ristretto.image_size(c2) === Ristretto.image_size(orig)
+        @test c2.image_size === orig.image_size
         @test c2.subsampling === orig.subsampling
 
         # Override image_size
         plain = CartesianAcquisitionInfo(ksp; is3D = false, image_size = (16, 16))
         c3 = AcquisitionInfo(plain; image_size = (32, 32))
-        @test Ristretto.image_size(c3) == (32, 32)
+        @test c3.image_size == (32, 32)
         @test c3.kspace_data === plain.kspace_data
         @test c3.is3D === plain.is3D
 
@@ -160,7 +160,7 @@ end
         @test c1.trajectory === orig.trajectory
         @test c1.dcf === orig.dcf
         @test c1.sensitivity_maps === orig.sensitivity_maps
-        @test Ristretto.image_size(c1) === Ristretto.image_size(orig)
+        @test c1.image_size === orig.image_size
         @test c1.is3D === orig.is3D
         @test c1.shifted_kspace_dims === orig.shifted_kspace_dims
         @test c1.shifted_image_dims === orig.shifted_image_dims
@@ -180,7 +180,7 @@ end
         )
         @test c2.is3D == true
         @test c2.trajectory === traj3d
-        @test Ristretto.image_size(c2) == (16, 16, 16)
+        @test c2.image_size == (16, 16, 16)
 
         # Override dcf
         new_dcf = rand(Float32, 64)
@@ -200,7 +200,7 @@ end
         # Override image_size
         plain_nc = NonCartesianAcquisitionInfo(ksp; trajectory = traj, image_size = (16, 16))
         c5 = AcquisitionInfo(plain_nc; image_size = (32, 32))
-        @test Ristretto.image_size(c5) == (32, 32)
+        @test c5.image_size == (32, 32)
         @test c5.kspace_data === plain_nc.kspace_data
         @test c5.trajectory === plain_nc.trajectory
     end

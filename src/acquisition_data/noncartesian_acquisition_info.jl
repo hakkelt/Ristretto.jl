@@ -192,7 +192,7 @@ function _get_acq_info_meta(info::NonCartesianAcquisitionInfo)
         push!(meta, "dcf=Array{$(eltype(info.dcf))}<$(join(size(info.dcf), "×"))>")
     end
     push!(meta, "encoding=" * (info.is3D ? "3D" : "2D"))
-    push!(meta, "image_size=$(join(image_size(info), "×"))")
+    push!(meta, "image_size=$(join(info.image_size, "×"))")
     if !isnothing(info.sensitivity_maps)
         push!(meta, "sensitivity_maps=$(eltype(info.sensitivity_maps))<$(join(size(info.sensitivity_maps), "×"))>")
     end

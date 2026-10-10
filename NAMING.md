@@ -149,8 +149,8 @@ built-in pieces. Anything needed only to *extend* the package is `public` but no
   scaling, executors, partial-Fourier filters, sampling patterns, preprocessing methods;
 - `AcquisitionInfo` (its two concrete subtypes are `public`, see Rule 6.2);
 - the top-level verbs, `ReconstructionConfig`, `Component`, `ReconImage`, `Header`, `components`,
-  `total_image`, `TemporalBasis`, `KSpaceToImage`, `pseudo_replica`, and the export verbs
-  `write_nifti`, `write_dicom`, `write_mrd`, whose methods come from package extensions.
+  `total_image`, `drop_components`, `TemporalBasis`, `KSpaceToImage` and `pseudo_replica`. Export
+  to a file goes through FileIO's `save`, whose methods come from package extensions.
 
 `AcquisitionInfo` is exported despite being abstract because it is also a constructor: it dispatches
 to `CartesianAcquisitionInfo` or `NonCartesianAcquisitionInfo`. That is the *only* justification for

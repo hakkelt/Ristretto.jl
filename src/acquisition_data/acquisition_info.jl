@@ -84,7 +84,6 @@ function AcquisitionInfo(
 end
 
 header(info::AcquisitionInfo) = info.header
-image_size(info::AcquisitionInfo) = info.image_size
 
 # The k-space and the arrays reconstructed against it must all be in host memory or all in device
 # memory: every operator built from them runs where the k-space lives.

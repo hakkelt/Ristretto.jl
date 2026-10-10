@@ -100,9 +100,8 @@ export AcquisitionInfo, PartitionedKSpace
 export TemporalBasis, KSpaceToImage
 
 # Image decomposition
-export Component, ReconImage, components, total_image
+export Component, ReconImage, components, total_image, drop_components
 export Header, settag!, gettag, tags
-export write_nifti, write_dicom, write_mrd
 
 # Preprocessing
 export density_compensation, PipeMenonDCF, VoronoiDCF, correct_dcf_edges
@@ -129,7 +128,7 @@ export ContourletParams, parabolic_levels # L1Contourlet
 # Extension surface: dispatch on these, subtype them, or implement them for a new component.
 # Documented and stable, but not exported.
 public CartesianAcquisitionInfo, NonCartesianAcquisitionInfo
-public header, image_size
+public header
 public Regularization, ReconstructionMethod, IterativeMethod, DirectMethod
 public Scaling, CoilCombination, DataFidelity, Verbosity, ReconstructionExecutor
 public Subsampling, VariableDensityDistribution, PartialFourierFilter

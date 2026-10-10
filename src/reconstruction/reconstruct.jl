@@ -65,13 +65,12 @@ function reconstruct(
 end
 
 # The image `reconstruct` returns: the solution with a copy of the acquisition's header, `spacing`
-# derived from `fov` when only that is known, and for a reconstruction with `Component`s each
-# component carrying its own copy.
+# derived from `fov` when only that is known.
 function _with_header(x, acq_data)
-    nd = length(image_size(acq_data))
+    nd = length(acq_data.image_size)
     h = _derive_spacing!(copy(header(acq_data)), size(x)[1:nd])
     x isa ReconImage || return ReconImage(x, h, nothing, nd)
-    return ReconImage(parent(x), h, map(c -> ReconImage(c, copy(h), nothing, nd), components(x)), nd)
+    return ReconImage(parent(x), h, components(x), nd)
 end
 
 """
@@ -300,7 +299,7 @@ function _present_components(xs, names, method::IterativeReconstruction, acq_dat
         total_x = NamedDimsArray{img_dimnames}(total_x)
         xs = map(x -> NamedDimsArray{img_dimnames}(x), xs)
     end
-    return ReconImage(total_x, Header(), NamedTuple{names}(xs), length(image_size(acq_data)))
+    return ReconImage(total_x, Header(), NamedTuple{names}(xs), length(acq_data.image_size))
 end
 
 # `_extract_solution` hands back a `Tuple` of variables, but a solver *iterate* on the component

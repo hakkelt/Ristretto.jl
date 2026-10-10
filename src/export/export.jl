@@ -1,55 +1,5 @@
-# Writing a `ReconImage` to NIfTI, DICOM and MRD. The writers live in package extensions; what
-# they share, the layout of the volume and its voxel-to-patient affine, is here.
-
-"""
-    write_nifti(path, img::ReconImage; sidecar = true) -> path
-
-Write `img` to the NIfTI-1 file `path` (`.nii`, or `.nii.gz` to compress). Needs `using NIfTI`.
-
-The first three axes of the file are the image axes x, y and z: a 2D image gets a z axis of
-length one, or its slice axis when the axis after the image axes is named `:z` or `:slice`. Any
-further axes (time, echoes, ...) follow in order. Complex images are written as `complex64` or
-`complex128`; write `abs.(img)` for a magnitude image.
-
-The affine (`sform`) maps voxel indices to the scanner's RAS coordinates, converted from the
-header's LPS geometry (see [`Header`](@ref)). With `sidecar = true`, a JSON file next to `path`
-holds the sequence parameters under their BIDS names (`EchoTime`, `RepetitionTime`, ... in
-seconds), the other header entries, and the tags.
-"""
-function write_nifti end
-
-"""
-    write_dicom(dir, img::ReconImage; series_description = "Ristretto", series_number = 1) -> files
-
-Write `img` as one DICOM MR image series to the directory `dir`, one file per slice and per
-index of any non-image axis, and return the file names. Needs `using DICOM`.
-
-The pixel data is the magnitude of the image, stored as 16-bit integers with a rescale slope, so
-`RescaleSlope * stored` recovers it to 1 part in 65535 of the maximum. Each file carries the
-slice position and orientation (`ImagePositionPatient`, `ImageOrientationPatient`, LPS like the
-header), `PixelSpacing`, `SliceThickness`, the sequence parameters, and the tags as JSON in
-`ImageComments`. Patient and study fields are left empty except for generated UIDs; fill them in
-with a DICOM tool before archiving.
-"""
-function write_dicom end
-
-"""
-    write_mrd(path, img::ReconImage; group = "image_0") -> path
-
-Write `img` as MRD (ISMRMRD HDF5) images to `path`, under `/dataset/<group>`, with an
-`ismrmrdHeader` XML holding the field of view, the matrix size and the sequence parameters.
-Needs `using MRIFiles`.
-
-A 3D image is one MRD image; a 2D image is one MRD image per slice. Each non-image axis index is
-another image, numbered by `image_index`, with a `:time` index also in the `phase` counter.
-Geometry goes to `position` (the centre of each image) and `read_dir`/`phase_dir`/`slice_dir`;
-tags go to each image's meta attributes.
-"""
-function write_mrd end
-
-for (f, pkg) in ((:write_nifti, "NIfTI"), (:write_dicom, "DICOM"), (:write_mrd, "MRIFiles"))
-    @eval $f(args...; kwargs...) = throw(ArgumentError(string($(string(f)), " needs the ", $pkg, " package: run `using ", $pkg, "` first")))
-end
+# What the writers in the NIfTI, DICOM and MRIFiles extensions share: the layout of the volume
+# and its voxel-to-patient affine, and the header as text.
 
 # ---------------------------------------------------------------- layout and geometry
 

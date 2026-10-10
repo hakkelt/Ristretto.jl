@@ -5,8 +5,8 @@ The result of [`reconstruct`](@ref): the image `data` (a `NamedDimsArray` when t
 named, on the host or a device) together with a copy of the acquisition's [`header`](@ref), which
 carries the geometry (`fov`, `spacing`, `slice_spacing`, `orientation`, `offset`), the sequence
 parameters and the tags (see [`Header`](@ref)). The first `spatial_ndims` axes of `data` are the
-image axes; [`image_size`](@ref) is their size. When it is not given, it is the length of the
-header's `spacing` or `fov`, or else the number of leading axes named `:x`, `:y`, `:z`.
+image axes. When it is not given, it is the length of the header's `spacing` or `fov`, or else
+the number of leading axes named `:x`, `:y`, `:z`.
 
 It is an `AbstractArray` that behaves as `data`: positional indexing, `size` (also by dimension
 name, `size(img, :x)`), broadcasting and `Array(img)` all act on the image. `parent(img)` returns `data` and `dimnames(img)` its dimension
@@ -20,8 +20,10 @@ view(img; time = 1)   # non-spatial axes leave the geometry alone
 ```
 
 A reconstruction with [`Component`](@ref)s returns the sum of the components as `data` and keeps
-the components themselves: `img.lowrank` is the component named `lowrank`, `components(img)` all
-of them as a `NamedTuple`.
+the components themselves, as arrays shaped like `data` and described by the image's header:
+`img.lowrank` is the component named `lowrank`, `components(img)` all of them as a `NamedTuple`.
+Keyword indexing selects the same part of every component; [`drop_components`](@ref) releases
+them.
 """
 struct ReconImage{T, N, A <: AbstractArray{T, N}, C <: Union{Nothing, NamedTuple}} <: AbstractArray{T, N}
     data::A
@@ -58,7 +60,6 @@ function _guess_spatial_ndims(data, h::Header)
 end
 
 header(img::ReconImage) = getfield(img, :header)
-image_size(img::ReconImage) = size(parent(img))[1:_spatial_ndims(img)]
 _spatial_ndims(img::ReconImage) = getfield(img, :spatial_ndims)
 Base.parent(img::ReconImage) = getfield(img, :data)
 
@@ -100,6 +101,14 @@ function components(img::ReconImage)
 end
 
 """
+    drop_components(img::ReconImage) -> ReconImage
+
+`img` without its components: the same image data and header, so that the components can be
+garbage-collected once nothing else refers to them.
+"""
+drop_components(img::ReconImage) = ReconImage(parent(img), header(img), nothing, _spatial_ndims(img))
+
+"""
     total_image(img::ReconImage)
 
 The image itself, without the header: the sum of the components for a reconstruction with
@@ -139,7 +148,7 @@ function _keyword_index(f, img::ReconImage, sel::NamedTuple)
     data isa NamedDimsArray || throw(ArgumentError("keyword indexing needs a ReconImage with dimension names"))
     out = f(data; pairs(sel)...)
     out isa AbstractArray || return out
-    comps = _map_components(c -> _keyword_index(f, c, sel), img)
+    comps = _map_components(c -> f(c; pairs(sel)...), img)
     h, nd = _slice_geometry(header(img), dimnames(data)[1:_spatial_ndims(img)], sel)
     return ReconImage(out, h, comps, nd)
 end

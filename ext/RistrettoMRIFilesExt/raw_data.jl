@@ -1,12 +1,3 @@
-module RistrettoMRIBaseExt
-
-using Ristretto
-using Ristretto: CartesianAcquisitionInfo, NonCartesianAcquisitionInfo, Header
-using LinearAlgebra: dot, norm
-using ArgCheck: @argcheck
-using NamedDims: NamedDimsArray
-using MRIBase: MRIBase, RawAcquisitionData, Limit, kspaceNodes
-
 # ISMRMRD flag bit for `ACQ_IS_NOISE_MEASUREMENT` (1-based bit index 19, per the ISMRMRD spec /
 # MRIBase.jl's `Flags.jl`). Noise-calibration profiles carry no image k-space and must be
 # excluded before the profile list is turned into an array.
@@ -92,9 +83,6 @@ function Ristretto.AcquisitionInfo(raw::RawAcquisitionData; sensitivity_maps = n
     return _noncartesian_acquisition_info(raw; sensitivity_maps)
 end
 
-# Gyromagnetic ratio of ¹H in MHz/T, to read the field strength off the resonance frequency.
-const _GAMMA_H1_MHZ_PER_T = 42.577478
-
 # The metadata header of an MRD acquisition: the encoded field of view, the sequence parameters,
 # and the geometry from the profiles' `position` (the centre of the slice or slab) and direction
 # cosines, in the patient coordinate system LPS. `img_size` is the reconstruction grid, whose
@@ -116,7 +104,7 @@ function _raw_header(raw::RawAcquisitionData, profiles, img_size)
         (v isa Real || (v isa AbstractVector && !isempty(v))) && (h[name] = v)
     end
     f = get(params, "H1resonanceFrequency_Hz", nothing)
-    isnothing(f) || f <= 0 || (h.field_strength = f / 1.0e6 / _GAMMA_H1_MHZ_PER_T)
+    isnothing(f) || f <= 0 || (h.field_strength = f / _GAMMA_HZ_PER_T)
 
     head = first(profiles).head
     R = Float64[collect(head.read_dir) collect(head.phase_dir) collect(head.slice_dir)]
@@ -399,5 +387,3 @@ function _noncartesian_acquisition_info(raw::RawAcquisitionData; sensitivity_map
         header = _raw_header(raw, profiles, image_size),
     )
 end
-
-end # module RistrettoMRIBaseExt

@@ -43,7 +43,7 @@ holds, and keyword indexing returns a `ReconImage` whose geometry describes the 
 
 ```@example recon
 using NamedDims
-using Ristretto: header, image_size
+using Ristretto: header
 
 ksp = NamedDimsArray{(:kx, :ky, :z)}(rand(ComplexF32, 64, 64, 3))
 acq = AcquisitionInfo(ksp; header = (; fov = (220, 220), slice_spacing = 5,
@@ -54,7 +54,7 @@ header(img[z = 2]).offset        # moved by one slice spacing
 
 ```@example recon
 crop = img[x = 17:48]
-image_size(crop), header(crop).fov
+size(crop), header(crop).fov
 ```
 
 Tagging the image (`settag!(img, :reader, "A")`) never changes the acquisition. `Array(img)` is

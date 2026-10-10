@@ -1,15 +1,3 @@
-module RistrettoMRIFilesExt
-
-using Ristretto
-using Ristretto: ReconImage, header, _spatial_ndims, _export_volume, _lps_affine
-using MRIFiles: MRIFiles
-using LinearAlgebra: norm
-
-const HDF5 = MRIFiles.HDF5
-const API = HDF5.API
-
-const _GAMMA_HZ_PER_T = 42.577478e6
-
 # ISMRMRD image data types and image types.
 _mrd_data_type(::Type{Float32}) = 5
 _mrd_data_type(::Type{Float64}) = 6
@@ -19,7 +7,8 @@ _mrd_eltype(::Type{T}) where {T <: Union{Float32, Float64, ComplexF32, ComplexF6
 _mrd_eltype(::Type{<:Complex}) = ComplexF32
 _mrd_eltype(::Type) = Float32
 
-function Ristretto.write_mrd(path::AbstractString, img::ReconImage; group::AbstractString = "image_0")
+function FileIO.save(f::ISMRMRDFile, img::ReconImage; group::AbstractString = "image_0")
+    path = f.filename
     vol, extra_names, multislice = _export_volume(img)
     h = header(img)
     nd = _spatial_ndims(img)
@@ -181,5 +170,3 @@ function _meta_xml(tags)
 end
 
 _escape(s) = replace(string(s), "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-
-end

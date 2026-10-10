@@ -47,10 +47,11 @@ end
     using Test
     using Ristretto
     using NIfTI
+    using FileIO
     import JSON
 
     dir = mktempdir()
-    path = write_nifti(joinpath(dir, "img.nii.gz"), img)
+    path = save(File{format"NIfTI"}(joinpath(dir, "img.nii.gz")), img)
     v = niread(path)
     @test size(v) == size(img)
     @test eltype(v) == ComplexF32
@@ -68,7 +69,8 @@ end
     @test sidecar["MagneticFieldStrength"] == 3
     @test sidecar["protocol"] == "test"
     @test sidecar["Tags"]["subject"] == "s01"
-    write_nifti(joinpath(dir, "plain.nii"), img; sidecar = false)
+    @test save(joinpath(dir, "plain.nii"), img; sidecar = false) == joinpath(dir, "plain.nii")
+    @test isfile(joinpath(dir, "plain.nii"))
     @test !isfile(joinpath(dir, "plain.json"))
 end
 
@@ -76,10 +78,16 @@ end
     using Test
     using Ristretto
     using DICOM
+    using FileIO
     import JSON
 
-    files = write_dicom(joinpath(mktempdir(), "series"), img; series_description = "test")
+    files = save(joinpath(mktempdir(), "series", "img.dcm"), img; series_description = "test")
     @test length(files) == 6
+    @test basename(files[2]) == "img_00002.dcm"
+    # A single image keeps the name it was given.
+    single = joinpath(mktempdir(), "one.dcm")
+    @test save(single, img[z = 1, time = 1]) == [single]
+    @test isfile(single)
     # Slices vary fastest, then frames: file 5 is slice 2 of frame 2.
     d = dcm_parse(files[5])
     @test d[(0x0020, 0x0032)] ≈ voxel_lps(1, 1, 2) atol = 1.0e-6
@@ -98,9 +106,10 @@ end
     using Test
     using Ristretto
     using MRIFiles
+    using FileIO: save
     using LinearAlgebra: norm
 
-    path = write_mrd(joinpath(mktempdir(), "img.h5"), img)
+    path = save(ISMRMRDFile(joinpath(mktempdir(), "img.h5")), img)
     HDF5 = MRIFiles.HDF5
     HDF5.h5open(path) do f
         data = read(f["dataset/image_0/data"])

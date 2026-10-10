@@ -54,7 +54,7 @@ end
 function get_subsampled_fourier_operator(info::CartesianAcquisitionInfo; threaded::Bool = true, fast_planning::Bool = false)
     @argcheck !isnothing(info.kspace_data) "The provided CartesianAcquisitionInfo does not contain k-space data, which is required to build the subsampled Fourier operator."
     @argcheck !isnothing(info.subsampling) "CartesianAcquisitionInfo must include a subsampling pattern to build a subsampled Fourier operator."
-    return get_subsampled_fourier_operator(info.kspace_data, image_size(info), info.subsampling; shifted_kspace_dims = info.shifted_kspace_dims, shifted_image_dims = info.shifted_image_dims, threaded, fast_planning)
+    return get_subsampled_fourier_operator(info.kspace_data, info.image_size, info.subsampling; shifted_kspace_dims = info.shifted_kspace_dims, shifted_image_dims = info.shifted_image_dims, threaded, fast_planning)
 end
 
 
@@ -120,7 +120,7 @@ end
 
 function get_subsampling_operator(acq_info::CartesianAcquisitionInfo; threaded::Bool = true)
     @argcheck !isnothing(acq_info.subsampling) "CartesianAcquisitionInfo must include a subsampling pattern"
-    return get_subsampling_operator(acq_info.kspace_data, image_size(acq_info), acq_info.subsampling; threaded)
+    return get_subsampling_operator(acq_info.kspace_data, acq_info.image_size, acq_info.subsampling; threaded)
 end
 
 # -------- Type definitions for different subsampling patterns --------

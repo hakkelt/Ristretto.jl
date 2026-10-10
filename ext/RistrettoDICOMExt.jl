@@ -3,6 +3,7 @@ module RistrettoDICOMExt
 using Ristretto
 using Ristretto: ReconImage, header, _spatial_ndims, _export_volume, _lps_affine, _json
 using DICOM: DICOM, dcm_write
+using FileIO: FileIO, File, @format_str
 using LinearAlgebra: norm, cross, dot
 using Printf: @sprintf
 using Random: RandomDevice
@@ -23,7 +24,7 @@ _is(x::Integer) = [string(x)]
 # Text values have even length, padded with a space.
 _even(s::AbstractString) = isodd(ncodeunits(s)) ? s * " " : s
 
-function Ristretto.write_dicom(dir::AbstractString, img::ReconImage; series_description::AbstractString = "Ristretto", series_number::Integer = 1)
+function fileio_save(f::File{format"DCM"}, img::ReconImage; series_description::AbstractString = "Ristretto", series_number::Integer = 1)
     vol, _, _ = _export_volume(img)
     h = header(img)
     nx, ny, nz = size(vol, 1), size(vol, 2), size(vol, 3)
@@ -39,7 +40,8 @@ function Ristretto.write_dicom(dir::AbstractString, img::ReconImage; series_desc
 
     study, series, frame = _uid(), _uid(), _uid()
     comments = isempty(h.tags) ? nothing : _even(_json(h.tags))
-    mkpath(dir)
+    path = FileIO.filename(f)
+    mkpath(dirname(abspath(path)))
     files = String[]
     for e in 1:nextra, z in 1:nz
         n = length(files) + 1
@@ -85,11 +87,25 @@ function Ristretto.write_dicom(dir::AbstractString, img::ReconImage; series_desc
         _set_sequence!(meta, h)
         isnothing(comments) || (meta[(0x0020, 0x4000)] = comments)
         _set_file_meta!(meta, instance)
-        file = joinpath(dir, @sprintf("IM_%05d.dcm", n))
+        file = nz * nextra == 1 ? path : _numbered(path, n)
         dcm_write(file, DICOM.DICOMData(meta, :little, true, Dict{Tuple{UInt16, UInt16}, String}()))
         push!(files, file)
     end
     return files
+end
+
+# `series.dcm` becomes `series_00001.dcm`, `series_00002.dcm`, ...
+function _numbered(path, n)
+    stem, ext = splitext(path)
+    return string(stem, @sprintf("_%05d", n), isempty(ext) ? ".dcm" : ext)
+end
+
+function __init__()
+    # FileIO lists other savers for DICOM; this one goes first, so that a `ReconImage` reaches it.
+    savers = FileIO.add_saver(format"DCM", @__MODULE__)
+    filter!(!=(@__MODULE__), savers)
+    pushfirst!(savers, @__MODULE__)
+    return nothing
 end
 
 function _set_sequence!(meta, h)

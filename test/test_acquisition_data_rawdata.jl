@@ -1,4 +1,6 @@
 @testmodule RawAcqHelpers begin
+    # Loading MRIFiles loads the extension that builds an AcquisitionInfo from raw data.
+    using MRIFiles: MRIFiles
     using MRIBase: RawAcquisitionData, Profile, AcquisitionHeader, EncodingCounters, Limit
 
     export make_profile, make_traj_profile, make_raw
@@ -90,7 +92,7 @@ end
         info = AcquisitionInfo(raw)
         @test info isa CartesianAcquisitionInfo
         @test info.is3D == false
-        @test Ristretto.image_size(info) == (10, 8)
+        @test info.image_size == (10, 8)
         @test dimnames(info.kspace_data) == (:kx, :ky, :coil, :z)
         @test size(info.kspace_data) == (8, 6, ncoil, 2)
         @test info.subsampling == (3:10, 3:8)
@@ -111,7 +113,7 @@ end
         @test dimnames(info.kspace_data) == (:kx, :ky, :coil)
         @test size(info.kspace_data) == (4, 4, 1)
         @test isnothing(info.subsampling)
-        @test Ristretto.image_size(info) == (4, 4)
+        @test info.image_size == (4, 4)
         @test info.shifted_image_dims == (:x, :y)
     end
 
@@ -189,7 +191,7 @@ end
         @test info.is3D == true
         @test dimnames(info.kspace_data) == (:kx, :ky, :kz, :coil)
         @test size(info.kspace_data) == (4, 4, 3, 1)
-        @test Ristretto.image_size(info) == (4, 4, 3)
+        @test info.image_size == (4, 4, 3)
     end
 
     @testset "multi-slab 3D (is3D and slice both vary) is rejected, not silently dropped" begin
@@ -296,7 +298,7 @@ end
     info = AcquisitionInfo(raw)
     @test info isa NonCartesianAcquisitionInfo
     @test info.is3D == false
-    @test Ristretto.image_size(info) == (8, 8)
+    @test info.image_size == (8, 8)
     @test dimnames(info.trajectory) == (:coord, :sample, :readout)
     @test size(info.trajectory) == (2, nsamp, length(profiles))
     @test dimnames(info.kspace_data) == (:sample, :readout, :coil)
@@ -427,7 +429,7 @@ end
         info = AcquisitionInfo(raw)
         @test info isa CartesianAcquisitionInfo
         @test dimnames(info.kspace_data) == (:kx, :ky, :coil, :time)
-        @test Ristretto.image_size(info) == (512, 208)
+        @test info.image_size == (512, 208)
         @test size(info.kspace_data) == (404, 208, 15, 19)
         # Asymmetric-echo readout: only a contiguous block of the 512-sample encoded readout was
         # acquired, recentered via `head.center_sample` (148) rather than the naive `row + 1`.

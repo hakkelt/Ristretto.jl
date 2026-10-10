@@ -9,7 +9,7 @@ function get_image_size(info::AcquisitionInfo)
     transform_dims_count = _get_sample_dims_count(info)
     batch_dims_start = isnothing(info.sensitivity_maps) ? transform_dims_count + 1 : transform_dims_count + 2
     batch_dims = _ksp_trailing_size(info.kspace_data, batch_dims_start)
-    return (image_size(info)..., batch_dims...)
+    return (info.image_size..., batch_dims...)
 end
 
 function get_time_dim(time_dim, image_dims)

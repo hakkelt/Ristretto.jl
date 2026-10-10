@@ -60,7 +60,7 @@ end
 
 Estimates coil sensitivity maps from multi-coil k-space data using the specified method.
 When passed an `AcquisitionInfo`, returns a new `AcquisitionInfo` with the `sensitivity_maps` field populated,
-sized to match `image_size(acq)` (the k-space is zero-padded, centered, if it only covers the measured extent
+sized to match `acq.image_size` (the k-space is zero-padded, centered, if it only covers the measured extent
 of a subsampled acquisition). Passing `image_size` explicitly has the same effect for the raw-array method.
 
 K-space with batch dimensions past the coil axis (`:z` slices, `:time` frames, `:contrast`, ...)
@@ -72,7 +72,7 @@ back in the k-space's own layout, e.g. `(:x, :y, :coil, :z)` for multi-slice dat
 Every estimator here reads a calibration window out of a Cartesian grid, which non-Cartesian
 samples are not. The `NonCartesianAcquisitionInfo` method therefore grids first: a
 density-compensated NFFT adjoint gives one image per coil, a spatial FFT puts those back on a
-Cartesian grid of `image_size(acq)`, and the estimator runs on that. `dcf` is what weights the
+Cartesian grid of `acq.image_size`, and the estimator runs on that. `dcf` is what weights the
 gridding — `acq.dcf` when the acquisition carries one (vendor weights, or the output of
 [`density_compensation`](@ref)), otherwise `:auto`, which lets NFFTOperators estimate it.
 Gridding without any density compensation would hand the estimator a k-space centre weighted by
@@ -111,7 +111,7 @@ function estimate_sensitivities(
         acq.kspace_data;
         method,
         is3D,
-        image_size = image_size(acq),
+        image_size = acq.image_size,
     )
     if !isempty(acq.shifted_image_dims)
         sens = _shift_sensitivity_maps(sens, acq.shifted_image_dims, acq.kspace_data, is3D)
@@ -176,12 +176,12 @@ end
 # carries them too, so an unnamed k-space grids through the plain-array operator.
 function _grid_coil_images(ksp::AbstractArray, acq::NonCartesianAcquisitionInfo, dcf, threaded::Bool)
     return if ksp isa NamedDimsArray
-        𝒩 = get_fourier_operator(ksp, image_size(acq), acq.trajectory; dcf, threaded)
+        𝒩 = get_fourier_operator(ksp, acq.image_size, acq.trajectory; dcf, threaded)
         𝒩' * ksp
     else
         traj = acq.trajectory isa NamedDimsArray ? unname(acq.trajectory) : acq.trajectory
         raw_dcf = dcf isa NamedDimsArray ? unname(dcf) : dcf
-        𝒩 = get_fourier_operator(ksp, image_size(acq), traj; dcf = raw_dcf, threaded)
+        𝒩 = get_fourier_operator(ksp, acq.image_size, traj; dcf = raw_dcf, threaded)
         𝒩' * ksp
     end
 end

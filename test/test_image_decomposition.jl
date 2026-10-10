@@ -83,6 +83,30 @@ end
     @test_throws ArgumentError components(ReconImage(a))
 end
 
+@testitem "ReconImage: components are sliced with the image and can be dropped" tags = [:components] begin
+    using Test
+    using Ristretto
+    using Ristretto: header
+    using NamedDims
+
+    a = NamedDimsArray{(:x, :y, :time)}(rand(4, 4, 3))
+    b = NamedDimsArray{(:x, :y, :time)}(rand(4, 4, 3))
+    img = ReconImage(a + b, Header(; spacing = (1, 1)); components = (lowrank = a, sparse = b))
+
+    frame = img[time = 2]
+    @test frame.lowrank == a[time = 2]
+    @test frame.sparse == b[time = 2]
+    @test !(frame.lowrank isa ReconImage)
+    crop = view(img; x = 2:3)
+    @test crop.sparse == b[x = 2:3]
+
+    plain = drop_components(img)
+    @test parent(plain) === parent(img)
+    @test header(plain) === header(img)
+    @test_throws ArgumentError components(plain)
+    @test propertynames(plain) == (:data, :header, :components)
+end
+
 @testitem "ReconImage: getproperty is type-stable for a literal Symbol" tags = [:components, :jet] begin
     using Test
     using JET

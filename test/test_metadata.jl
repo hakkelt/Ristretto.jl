@@ -3,7 +3,7 @@ using TestItems
 @testitem "Header: known keys are fields, any other key is kept" tags = [:acquisition] begin
     using Test
     using Ristretto
-    using Ristretto: header, image_size
+    using Ristretto: header
 
     h = Header(; fov = (240, 180), TE = 4.2, protocol = "t1_se")
     @test h isa AbstractDict{Symbol, Any}
@@ -42,10 +42,10 @@ end
 @testitem "Header on an acquisition: optional, stored as given, shared by copies" tags = [:acquisition] begin
     using Test
     using Ristretto
-    using Ristretto: header, image_size
+    using Ristretto: header
 
     acq = AcquisitionInfo(rand(ComplexF32, 16, 12); is3D = false)
-    @test image_size(acq) == (16, 12)
+    @test acq.image_size == (16, 12)
     @test header(acq) isa Header
     @test isempty(header(acq))
 
@@ -88,7 +88,7 @@ end
 @testitem "reconstruct returns a ReconImage with the acquisition's header" tags = [:reconstruction] begin
     using Test
     using Ristretto
-    using Ristretto: header, image_size
+    using Ristretto: header, _spatial_ndims
     using NamedDims
 
     ksp = NamedDimsArray{(:kx, :ky, :z)}(rand(ComplexF32, 16, 16, 3))
@@ -98,7 +98,7 @@ end
     @test img isa ReconImage
     @test parent(img) isa NamedDimsArray
     @test dimnames(img) == (:x, :y, :z)
-    @test image_size(img) == (16, 16)
+    @test _spatial_ndims(img) == 2
     @test header(img).spacing == (10.0, 10.0)
     @test isnothing(header(acq).spacing)   # derived on the image's copy only
     @test gettag(img, :subject) == "s1"
@@ -115,7 +115,7 @@ end
 @testitem "ReconImage: keyword indexing moves the offset" tags = [:reconstruction] begin
     using Test
     using Ristretto
-    using Ristretto: header, image_size
+    using Ristretto: header, _spatial_ndims
     using NamedDims
 
     R = [0.0 0 1; 1 0 0; 0 1 0]          # x → L-P-S column 1 = (0,1,0), ...
@@ -127,12 +127,12 @@ end
     crop = img[x = 3:6]
     @test crop isa ReconImage
     @test size(crop) == (4, 6, 4, 3)
-    @test image_size(crop) == (4, 6, 4)
+    @test _spatial_ndims(crop) == 3
     @test header(crop).fov == (8.0, 12.0, 8.0)
     @test collect(header(crop).offset) ≈ [10, 20, 30] .+ R[:, 1] .* (2 * 2.0)
 
     slice = img[z = 3]
-    @test image_size(slice) == (8, 6)
+    @test _spatial_ndims(slice) == 2
     @test header(slice).spacing == (2.0, 2.0)
     @test header(slice).slice_thickness == 2.0
     @test collect(header(slice).offset) ≈ [10, 20, 30] .+ R[:, 3] .* (2 * 2.0)
@@ -147,14 +147,14 @@ end
     @test frame isa ReconImage
     @test header(frame).offset == h.offset
     @test header(img).offset == (10.0, 20.0, 30.0)   # slicing never changes the original
-    @test image_size(frame) == (8, 6, 4)
+    @test _spatial_ndims(frame) == 3
 
     # A 2D multi-slice image: `z` moves the offset by the slice spacing.
     h2 = Header(; spacing = (1, 1), slice_spacing = 5, orientation = R, offset = (0, 0, 0))
     ms = ReconImage(NamedDimsArray{(:x, :y, :z)}(rand(8, 6, 4)), h2)
-    @test image_size(ms) == (8, 6)
+    @test _spatial_ndims(ms) == 2
     @test collect(header(ms[z = 4]).offset) ≈ R[:, 3] .* 15
-    @test image_size(ms[z = 4]) == (8, 6)
+    @test _spatial_ndims(ms[z = 4]) == 2
 end
 
 @testitem "ReconImage moves to a device with its header" tags = [:gpu, :reconstruction] setup = [GpuEnvSetup, GpuHelpers] begin
@@ -170,4 +170,69 @@ end
         @test header(img).fov == (160.0, 160.0)
         img
     end
+end
+
+@testitem "ReconImage: array interface and spatial axes" tags = [:reconstruction] begin
+    using Test
+    using Ristretto
+    using Ristretto: header, _spatial_ndims
+    using NamedDims
+
+    data = NamedDimsArray{(:x, :y, :time)}(rand(ComplexF32, 4, 3, 2))
+    img = ReconImage(data, (; spacing = (2, 2)))
+    @test _spatial_ndims(img) == 2
+    @test NamedDimsArray(img) === data
+    @test dimnames(img, 3) === :time
+    @test convert(Array, img) == Array(data)
+    @test similar(img) isa Array{ComplexF32, 3}
+    img[1, 1, 1] = 5
+    @test data[1, 1, 1] == 5
+    c = copy(img)
+    c[1, 1, 1] = 0
+    @test img[1, 1, 1] == 5
+    @test header(c) !== header(img) && header(c).spacing == (2.0, 2.0)
+    @test occursin("spacing 2.0×2.0 mm", sprint(show, MIME"text/plain"(), img))
+    @test occursin("(:x, :y, :time)", sprint(show, MIME"text/plain"(), img))
+
+    # Without a header, the spatial axes are guessed from the fov or the dimension names.
+    @test _spatial_ndims(ReconImage(rand(4, 3, 2), (; fov = (1, 2, 3)))) == 3
+    @test _spatial_ndims(ReconImage(rand(4, 3, 2))) == 2
+    @test _spatial_ndims(ReconImage(NamedDimsArray{(:x, :y, :z, :t)}(rand(2, 2, 2, 2)))) == 3
+    @test_throws ArgumentError ReconImage(rand(2, 2); spatial_ndims = 3)
+    @test_throws ArgumentError NamedDimsArray(ReconImage(rand(2, 2)))
+    @test_throws ArgumentError ReconImage(rand(2, 2))[x = 1]
+
+    # A selection that is not a range drops the offset; a single row leaves a profile, which
+    # the header's geometry cannot describe.
+    h = Header(; fov = (8, 6), spacing = (2, 2), orientation = [1.0 0 0; 0 1 0; 0 0 1], offset = (0, 0, 0))
+    img2 = ReconImage(NamedDimsArray{(:x, :y)}(rand(4, 3)), h)
+    picked = img2[x = [1, 3]]
+    @test isnothing(header(picked).offset)
+    profile = img2[y = 2]
+    @test _spatial_ndims(profile) == 1
+    @test isnothing(header(profile).fov) && isnothing(header(profile).spacing)
+    @test img2[x = 1, y = 1] isa Real
+end
+
+@testitem "Header: dictionary interface" tags = [:acquisition] begin
+    using Test
+    using Ristretto
+    using Ristretto: header
+
+    h = Header(; TE = [1, 2], site = "A", tags = Dict(:reader => "B"))
+    @test h.TE == [1.0, 2.0]
+    @test header(h) === h
+    @test gettag(h, :reader) == "B"
+    @test haskey(h, :tags)
+    @test Dict(collect(h)) == Dict(:TE => [1.0, 2.0], :site => "A", :tags => Dict("reader" => "B"))
+    @test get(() -> 0, h, :TR) == 0
+    @test get(() -> 0, h, :site) == "A"
+    delete!(h, :site)
+    delete!(h, :tags)
+    @test !haskey(h, :site) && !haskey(h, :tags)
+    h.extra = Dict("protocol" => "x")
+    @test h[:protocol] == "x"
+    h.fov = nothing
+    @test !haskey(h, :fov)
+    @test sprint(show, Header()) == "Header()"
 end

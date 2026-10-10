@@ -218,7 +218,7 @@ function _direct_coil_dim(acq::NonCartesianAcquisitionInfo)
         nframe = _trajectory_frame_dims_count(acq.trajectory, acq.kspace_data)
         ndims(acq.kspace_data) > _get_sample_dims_count(acq) + nframe || return 0
     end
-    return length(image_size(acq)) + 1
+    return length(acq.image_size) + 1
 end
 
 function _direct_reconstruct_coil_combined(acq_data::NonCartesianAcquisitionInfo, method::DirectReconstruction, 𝒜)

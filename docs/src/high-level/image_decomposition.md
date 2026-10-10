@@ -19,6 +19,7 @@ underlying optimization model.
 Component
 components
 total_image
+drop_components
 ```
 
 ## Basic Usage
@@ -65,8 +66,11 @@ img.components.smooth isa AbstractArray
 img.smooth isa AbstractArray
 ```
 
-Each component is itself a `ReconImage` with its own copy of the acquisition's
-[`header`](@ref Ristretto.header). The image's own properties (`data`, `header`,
+The components are plain arrays shaped like the image, which the image's
+[`header`](@ref Ristretto.header) describes. Keyword indexing selects the same part of
+every component, so `img[time = 3].smooth` is frame 3 of the smooth component. Once the
+components are no longer needed, `drop_components(img)` returns the image without them, so
+their memory can be released. The image's own properties (`data`, `header`,
 `components`) always resolve first, so a component cannot be named after one of
 them — `reconstruct` (via `Component`/`check_components`) and the `ReconImage`
 constructor both reject that collision, since such a component would otherwise

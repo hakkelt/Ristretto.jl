@@ -243,8 +243,8 @@ _grid_score(points::Real) = max(-12.0, min(-12 + 2.5 * (log2(points) - 14), -7 +
 # axis for a non-uniform transform, as its Toeplitz normal operator is) and the product of every
 # axis after the sample axes.
 function _fft_grid_and_batch(acq::AcquisitionInfo)
-    grid = prod(image_size(acq))
-    acq isa NonCartesianAcquisitionInfo && (grid *= 2^length(image_size(acq)))
+    grid = prod(acq.image_size)
+    acq isa NonCartesianAcquisitionInfo && (grid *= 2^length(acq.image_size))
     batch = prod(_ksp_trailing_size(acq.kspace_data, _get_sample_dims_count(acq) + 1); init = 1)
     return grid, batch
 end

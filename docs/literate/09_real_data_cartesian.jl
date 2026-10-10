@@ -60,7 +60,7 @@ println("field strength: ", raw.params["systemFieldStrength_T"], " T")
 # ## 2. From `RawAcquisitionData` to `AcquisitionInfo`
 #
 # Turning a scanner file into the array a reconstruction can use is where most hand-written MRI
-# code goes wrong, so Ristretto does it for you. Loading `MRIBase` (`MRITestData` already does)
+# code goes wrong, so Ristretto does it for you. Loading `MRIFiles` (`MRITestData` already does)
 # activates a package extension that adds
 # `AcquisitionInfo(raw::MRIBase.RawAcquisitionData; sensitivity_maps = nothing)`.
 #

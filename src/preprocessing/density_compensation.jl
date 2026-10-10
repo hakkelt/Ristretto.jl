@@ -69,9 +69,9 @@ function density_compensation(
     array_type = isnothing(ksp) ? Array : Base.typename(_array_type_of(ksp)).wrapper
     nframe = _trajectory_frame_dims_count(acq.trajectory, ksp)
     dcf = if nframe == 0
-        compute_dcf(acq.trajectory, image_size(acq), method; array_type)
+        compute_dcf(acq.trajectory, acq.image_size, method; array_type)
     else
-        _per_frame_dcf(acq.trajectory, image_size(acq), method, nframe; array_type)
+        _per_frame_dcf(acq.trajectory, acq.image_size, method, nframe; array_type)
     end
     return NonCartesianAcquisitionInfo(acq; dcf = isnothing(ksp) ? dcf : _to_storage_of(ksp, dcf))
 end

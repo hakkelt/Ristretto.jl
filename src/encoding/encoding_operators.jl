@@ -144,9 +144,9 @@ function _coil_fused_encoding_operator(
     (threaded && !isnothing(smaps) && Threads.nthreads() > 1) || return nothing
     ksp = info.kspace_data
     _is_device(ksp) && return nothing
-    img_size = image_size(info)
-    prod(img_size) <= COIL_FUSED_MAX_VOXELS || return nothing
-    nd = length(img_size)
+    image_size = info.image_size
+    prod(image_size) <= COIL_FUSED_MAX_VOXELS || return nothing
+    nd = length(image_size)
     ndims(smaps) == nd + 1 || return nothing
     _has_dimnames(smaps) && dimnames(smaps)[end] !== :coil && return nothing
     size(smaps, nd + 1) > 1 || return nothing
@@ -201,7 +201,7 @@ function _frame_batched_coil_fused_operator(
     end
     codomain = size(first(per_frame), 1)
     all(op -> isequal(size(op, 1), codomain), per_frame) || return nothing
-    nd = length(image_size(info))
+    nd = length(info.image_size)
     codomain_rank = length(size(first(per_frame), 1))
     nframe_dims = length(frame_dims)
     mask = (ntuple(_ -> :_, nd)..., ntuple(_ -> :s, nframe_dims)...) =>
@@ -226,8 +226,8 @@ function _coil_fused_frame_operator(
         coil_maps = _coil_maps(info),
     )
     ksp = info.kspace_data
-    img_size = image_size(info)
-    nd = length(img_size)
+    image_size = info.image_size
+    nd = length(image_size)
     ncoils = length(coil_maps)
     ksp_one_coil = ksp[ntuple(_ -> Colon(), ndims(ksp) - 1)..., 1]
     shift_kwargs = (
@@ -243,7 +243,7 @@ function _coil_fused_frame_operator(
                 get_fourier_operator(ksp_one_coil, info.is3D; shift_kwargs..., threaded = false, fast_planning)
         else
             get_subsampled_fourier_operator(
-                ksp_one_coil, img_size, info.subsampling;
+                ksp_one_coil, image_size, info.subsampling;
                 shift_kwargs..., threaded = false, fast_planning,
             )
         end
@@ -258,8 +258,8 @@ function _coil_fused_frame_operator(
         threaded, threading_strategy = ThreadingStrategy.FIXED_OPERATOR,
     )
     ℬ = BroadCast(
-        Eye(zeros(domain_type(first(per_coil)), img_size...)),
-        (img_size..., ncoils); threaded,
+        Eye(zeros(domain_type(first(per_coil)), image_size...)),
+        (image_size..., ncoils); threaded,
     )
     op = 𝒞 * ℬ
     _has_dimnames(ksp) || return op
@@ -269,7 +269,7 @@ end
 function _coil_maps(info::CartesianAcquisitionInfo)
     smaps = info.sensitivity_maps
     plain_smaps = unname(smaps)
-    nd = length(image_size(info))
+    nd = length(info.image_size)
     return [copy(selectdim(plain_smaps, nd + 1, c)) for c in axes(plain_smaps, nd + 1)]
 end
 

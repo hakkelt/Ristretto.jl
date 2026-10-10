@@ -242,13 +242,13 @@ info_named_shift = AcquisitionInfo(
 
 ### Building from raw ISMRMRD data (`MRIBase.RawAcquisitionData`)
 
-Loading `MRIBase.RawAcquisitionData` (from `MRIFiles.RawAcquisitionData`/`MRITestData.load_raw`) — a
-weak dependency: this constructor is available once `MRIBase` is loaded — derives the encoding
+An `MRIBase.RawAcquisitionData`, as `MRIFiles` reads it from an ISMRMRD file (`RawAcquisitionData(ISMRMRDFile(path))`, or `MRITestData.load_raw`),
+converts directly once `MRIFiles` is loaded (MRITestData loads it). The constructor derives the encoding
 matrix, k-space layout, coil dimension, subsampling pattern and Cartesian/non-Cartesian dispatch
 directly from the ISMRMRD header, instead of hand-assembling arrays from `raw.profiles`:
 
 ```julia
-using MRIBase   # loads the MRIBase extension
+using MRIFiles  # loads the MRIFiles extension
 using Ristretto
 
 info = AcquisitionInfo(raw)  # raw::MRIBase.RawAcquisitionData
@@ -317,7 +317,7 @@ acquisition gets an empty one. The images `reconstruct` returns carry a copy of 
 [`ReconImage`](@ref)), and the [export functions](export.md) write it.
 
 ```@example acqinfo
-using Ristretto: header, image_size
+using Ristretto: header
 
 acq = AcquisitionInfo(rand(ComplexF32, 64, 48); is3D = false,
     header = (; fov = (240, 180), TE = 4.2, protocol = "t1_se"))
@@ -346,7 +346,6 @@ fills all of these from the MRD header and profiles.
 ```@docs
 Header
 Ristretto.header
-Ristretto.image_size
 settag!
 gettag
 tags

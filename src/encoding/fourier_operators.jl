@@ -68,7 +68,7 @@ function get_fourier_operator(info::CartesianAcquisitionInfo; threaded::Bool = t
     else
         # Only a planning template with the full k-space layout is needed here;
         # avoid materializing the full k-space via an adjoint apply.
-        ksp = _full_kspace_template(info.kspace_data, image_size(info), info.subsampling)
+        ksp = _full_kspace_template(info.kspace_data, info.image_size, info.subsampling)
     end
     shifted_image_dims = info.shifted_image_dims
     shifted_kspace_dims = info.shifted_kspace_dims
@@ -151,7 +151,7 @@ function get_fourier_operator(
     @argcheck !isnothing(info.kspace_data) "The provided NonCartesianAcquisitionInfo does not contain k-space data, which is required to build the NFFT operator."
     return get_fourier_operator(
         info.kspace_data,
-        image_size(info),
+        info.image_size,
         info.trajectory;
         dcf = info.dcf,
         threaded, m, sigma, precompute, fast_planning,
