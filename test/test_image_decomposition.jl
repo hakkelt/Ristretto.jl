@@ -37,52 +37,39 @@ end
     @test t1 isa typeof(t2)
 end
 
-@testitem "DecomposedImage: array semantics" tags = [:components] begin
+@testitem "ReconImage with components: array semantics" tags = [:components] begin
     using Test
     using Ristretto
-    using Ristretto: bind_dimensions
 
     a = rand(4, 4)
     b = rand(4, 4)
-    img = Ristretto.DecomposedImage(a + b, (lowrank = a, sparse = b))
+    img = ReconImage(a + b; components = (lowrank = a, sparse = b))
 
     @test size(img) == (4, 4)
     @test img[2, 3] ≈ (a + b)[2, 3]
-    @test img.components.lowrank == a
-    @test img.components.sparse == b
-    @test total_image(img) === img.total
-    @test components(img) === img.components
+    @test components(img).lowrank == a
+    @test components(img).sparse == b
+    @test total_image(img) === parent(img)
     @test sum(values(components(img))) ≈ total_image(img)
     @test Array(img) ≈ a + b
-    @test_throws ErrorException img[1, 1] = 1.0
-
-    # `similar`/`copy` must keep going through `.total`, unaffected by the `getproperty` overload.
     @test similar(img, Float64, (4, 4)) isa typeof(a)
     @test copy(img) ≈ a + b
+    @test img .+ 1 ≈ a + b .+ 1
 end
 
-@testitem "DecomposedImage: property access forwards to components" tags = [:components] begin
+@testitem "ReconImage: property access forwards to components" tags = [:components] begin
     using Test
     using Ristretto
 
     a = rand(4, 4)
     b = rand(4, 4)
-    img = Ristretto.DecomposedImage(a + b, (lowrank = a, sparse = b))
+    img = ReconImage(a + b; components = (lowrank = a, sparse = b))
 
-    # Shorthand `img.lowrank` must be identical to the long form `img.components.lowrank`.
-    @test img.lowrank == a
-    @test img.sparse == b
-    @test img.lowrank === img.components.lowrank
-    @test img.sparse === img.components.sparse
+    @test img.lowrank === a
+    @test img.sparse === b
+    @test img.data ≈ a + b
+    @test Set(propertynames(img)) == Set((:data, :header, :components, :lowrank, :sparse))
 
-    # Real struct fields resolve first and are never shadowed.
-    @test img.total ≈ a + b
-    @test img.components === (lowrank = a, sparse = b)
-
-    # propertynames lists both the real fields and the component names.
-    @test Set(propertynames(img)) == Set((:total, :components, :lowrank, :sparse))
-
-    # An unknown name errors with a message naming both the real fields and the components.
     err = try
         img.nonexistent
         nothing
@@ -91,54 +78,61 @@ end
     end
     @test err isa ArgumentError
     msg = sprint(showerror, err)
-    @test occursin("total", msg)
-    @test occursin("components", msg)
-    @test occursin("lowrank", msg)
-    @test occursin("sparse", msg)
+    @test occursin("lowrank", msg) && occursin("sparse", msg) && occursin("header", msg)
+
+    @test_throws ArgumentError components(ReconImage(a))
 end
 
-@testitem "DecomposedImage: getproperty is type-stable for a literal Symbol" tags = [:components, :jet] begin
+@testitem "ReconImage: components are sliced with the image and can be dropped" tags = [:components] begin
+    using Test
+    using Ristretto
+    using Ristretto: header
+    using NamedDims
+
+    a = NamedDimsArray{(:x, :y, :time)}(rand(4, 4, 3))
+    b = NamedDimsArray{(:x, :y, :time)}(rand(4, 4, 3))
+    img = ReconImage(a + b, Header(; spacing = (1, 1)); components = (lowrank = a, sparse = b))
+
+    frame = img[time = 2]
+    @test frame.lowrank == a[time = 2]
+    @test frame.sparse == b[time = 2]
+    @test !(frame.lowrank isa ReconImage)
+    crop = view(img; x = 2:3)
+    @test crop.sparse == b[x = 2:3]
+
+    plain = drop_components(img)
+    @test parent(plain) === parent(img)
+    @test header(plain) === header(img)
+    @test_throws ArgumentError components(plain)
+    @test propertynames(plain) == (:data, :header, :components)
+end
+
+@testitem "ReconImage: getproperty is type-stable for a literal Symbol" tags = [:components, :jet] begin
     using Test
     using JET
     using Ristretto
 
     a = rand(4, 4)
     b = rand(4, 4)
-    img = Ristretto.DecomposedImage(a + b, (lowrank = a, sparse = b))
+    img = ReconImage(a + b; components = (lowrank = a, sparse = b))
 
     get_lowrank(img) = img.lowrank
-    get_total(img) = img.total
-    get_components(img) = img.components
+    get_data(img) = img.data
 
     @test (@inferred get_lowrank(img)) == a
-    @test (@inferred get_total(img)) ≈ a + b
-    @test (@inferred get_components(img)) === img.components
-
-    # JET confirms no dynamic-dispatch/runtime-dispatch report for a literal-Symbol access, since a
-    # constant Symbol is what every call site in the package and in user code actually writes
-    # (`img.lowrank`, not `getproperty(img, name_variable)`).
+    @test (@inferred get_data(img)) ≈ a + b
     @test_opt target_modules = (Ristretto,) get_lowrank(img)
-    @test_opt target_modules = (Ristretto,) get_total(img)
-    @test_opt target_modules = (Ristretto,) get_components(img)
+    @test_opt target_modules = (Ristretto,) get_data(img)
 end
 
-@testitem "DecomposedImage: a component named like a struct field is rejected" tags = [:components] begin
+@testitem "A component named like a ReconImage field is rejected" tags = [:components] begin
     using Test
     using Ristretto
 
-    a = rand(4, 4)
-    b = rand(4, 4)
-
-    # Direct construction with a reserved component name.
-    @test_throws ArgumentError Ristretto.DecomposedImage(a + b, (total = a, sparse = b))
-    @test_throws ArgumentError Ristretto.DecomposedImage(a + b, (components = a, sparse = b))
-
-    # The same collision caught earlier, at Component-tuple validation time.
-    c1 = Component(:total, L1Image(0.1))
     c2 = Component(:sparse, L1Image(0.1))
-    @test_throws ArgumentError Ristretto.check_components((c1, c2))
-    c3 = Component(:components, L1Image(0.1))
-    @test_throws ArgumentError Ristretto.check_components((c3, c2))
+    @test_throws ArgumentError Ristretto.check_components((Component(:data, L1Image(0.1)), c2))
+    @test_throws ArgumentError Ristretto.check_components((Component(:header, L1Image(0.1)), c2))
+    @test_throws ArgumentError Ristretto.check_components((Component(:components, L1Image(0.1)), c2))
 end
 
 @testitem "build_model: two-component model matches hand-computed objective" tags = [:components, :minimizer] begin
@@ -203,7 +197,7 @@ end
         IterativeReconstruction(Component(:smooth, L2Image(0.01)), Component(:sparse, L1Image(0.05)); maxit = 150); verbosity = Silent()
     )
 
-    @test img_recon isa DecomposedImage
+    @test img_recon isa ReconImage
     error_norm = norm(Array(img_recon) - img_true) / norm(img_true)
     @test error_norm < 0.5
 
@@ -275,7 +269,7 @@ end
     )
 
     img_recon = reconstruct(acq_with_data, IterativeReconstruction(components...; maxit = 20); verbosity = Silent())
-    @test img_recon isa DecomposedImage
+    @test img_recon isa ReconImage
 
     @test_throws ArgumentError reconstruct(acq_with_data, IterativeReconstruction(components...; algorithm = FISTA(), maxit = 20); verbosity = Silent())
 end
@@ -302,7 +296,7 @@ end
     img_split = reconstruct(acq_ms, IterativeReconstruction(components...; maxit = 30); verbosity = Silent())
     img_joint = reconstruct(acq_ms, IterativeReconstruction(components...; maxit = 30); disable_task_splitting = true, verbosity = Silent())
 
-    @test img_split isa DecomposedImage
+    @test img_split isa ReconImage
     @test size(img_split) == (nx, ny, nslices)
     @test isapprox(Array(img_split), Array(img_joint); rtol = 0.1)
 
@@ -358,11 +352,11 @@ end
     )
 
     img_recon = reconstruct(acq_data, IterativeReconstruction(components...; maxit = 5); verbosity = Silent())
-    @test img_recon isa DecomposedImage
+    @test img_recon isa ReconImage
     @test size(img_recon) == (nx, ny, nt)
     @test dimnames(img_recon) == (:x, :y, :time)
-    @test haskey(img_recon.components, :lowrank)
-    @test haskey(img_recon.components, :sparse)
+    @test haskey(Ristretto.components(img_recon), :lowrank)
+    @test haskey(Ristretto.components(img_recon), :sparse)
     @test all(isfinite, img_recon.lowrank)
     @test all(isfinite, img_recon.sparse)
 end

@@ -1,26 +1,18 @@
 docs/build
+# Pages and notebooks docs/make.jl generates from docs/literate/.
+docs/src/tutorials/
 *.cov
 Manifest.toml
 .serena/
-# SLURM job output. The benchmark SLURM scripts themselves are tracked (benchmark/slurm/); the
-# notebook export/precompile scripts are not, for now.
+# SLURM job output. The benchmark SLURM scripts themselves are tracked (benchmark/slurm/).
 /benchmark/**/slurm_*.txt
-docs/notebooks/**/*slurm*
 # Site configuration of the benchmark SLURM scripts: paths of one machine (copy site.env.example).
 /benchmark/slurm/site.env
 # Harness results, SLURM logs and job output (local working data).
 /benchmark/results/
 
-# Jupyter/notebook build artifacts
+# Jupyter artifacts
 .ipynb_checkpoints/
-docs/notebooks/build/
-docs/notebooks/cache/
-# Plots.jl writes the scratch file for an animated GIF next to the working directory.
-docs/notebooks/tmp.gif
-
-# .ipynb is a jupytext-generated view of docs/notebooks/src/*.jl (the tracked source); regenerate
-# with `python3 -m jupytext --to ipynb docs/notebooks/src/*.jl` rather than committing it.
-docs/notebooks/*.ipynb
 
 # per-section/per-group benchmark fragments (legacy; superseded by results/runs/, kept ignored for
 # any leftover files from before the switch)
@@ -35,7 +27,7 @@ benchmark/comparison/results/runs/
 # agent scaffolding and worktrees
 .claude/
 
-# Scratch worktrees in which `tools/vendor.jl rebuild` assembles each fork's `integration`
+# Scratch worktrees in which `deps/vendor.jl rebuild` assembles each fork's `integration`
 # branch; they belong to the dependency checkouts, not to this repository.
 .vendor-work/
 
@@ -54,10 +46,11 @@ benchmark/comparison/results/runs/
 # https://mr.usc.edu/download/LORAKS2/ (a form issues a personalised link) and unpack it here.
 /benchmark/comparison/original_implementations/LORAKS2/
 
-# Written by the test environment when MRITestData caches a download; per-machine state.
-# (The tracked docs/notebooks/ LocalPreferences.toml is deliberate.) The benchmark environments'
-# download path comes from RISTRETTO_BENCH_DATA_DIR and must not be committed.
+# Written by the test and docs environments when MRITestData caches a download; per-machine
+# state. The benchmark environments' download path comes from RISTRETTO_BENCH_DATA_DIR and must
+# not be committed.
 /test/LocalPreferences.toml
+/docs/LocalPreferences.toml
 /benchmark/**/LocalPreferences.toml
 /benchmark/LocalPreferences.toml
 
@@ -65,3 +58,4 @@ benchmark/comparison/results/runs/
 # other device backends found on the machine).
 /benchmark/comparison/gpu_env/
 /test/gpu_env/
+__pycache__/

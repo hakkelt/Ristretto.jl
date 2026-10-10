@@ -17,7 +17,7 @@ apply throughout; in particular, changes to vendored packages go on fork branche
 | **P1 — done** (PR #2, 2026-10-09) | 5 (rename), 9, 2, 11, 1 (measurement + quick wins), 3 |
 | **P2 — documentation (next)** | 28, 30, 29, 31, 6, 7 + 8, 10, 23, 4 |
 | **P3 — strengthens the paper** | 19, 20 (Python wrapper), 22 |
-| **Deferred** | 12, 13, 14, 15, rest of 1, 16, 17, 18, 24, 25, 26, 27 |
+| **Deferred** | 12, 13, 14, 15, rest of 1, 16, 17, 18, 24, 25, 26, 27, 32–38 |
 
 Ordering constraints: 5 before 4, 10 and 20 (a rename touches all of them); 9 and 7 before 10
 (notebooks are rewritten only once); 9 before 22 (simulated benchmark cases change); 7 before 8;
@@ -100,7 +100,9 @@ Comments are often too verbose. Ristretto `src/` and `ext/` first; comments in v
 on the fork branch that owns the code.
 
 ### 4. README
-**Status:** todo. **Tier:** P2. **After:** 5.
+**Status:** done (`p2`, 2026-10-10): installation, three high-level examples, a
+low-level one, a benchmark table from `docs/benchmark_tables.jl`, badges; `test/test_readme.jl`
+runs its code. **Tier:** P2. **After:** 5.
 
 Short and focused: what the package is, how to install Julia (one or two lines: juliaup), how to
 install the package, two or three examples, and a small benchmark table from the committed
@@ -120,7 +122,10 @@ rename by deleting the old name, never by deprecating it (`AGENTS.md`): module, 
 extensions, repository, docs, notebooks, benchmarks, `AGENTS.md`/`NAMING.md`.
 
 ### 6. Fork documentation and vendoring notes
-**Status:** todo. **Tier:** P2.
+**Status:** done (`p2`, 2026-10-10). Pages notes added; each fork's stack has `docs/fork-pages`
+(AbstractOperators #55, ProximalOperators #21, ProximalAlgorithms #18, StructuredOptimization #8,
+open for review), which deploys `integration` to the fork's GitHub Pages as `dev`; all four `dev`
+sites are up, and the low-level pages and tutorial 12 link them. **Tier:** P2.
 
 - Pages presenting a vendored package (`docs/src/low-level/abstract_operators.md`,
   `proximal_operators.md`, `custom_reconstruction.md`, ...) warn that it must be imported through
@@ -130,7 +135,18 @@ extensions, repository, docs, notebooks, benchmarks, `AGENTS.md`/`NAMING.md`.
   Pages enabled as of 2026-10-08), and Ristretto's docs and notebooks link there.
 
 ### 29. Faster test suite
-**Status:** todo. **Tier:** P2.
+**Status:** done (`p2`, 2026-10-10). On CI (PR #4, warm package cache) the test job took 19 min 34 s,
+of which the test step 17 min 53 s and the `:extension` coverage rerun 43 s: 1.1× faster than the
+22 min baseline, short of the 2× target (the first run, with a cold cache, took 34 min 37 s). Baseline
+2026-10-09: CI test job 22 min with coverage; locally 214 items, 3567 s summed on 4 workers.
+Measured item by item in one process as CI runs them (1 thread, no GPU): 3909 s with
+`--code-coverage=user`, 2393 s after (225 items), which includes ~350 s of one-off precompilation
+that `--check-bounds=yes` (as `Pkg.test` sets it) causes and the baseline did not pay. Most of the
+gain: coverage now counts only `src/` (and `ext/` in a second run of the `:extension` items), since
+`user` also instrumented the vendored `deps/` and made solver loops 4–10× slower (TGV3D 375 s →
+21 s). The rest: shorter ADMM/VuCondat budgets where the extra iterations moved nothing (TGV,
+infimal convolution, preconditioned Chambolle–Pock reference), and no host solve in
+`test_on_devices` when there is no device. No `:slow` tag was needed. **Tier:** P2.
 
 The full suite takes about 25 minutes on CI and on the login node. Find where the time goes
 (per-item durations from the TestItems runner) and cut it without losing coverage:
@@ -145,7 +161,8 @@ Report the per-item time before and after, and keep the slow, high-value cases (
 integration) behind a tag if they cannot be shrunk.
 
 ### 30. Re-run the examples
-**Status:** todo. **Tier:** P2.
+**Status:** done (`p2`): all 35 scripts ran on 2026-10-09 at `0e3aabe1`; table in
+`examples/README.md`. **Tier:** P2.
 
 Run every `examples/` script (`examples/run_all.jl`; the large datasets in one SLURM job) against
 the current package, fix what broke in `ext/RistrettoMRIBaseExt.jl`, preprocessing or `src/`
@@ -155,7 +172,12 @@ credentials (fastMRI signed URLs, the CMRxRecon Synapse token) are reported as s
 credential is missing, not as failures.
 
 ### 31. Literature review into the docs and the roadmap
-**Status:** todo. **Tier:** P2. **Before:** 10, 23.
+**Status:** done (`p2`, 2026-10-10). Not implemented: items 32–38 and notes on 16, 17 and 24 (open
+question 2, the non-linear solver strategy, is on item 32; 3 is on item 33; 1 is item 16; 4 no
+longer applies). Implemented: a few lines and the seminal references on the page where each
+feature lives (methods, preprocessing, acquisition data, analysis, regularization, theory), the
+method-API design in `low-level/custom_reconstruction.md`, the feature matrix on the
+related-packages page (item 23). The review file is deleted. **Tier:** P2. **Before:** 10, 23.
 
 `comprehensive_literature_review_mri_toolboxes.md` is too long to keep as it is. Audit it against
 `src/`: what is implemented is compacted into the documentation page where the feature lives (a
@@ -165,19 +187,29 @@ page (item 23), and what is not implemented becomes roadmap items. Then delete t
 ## User-facing features
 
 ### 7. Metadata header and result type
-**Status:** todo. **Tier:** P2.
+**Status:** done on `p2` (2026-10-09). `Header` is a dictionary whose known keys are typed fields;
+it is optional on `AcquisitionInfo`, shared by its copies, and filled from MRD by the MRIFiles
+extension. `reconstruct` returns a `ReconImage` with its own copy; keyword slicing moves `offset`.
+`DecomposedImage` is gone: a `ReconImage` holds the components as plain arrays, sliced with it
+and released by `drop_components`. Geometry is stored in LPS. **Tier:** P2.
 
 - `AcquisitionInfo` gets a header holding arbitrary key/value metadata.
 - `reconstruct` returns a type that is a subtype of `AbstractArray`, carrying geometry (FOV, voxel
   size, orientation, position) and the header forwarded from `AcquisitionInfo`.
 - Tags can be added on both `AcquisitionInfo` and the result image.
-- Header contents come from the MRD header (MRIBase extension) or other acquisition metadata, and
+- Header contents come from the MRD header (MRIFiles extension) or other acquisition metadata, and
   feed the export formats of item 8.
 
-Write a short design note before implementing.
+The design note written before the implementation (reviewed 2026-10-09) now lives in the
+`Header` and `ReconImage` docstrings and the acquisition-data, reconstruction and export pages.
 
 ### 8. Export to NIfTI, DICOM, MRD
-**Status:** todo. **Tier:** P2. **After:** 7.
+**Status:** done on `p2` (2026-10-10). Saving follows the FileIO convention: `save("x.nii", img)`
+(FileIO + NIfTI extension; RAS `sform`, BIDS-style JSON sidecar), `save("x.dcm", img)` (FileIO +
+DICOM extension; magnitude MR image series, 16-bit with a rescale slope, tags in `ImageComments`)
+and `save(ISMRMRDFile("x.h5"), img)` (MRIFiles extension; ISMRMRD HDF5 images, tags as meta
+attributes). Each file was read back by nibabel, pydicom and the `ismrmrd` Python package with the
+same geometry; docs page `high-level/export.md`. **Tier:** P2. **After:** 7.
 
 One package extension per format. Known keys of the header map to DICOM tags, NIfTI fields and
 MRD image header fields; geometry provides the affine.
@@ -211,7 +243,13 @@ the reconstruction's own forward operator makes results optimistic.
 Update tests, docs and notebooks that rely on the current behaviour.
 
 ### 10. One documentation site
-**Status:** todo. **Tier:** P2. **After:** 5, 7, 9.
+**Status:** done (`p2`, 2026-10-10). The twelve notebooks are Literate scripts in
+`docs/literate/`, executed into `docs/src/tutorials/` on every build and written as notebooks to
+download; `docs/notebooks/` (jupytext, IJulia, export and SLURM scripts) is gone. Home page cut
+to installation (juliaup), a three-line example and a map of the site; each reference page links
+its tutorial. Docs CI caches the MRITestData downloads and runs 2 threads. Item 9 leftover:
+tutorial 01 simulates from a finer area-sampled phantom; the other tutorials keep their phantoms
+(tutorial 03 explains the inverse crime on them). **Tier:** P2. **After:** 5, 7, 9.
 
 Merge the notebooks (`docs/notebooks/`) and the Documenter pages (`docs/src/`) into a single
 Documenter site in which every topic has one home: tutorials come from the notebooks; reference,
@@ -220,7 +258,12 @@ Literate.jl scripts as the single source, generating both the executed pages and
 files. Includes a short "Installing Julia" section (juliaup), as in item 4.
 
 ### 23. Related packages page
-**Status:** todo. **Tier:** P2. **After:** 31.
+**Status:** done (`p2`, 2026-10-10). `docs/src/related_packages.md`: feature matrix
+of BART, SigPy, Gadgetron, MRIReco.jl, MIRT.jl, MRpro and Ristretto re-verified against each
+project's source and docs (October 2026), benchmark tables generated at build time from the
+committed snapshots by `docs/benchmark_tables.jl` (time to accuracy, matched effort, thread
+scaling, GPU, hardware), the Julia ecosystem and the pipelines. Snapshot schema 3 records
+dates, CPU, GPU, Julia and BLAS; the harness now stores the CPU model. **Tier:** P2. **After:** 31.
 
 A documentation page "Related packages" with a feature comparison against other toolboxes (from
 the literature review, item 31, re-verified), the Julia MRI ecosystem (KomaMRI, MRIReco,
@@ -327,13 +370,21 @@ operators (using the true adjoint — Ristretto's Fourier `'` is Aᴴ/N); pretra
 SNRAware, Hugging Face weights) through the existing `PlugAndPlay` and as post-processing;
 MoDL/VarNet in Lux with fastMRI weight import; RAKI; implicit neural representations; diffusion
 (via PythonCall); transformers (import only). Check weight licenses individually.
-`comprehensive_literature_review_mri_toolboxes.md` §2.7.2 and §5.10 scope this.
+Unrolled networks (VarNet: Hammernik et al., MRM 2018, doi:10.1002/mrm.26977; MoDL: Aggarwal et
+al., IEEE TMI 2019, doi:10.1109/TMI.2018.2865356) train the regularizer and the step sizes end to
+end through the forward operator, an execution model `reconstruct` does not have; that is why
+this lives in its own package.
 
 ### 17. Post-processing
 **Status:** todo. **Tier:** deferred.
 
 Phase unwrapping, geometric distortion correction, DC artifact removal, Gaussian smoothing, Dixon,
 QSM, MR fingerprinting. Prefer integrating existing packages, after checking their licenses.
+
+Water–fat separation: multi-echo signal model with multi-peak fat and field map, IDEAL (Reeder et
+al., doi:10.1002/mrm.20624) and graph-cut field-map estimation (Hernando et al.,
+doi:10.1002/mrm.22177). Joint water/fat/field-map estimation is non-linear; see item 32's note on
+the solver strategy.
 
 ### 18. Motion correction
 **Status:** todo. **Tier:** deferred.
@@ -360,6 +411,69 @@ reconstruction. MATLAB through Python or the CLI. JuliaC `--trim` is not realist
 
 Extract respiratory/cardiac self-navigation signals from the acquired data (e.g. repeated k-space
 centre samples) for binning and motion-resolved reconstruction; relates to item 18.
+
+The reconstruction half of XD-GRASP (Feng et al., doi:10.1002/mrm.25665) is already expressible
+(`TemporalTotalVariation` over the motion-state dimensions); what is missing is this item: the
+self-gating signal, the sorting into motion states, and the per-bin trajectories that result.
+
+### 32. Joint image and sensitivity estimation (JSENSE, NLINV)
+**Status:** todo. **Tier:** deferred.
+
+Estimate the image and the coil sensitivities together instead of calibrating the maps first:
+JSENSE (Ying & Sheng, doi:10.1002/mrm.21245) alternates between the two; NLINV (Uecker et al.,
+doi:10.1002/mrm.21692) solves the bilinear problem by the iteratively regularized Gauss–Newton
+method. **Open:** the non-linear solver strategy (an IRGNM in Ristretto, an alternating layer over
+the existing linear solvers, or a general non-linear optimizer) is to be discussed; the choice also
+shapes items 17 (water–fat) and 38 (quantitative mapping).
+
+### 33. B₀ off-resonance correction
+**Status:** todo. **Tier:** deferred.
+
+A forward operator with off-resonance (and optionally R₂* decay) during the readout, made fast by
+time segmentation or multi-frequency interpolation into a short sum of NFFTs (Sutton, Noll &
+Fessler, doi:10.1109/TMI.2002.808360; Fessler et al., doi:10.1109/TSP.2005.853152), supplied
+through the method's `signal_model` like `TemporalBasis`. Model factors stay on the method, so one
+acquisition can be reconstructed with and without correction; revisit whether field maps belong
+on `AcquisitionInfo` (they describe the acquisition) once this lands.
+
+### 34. EPI Nyquist ghost correction
+**Status:** todo. **Tier:** deferred.
+
+Even/odd echo phase correction from navigator lines, as a preprocessing step that returns a
+corrected `AcquisitionInfo` (Bruder et al., doi:10.1002/mrm.1910230211); entropy-based and
+reference-free variants after that. The examples include EPI data to test it on.
+
+### 35. Virtual conjugate coils
+**Status:** todo. **Tier:** deferred.
+
+Add the conjugate of the point-reflected k-space as extra virtual channels, so SENSE and GRAPPA
+exploit the phase constraint of partial Fourier without an explicit phase estimate (Blaimer et
+al., doi:10.1002/mrm.21652).
+
+### 36. Simultaneous multi-slice
+**Status:** todo. **Tier:** deferred.
+
+SMS encoding with blipped-CAIPI shifts and slice-GRAPPA / split slice-GRAPPA (Setsompop et al.,
+doi:10.1002/mrm.23097; Cauley et al., doi:10.1002/mrm.24898). Slices are then no longer separable,
+so task splitting must be told the slice dimension is coupled (as `get_affected_dims` does for a
+regularizer).
+
+### 37. PROPELLER / BLADE
+**Status:** todo. **Tier:** deferred.
+
+Blade-wise rotation, translation and phase estimation from the commonly sampled k-space centre,
+correlation weighting or rejection of corrupted blades, then gridding (Pipe,
+doi:10.1002/(SICI)1522-2594(199911)42:5<963::AID-MRM17>3.0.CO;2-L); relates to item 18.
+
+### 38. Model-based parameter mapping
+**Status:** todo. **Tier:** deferred.
+
+T₁, T₂ and T₂* maps estimated directly from k-space through a signal equation in the forward
+model, instead of fitting reconstructed contrast images (Block, Uecker & Frahm,
+doi:10.1109/TMI.2009.2023119; Sumpf et al., doi:10.1002/jmri.22633; Wang et al.,
+doi:10.1002/mrm.26726). Its linearized form is `TemporalBasis` (subspace reconstruction), which
+exists; the non-linear form depends on item 32's solver decision. `NonNegative` and `BoxConstraint`
+already cover the regularization side.
 
 ### 25. Reconstruction pipelines: OpenRecon, Gadgetron
 **Status:** todo. **Tier:** deferred.

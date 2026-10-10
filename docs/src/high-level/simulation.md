@@ -1,5 +1,7 @@
 # Simulation Tools
 
+*Tutorial: [Simulation](../tutorials/03_simulation.md).*
+
 Ristretto provides comprehensive tools for simulating MRI acquisitions. These are essential for testing reconstruction algorithms, teaching MRI concepts, and prototyping new acquisition strategies.
 
 ## Why Simulate?

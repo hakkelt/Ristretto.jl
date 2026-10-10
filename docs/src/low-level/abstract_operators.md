@@ -1,5 +1,14 @@
 # [AbstractOperators.jl: Matrix-Free Linear Operators](@id abstract_operators)
 
+!!! note "Bundled package"
+    Ristretto ships its own copy of AbstractOperators.jl (with FFTWOperators, NFFTOperators,
+    WaveletOperators and DSPOperators). Import them through Ristretto, as `using
+    Ristretto.AbstractOperators`, and do not `Pkg.add` the registered packages: the bundled
+    version carries work that is not registered yet (multithreading, GPU support, new operators,
+    functions and algorithms). Upstreaming it is under way, and the bundled copy goes away once
+    the registered releases have it. Documentation of the bundled version:
+    [AbstractOperators.jl (fork)](https://hakkelt.github.io/AbstractOperators.jl/dev/).
+
 ## Why Matrix-Free Operators?
 
 ### The Matrix Representation Problem
@@ -227,7 +236,7 @@ end
 3. **Implement adjoint**: For `LinearOperator`, also implement `mul!` for `AdjointOperator`
 4. **Test correctness**: Verify `⟨Lx, y⟩ = ⟨x, L'y⟩` for random inputs
 
-For complete details on implementing custom operators, see the [AbstractOperators.jl documentation](https://hakkelt.github.io/AbstractOperators.jl/stable/custom/).
+For complete details on implementing custom operators, see the [AbstractOperators.jl documentation](https://hakkelt.github.io/AbstractOperators.jl/dev/custom/).
 
 ## Operators in AbstractOperators.jl
 
@@ -314,6 +323,6 @@ x̂, _ = @minimize ls(𝒜 * v - ksp) + 0.01 * norm(𝒲 * v, 1)
 
 ## Further Reading
 
-- **AbstractOperators.jl Documentation**: [https://hakkelt.github.io/AbstractOperators.jl/stable/](https://hakkelt.github.io/AbstractOperators.jl/stable/)
-- **Custom Operators Guide**: [https://hakkelt.github.io/AbstractOperators.jl/stable/custom/](https://hakkelt.github.io/AbstractOperators.jl/stable/custom/)
-- **Operator Properties**: Learn about [operator traits and properties](https://hakkelt.github.io/AbstractOperators.jl/stable/properties/)
+- **AbstractOperators.jl Documentation**: [https://hakkelt.github.io/AbstractOperators.jl/dev/](https://hakkelt.github.io/AbstractOperators.jl/dev/)
+- **Custom Operators Guide**: [https://hakkelt.github.io/AbstractOperators.jl/dev/custom/](https://hakkelt.github.io/AbstractOperators.jl/dev/custom/)
+- **Operator Properties**: Learn about [operator traits and properties](https://hakkelt.github.io/AbstractOperators.jl/dev/properties/)

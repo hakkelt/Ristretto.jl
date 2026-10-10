@@ -7,9 +7,13 @@
             image_size,
             shifted_kspace_dims::Tuple=(),
             shifted_image_dims::Tuple=(),
+            header=nothing,
     )
 
 Container for non-Cartesian MRI acquisition settings.
+
+`header` is the metadata: a [`Header`](@ref), stored as given, or keywords for one as a
+`NamedTuple` or another dictionary. An empty header is created when none is given.
 
 The trajectory stores coordinate axes in its first dimension. Its remaining
 dimensions must match the non-coil k-space sample layout.
@@ -44,8 +48,9 @@ struct NonCartesianAcquisitionInfo{K, T, D, S, I, SD, ID} <: AcquisitionInfo
     shifted_kspace_dims::SD
     shifted_image_dims::ID
     is3D::Bool
+    header::Header
 
-    function NonCartesianAcquisitionInfo(ksp, traj, dcf, smaps, img_size, sK, sI)
+    function NonCartesianAcquisitionInfo(ksp, traj, dcf, smaps, img_size, sK, sI, hdr = nothing)
         @argcheck !isnothing(traj) "trajectory must be provided"
         nd = ndims(traj)
         @argcheck nd > 1 "trajectory must have at least 2 dimensions"
@@ -107,8 +112,10 @@ struct NonCartesianAcquisitionInfo{K, T, D, S, I, SD, ID} <: AcquisitionInfo
 
         _check_same_storage(ksp, smaps, "sensitivity maps")
         _check_same_storage(ksp, dcf, "dcf")
+        hdr = _to_header(hdr)
+        _check_geometry(hdr, img_size)
         return new{typeof(ksp), typeof(traj), typeof(dcf), typeof(smaps), typeof(img_size), typeof(sK), typeof(sI)}(
-            ksp, traj, dcf, smaps, img_size, sK, sI, is3D
+            ksp, traj, dcf, smaps, img_size, sK, sI, is3D, hdr
         )
     end
 end
@@ -121,7 +128,8 @@ NonCartesianAcquisitionInfo(
     image_size = nothing,
     shifted_kspace_dims::Union{Tuple, Integer, Symbol} = (),
     shifted_image_dims::Union{Tuple, Integer, Symbol} = (),
-) = NonCartesianAcquisitionInfo(kspace_data, trajectory, dcf, sensitivity_maps, image_size, shifted_kspace_dims, shifted_image_dims)
+    header = nothing,
+) = NonCartesianAcquisitionInfo(kspace_data, trajectory, dcf, sensitivity_maps, image_size, shifted_kspace_dims, shifted_image_dims, header)
 
 NonCartesianAcquisitionInfo(;
     kspace_data = nothing,
@@ -131,7 +139,8 @@ NonCartesianAcquisitionInfo(;
     image_size = nothing,
     shifted_kspace_dims::Union{Tuple, Integer, Symbol} = (),
     shifted_image_dims::Union{Tuple, Integer, Symbol} = (),
-) = NonCartesianAcquisitionInfo(kspace_data, trajectory, dcf, sensitivity_maps, image_size, shifted_kspace_dims, shifted_image_dims)
+    header = nothing,
+) = NonCartesianAcquisitionInfo(kspace_data, trajectory, dcf, sensitivity_maps, image_size, shifted_kspace_dims, shifted_image_dims, header)
 
 """
     _trajectory_frame_dims_count(trajectory, kspace) -> Int

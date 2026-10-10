@@ -1,5 +1,15 @@
 # ProximalOperators.jl Summary
 
+!!! note "Bundled package"
+    Ristretto ships its own copy of ProximalOperators.jl and ProximalAlgorithms.jl. Import them
+    through Ristretto, as `using Ristretto.ProximalOperators` and `using
+    Ristretto.ProximalAlgorithms`, and do not `Pkg.add` the registered packages: the bundled
+    version carries work that is not registered yet (multithreading, GPU support, new operators,
+    functions and algorithms). Upstreaming it is under way, and the bundled copy goes away once
+    the registered releases have it. Documentation of the bundled version:
+    [ProximalOperators.jl (fork)](https://hakkelt.github.io/ProximalOperators.jl/dev/),
+    [ProximalAlgorithms.jl (fork)](https://hakkelt.github.io/ProximalAlgorithms.jl/dev/).
+
 This page gives a quick overview of the `ProximalOperators.jl` package, which supplies a large catalog of convex (and some nonconvex) function objects together with their proximal operators (and gradients when available). These building blocks can be used by (`ProximalAlgorithms.jl`) and by the reconstruction routines in this toolbox to express regularization terms and constraints.
 
 ## Goal

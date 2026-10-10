@@ -1,5 +1,7 @@
 # Regularization
 
+*Tutorial: [Regularization](../tutorials/05_regularization.md).*
+
 Regularization is essential for reconstructing high-quality images from undersampled k-space data. This page explains the available regularization methods and how to use them.
 
 ## Why Regularization?
@@ -879,13 +881,13 @@ Dynamic imaging:
 - Otazo, R., Candès, E., & Sodickson, D. K. (2015). *Low-rank plus sparse matrix decomposition for accelerated dynamic MRI with separation of background and dynamic components.* Magnetic Resonance in Medicine, 73(3), 1125-1136. — the L+S model, see [Image Decomposition](image_decomposition.md).
 
 Low-rank models:
-- Liang, Z.-P. (2007). *Spatiotemporal imaging with partially separable functions.* Proc. IEEE ISBI, 988-991. — the partially separable / globally low-rank model behind [`LowRank`](@ref) and [`RankLimit`](@ref).
+- Liang, Z.-P. (2007). *Spatiotemporal imaging with partially separable functions.* Proc. IEEE ISBI, 988-991. <https://doi.org/10.1109/ISBI.2007.357020> — the partially separable / globally low-rank model behind [`LowRank`](@ref) and [`RankLimit`](@ref).
 - Trzasko, J. D., & Manduca, A. (2011). *Local versus global low-rank promotion in dynamic MRI series reconstruction.* Proc. ISMRM, 4371. — [`LocallyLowRank`](@ref).
 - Zhang, T., Pauly, J. M., & Levesque, I. R. (2015). *Accelerating parameter mapping with a locally low rank constraint.* Magnetic Resonance in Medicine, 73(2), 655-661.
 - Ong, F., & Lustig, M. (2016). *Beyond low rank + sparse: Multiscale low rank matrix decomposition.* IEEE Journal of Selected Topics in Signal Processing, 10(4), 672-687. — [`MultiScaleLowRank`](@ref).
 - Bauschke, H. H., Goebel, R., Lucet, Y., & Wang, X. (2008). *The proximal average: Basic theory.* SIAM Journal on Optimization, 19(2), 766-785. — the construction [`MultiScaleLowRank`](@ref) uses to combine the scales.
-- Shin, P. J., Larson, P. E. Z., Ohliger, M. A., et al. (2014). *Calibrationless parallel imaging reconstruction based on structured low-rank matrix completion.* Magnetic Resonance in Medicine, 72(4), 959-970. — SAKE, the `max_rank` form of [`StructuredLowRank`](@ref).
-- Haldar, J. P. (2014). *Low-rank modeling of local k-space neighborhoods (LORAKS) for constrained MRI.* IEEE Transactions on Medical Imaging, 33(3), 668-681. — LORAKS, whose C-matrix penalty is the `λ` form of [`StructuredLowRank`](@ref) and whose S- and G-matrices are its `structure = :s` and `:g`.
+- Shin, P. J., Larson, P. E. Z., Ohliger, M. A., et al. (2014). *Calibrationless parallel imaging reconstruction based on structured low-rank matrix completion.* Magnetic Resonance in Medicine, 72(4), 959-970. <https://doi.org/10.1002/mrm.24997> — SAKE, the `max_rank` form of [`StructuredLowRank`](@ref).
+- Haldar, J. P. (2014). *Low-rank modeling of local k-space neighborhoods (LORAKS) for constrained MRI.* IEEE Transactions on Medical Imaging, 33(3), 668-681. <https://doi.org/10.1109/TMI.2013.2293974> — LORAKS, whose C-matrix penalty is the `λ` form of [`StructuredLowRank`](@ref) and whose S- and G-matrices are its `structure = :s` and `:g`.
 - Haldar, J. P., & Zhuo, J. (2016). *P-LORAKS: Low-rank modeling of local k-space neighborhoods with parallel imaging data.* Magnetic Resonance in Medicine, 75(4), 1499-1514. — the multi-channel form of the C and S matrices.
 - Jin, K. H., Lee, D., & Ye, J. C. (2016). *A general framework for compressed sensing and parallel MRI using annihilating filter based low-rank Hankel matrix.* IEEE Transactions on Computational Imaging, 2(4), 480-495. — ALOHA (the `weights` argument of [`StructuredLowRank`](@ref)).
 
@@ -895,7 +897,7 @@ Joint sparsity and prior images:
 - Chen, G.-H., Tang, J., & Leng, S. (2008). *Prior image constrained compressed sensing (PICCS).* Medical Physics, 35(2), 660-663. — [`ReferencePrior`](@ref).
 
 Learned and denoiser-based priors:
-- Venkatakrishnan, S. V., Bouman, C. A., & Wohlberg, B. (2013). *Plug-and-play priors for model based reconstruction.* Proc. IEEE GlobalSIP, 945-948. — [`PlugAndPlay`](@ref).
+- Venkatakrishnan, S. V., Bouman, C. A., & Wohlberg, B. (2013). *Plug-and-play priors for model based reconstruction.* Proc. IEEE GlobalSIP, 945-948. <https://doi.org/10.1109/GlobalSIP.2013.6737048> — [`PlugAndPlay`](@ref).
 - Ahmad, R., Bouman, C. A., Buzzard, G. T., et al. (2020). *Plug-and-play methods for magnetic resonance imaging.* IEEE Signal Processing Magazine, 37(1), 105-116.
 
 Algorithms:

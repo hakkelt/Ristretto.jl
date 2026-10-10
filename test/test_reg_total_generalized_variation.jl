@@ -82,7 +82,8 @@ end
     using Ristretto.AbstractOperators
 
 
-    function denoise(reg, noisy; maxit = 2000)
+    # ADMM settles within 200 iterations here: the errors below move in the fourth digit beyond.
+    function denoise(reg, noisy; maxit = 200)
         model, x, _ = Ristretto.build_model_with_variables(
             Eye(noisy), noisy, (reg,); threaded = false, x₀ = copy(noisy),
         )
@@ -113,16 +114,15 @@ end
     end
 
     @testset "batch dimensions are denoised independently" begin
-        # Both the data term and the penalty are separable across the batch, so the exact minimizers
-        # coincide slice by slice. Only ADMM's finite iteration budget separates them — the two problems are
-        # of different size, so the solver does not take identical steps — hence the loose tolerance.
-        # The second slice is a different image, so a leak across the batch boundary would show up as a
-        # disagreement with the slice reconstructed on its own.
+        # Both the data term and the penalty are separable across the batch, so the minimizers coincide
+        # slice by slice, and so do ADMM's iterates (to 1e-8 after 150 iterations). The second slice is a
+        # different image, so a leak across the batch boundary would show up as a disagreement with the
+        # slice reconstructed on its own.
         other = [0.03 * i for i in 1:n, _ in 1:n] .+ 0.05 .* randn(MersenneTwister(4), n, n)
         stacked = cat(noisy, other; dims = 3)
-        result = denoise(TotalGeneralizedVariation2D(0.05), stacked; maxit = 1500)
-        @test result[:, :, 1] ≈ denoise(TotalGeneralizedVariation2D(0.05), noisy; maxit = 1500) rtol = 2.0e-2
-        @test result[:, :, 2] ≈ denoise(TotalGeneralizedVariation2D(0.05), other; maxit = 1500) rtol = 2.0e-2
+        result = denoise(TotalGeneralizedVariation2D(0.05), stacked; maxit = 150)
+        @test result[:, :, 1] ≈ denoise(TotalGeneralizedVariation2D(0.05), noisy; maxit = 150) rtol = 1.0e-6
+        @test result[:, :, 2] ≈ denoise(TotalGeneralizedVariation2D(0.05), other; maxit = 150) rtol = 1.0e-6
     end
 end
 
@@ -153,7 +153,7 @@ end
         Eye(noisy), noisy, components; threaded = false, x₀s = (copy(noisy), zero(noisy))
     )
     @test auxiliaries == ()
-    solve(model, ADMM(maxit = 1000, rho = 1.0))
+    solve(model, ADMM(maxit = 200, rho = 1.0))
     total = reduce(+, map(v -> copy(~v), vars))
 
     @test error_to_truth(total) < error_to_truth(noisy)
@@ -163,7 +163,7 @@ end
     tv_model, tv_x, _ = Ristretto.build_model_with_variables(
         Eye(noisy), noisy, (TotalVariation2D(0.05),); threaded = false, x₀ = copy(noisy),
     )
-    solve(tv_model, ADMM(maxit = 1000, rho = 1.0))
+    solve(tv_model, ADMM(maxit = 200, rho = 1.0))
     @test error_to_truth(total) < error_to_truth(copy(~tv_x))
 end
 
@@ -293,7 +293,7 @@ end
     using Ristretto.AbstractOperators
 
 
-    function denoise(reg, noisy; maxit = 800)
+    function denoise(reg, noisy; maxit = 100)
         model, x, _ = Ristretto.build_model_with_variables(
             Eye(noisy), noisy, (reg,); threaded = false, x₀ = copy(noisy),
         )

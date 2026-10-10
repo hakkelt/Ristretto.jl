@@ -7,9 +7,13 @@
             subsampling=nothing,
             shifted_kspace_dims::Tuple=(),
             shifted_image_dims::Tuple=(),
+            header=nothing,
     )
 
 Configuration container for Cartesian MRI acquisition and encoding settings.
+
+`header` is the metadata: a [`Header`](@ref), stored as given, or keywords for one as a
+`NamedTuple` or another dictionary. An empty header is created when none is given.
 
 `subsampling` may be a single pattern shared by the whole acquisition, or an *array of patterns*,
 one per batch element (a different ky mask per frame). In the latter case `kspace_data` is a dense
@@ -24,8 +28,9 @@ struct CartesianAcquisitionInfo{K, I, S, Sub, SD, ID} <: AcquisitionInfo
     subsampling::Sub
     shifted_kspace_dims::SD
     shifted_image_dims::ID
+    header::Header
 
-    function CartesianAcquisitionInfo(ksp, is3D, img_size, smaps, subs, sK, sI)
+    function CartesianAcquisitionInfo(ksp, is3D, img_size, smaps, subs, sK, sI, hdr = nothing)
         if !isnothing(subs)
             if !isnothing(ksp)
                 guessed = Ristretto._get_img_size_from_subsampling(subs, ksp)
@@ -97,8 +102,10 @@ struct CartesianAcquisitionInfo{K, I, S, Sub, SD, ID} <: AcquisitionInfo
             end
         end
 
+        hdr = _to_header(hdr)
+        _check_geometry(hdr, img_size)
         return new{typeof(ksp), typeof(img_size), typeof(smaps), typeof(subs), typeof(sK), typeof(sI)}(
-            ksp, is3D, img_size, smaps, subs, sK, sI
+            ksp, is3D, img_size, smaps, subs, sK, sI, hdr
         )
     end
 end
@@ -119,7 +126,8 @@ CartesianAcquisitionInfo(
     subsampling = nothing,
     shifted_kspace_dims::Union{Tuple, Integer, Symbol} = (),
     shifted_image_dims::Union{Tuple, Integer, Symbol} = (),
-) = CartesianAcquisitionInfo(kspace_data, is3D, image_size, sensitivity_maps, subsampling, shifted_kspace_dims, shifted_image_dims)
+    header = nothing,
+) = CartesianAcquisitionInfo(kspace_data, is3D, image_size, sensitivity_maps, subsampling, shifted_kspace_dims, shifted_image_dims, header)
 
 CartesianAcquisitionInfo(;
     kspace_data = nothing,
@@ -129,7 +137,8 @@ CartesianAcquisitionInfo(;
     subsampling = nothing,
     shifted_kspace_dims::Union{Tuple, Integer, Symbol} = (),
     shifted_image_dims::Union{Tuple, Integer, Symbol} = (),
-) = CartesianAcquisitionInfo(kspace_data, is3D, image_size, sensitivity_maps, subsampling, shifted_kspace_dims, shifted_image_dims)
+    header = nothing,
+) = CartesianAcquisitionInfo(kspace_data, is3D, image_size, sensitivity_maps, subsampling, shifted_kspace_dims, shifted_image_dims, header)
 
 
 function _check_smaps(smaps, ksp, subs, is3D, img_size)

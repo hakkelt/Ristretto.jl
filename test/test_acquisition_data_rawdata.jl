@@ -1,4 +1,6 @@
 @testmodule RawAcqHelpers begin
+    # Loading MRIFiles loads the extension that builds an AcquisitionInfo from raw data.
+    using MRIFiles: MRIFiles
     using MRIBase: RawAcquisitionData, Profile, AcquisitionHeader, EncodingCounters, Limit
 
     export make_profile, make_traj_profile, make_raw
@@ -6,9 +8,12 @@
     function make_profile(
             data::Matrix{ComplexF32}; step1 = 0, step2 = 0, slice = 0, contrast = 0, phase = 0,
             repetition = 0, set = 0, average = 0, discard_pre = 0, discard_post = 0, center_sample = 0,
+            position = (0, 0, 0), read_dir = (0, 0, 0), phase_dir = (0, 0, 0), slice_dir = (0, 0, 0),
         )
         ncoil = size(data, 2)
         head = AcquisitionHeader(;
+            position = Float32.(position), read_dir = Float32.(read_dir),
+            phase_dir = Float32.(phase_dir), slice_dir = Float32.(slice_dir),
             number_of_samples = UInt16(size(data, 1)),
             available_channels = UInt16(ncoil),
             active_channels = UInt16(ncoil),
@@ -50,18 +55,21 @@
         return Profile(head, traj, data)
     end
 
-    function make_raw(profiles; encoded_size, lim1, lim2 = Limit(0, 0, 0), trajectory = "cartesian")
-        params = Dict{String, Any}(
+    function make_raw(profiles; encoded_size, lim1, lim2 = Limit(0, 0, 0), trajectory = "cartesian", params...)
+        p = Dict{String, Any}(
             "encodedSize" => collect(encoded_size),
             "trajectory" => trajectory,
             "enc_lim_kspace_encoding_step_1" => lim1,
             "enc_lim_kspace_encoding_step_2" => lim2,
         )
-        return RawAcquisitionData(params, profiles)
+        for (k, v) in params
+            p[string(k)] = v
+        end
+        return RawAcquisitionData(p, profiles)
     end
 end
 
-@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — Cartesian" tags = [:acquisition] setup = [RawAcqHelpers] begin
+@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — Cartesian" tags = [:extension, :acquisition] setup = [RawAcqHelpers] begin
     using Ristretto
     using MRIBase: Profile, Limit
     using Ristretto: CartesianAcquisitionInfo
@@ -198,7 +206,48 @@ end
     end
 end
 
-@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — object stays centred in the FOV" tags = [:acquisition, :reconstruction] setup = [RawAcqHelpers] begin
+@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — header" tags = [:extension, :acquisition] setup = [RawAcqHelpers] begin
+    using Test
+    using Ristretto
+    using Ristretto: header
+    using MRIBase: Profile, Limit
+
+    # Two slices of a coronal-ish acquisition: read along -x, phase along z, slices along y (LPS),
+    # 6 mm apart; `position` is the centre of each slice.
+    read_dir, phase_dir, slice_dir = (-1, 0, 0), (0, 0, 1), (0, 1, 0)
+    profiles = Profile[
+        make_profile(
+            ones(ComplexF32, 8, 1); step1, slice, center_sample = 4,
+            position = (10, 20 + 6 * slice, 30), read_dir, phase_dir, slice_dir,
+        )
+            for slice in (0, 1) for step1 in 0:7
+    ]
+    raw = make_raw(
+        profiles; encoded_size = (8, 8, 1), lim1 = Limit(0, 7, 4),
+        encodedFOV = [160.0, 80.0, 3.0], TE = [4.5], TR = 300.0, flipAngle_deg = 15.0,
+        H1resonanceFrequency_Hz = 127_731_000,
+    )
+    h = header(AcquisitionInfo(raw))
+    @test h.fov == (160.0, 80.0)
+    @test h.spacing == (20.0, 10.0)
+    @test h.slice_thickness == 3.0
+    @test h.TE == 4.5 && h.TR == 300.0 && h.flip_angle == 15.0
+    @test h.field_strength ≈ 3.0 atol = 1.0e-3
+    @test h.orientation == [-1.0 0 0; 0 0 1; 0 1 0]
+    @test h.slice_spacing == 6.0
+    # The centre voxel (index n ÷ 2 + 1 = 5) of the first slice is at its `position`.
+    @test collect(h.offset) + h.orientation * ([4, 4, 0] .* [20.0, 10.0, 0]) ≈ [10, 20, 30]
+
+    # Without direction cosines the geometry is left unset.
+    raw0 = make_raw(
+        [make_profile(ones(ComplexF32, 4, 1); step1, center_sample = 2) for step1 in 0:3];
+        encoded_size = (4, 4, 1), lim1 = Limit(0, 3, 2),
+    )
+    h0 = header(AcquisitionInfo(raw0))
+    @test isnothing(h0.orientation) && isnothing(h0.offset) && isnothing(h0.fov)
+end
+
+@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — object stays centred in the FOV" tags = [:extension, :acquisition, :reconstruction] setup = [RawAcqHelpers] begin
     using Ristretto
     using MRIBase: Profile, Limit
     using NamedDims: unname
@@ -231,7 +280,7 @@ end
     @test rec ≈ (rec[7, 8] / 3) .* abs.(img)                 # whole image, not just the peak
 end
 
-@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — non-Cartesian dispatch" tags = [:acquisition, :nfft] setup = [RawAcqHelpers] begin
+@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — non-Cartesian dispatch" tags = [:extension, :acquisition, :nfft] setup = [RawAcqHelpers] begin
     using Ristretto
     using MRIBase: Profile, Limit
     using Ristretto: NonCartesianAcquisitionInfo
@@ -262,7 +311,7 @@ end
     end
 end
 
-@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — non-Cartesian density compensation and batches" tags = [:acquisition, :nfft] setup = [RawAcqHelpers] begin
+@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — non-Cartesian density compensation and batches" tags = [:extension, :acquisition, :nfft] setup = [RawAcqHelpers] begin
     using Ristretto
     using MRIBase: Profile, Limit
     using Ristretto: NonCartesianAcquisitionInfo
@@ -317,7 +366,7 @@ end
     end
 end
 
-@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — real M4Raw data" tags = [:acquisition, :integration] begin
+@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — real M4Raw data" tags = [:extension, :acquisition, :integration] begin
     using Ristretto
     using Ristretto: CartesianAcquisitionInfo
     using NamedDims: dimnames, unname
@@ -362,7 +411,7 @@ end
     end
 end
 
-@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — real OCMR data (asymmetric-echo readout)" tags = [:acquisition, :integration] begin
+@testitem "AcquisitionInfo(::MRIBase.RawAcquisitionData) — real OCMR data (asymmetric-echo readout)" tags = [:extension, :acquisition, :integration] begin
     using Ristretto
     using Ristretto: CartesianAcquisitionInfo
     using NamedDims: dimnames

@@ -17,6 +17,12 @@ Where:
 - ``y`` is the observed k-space data
 - ``n`` is measurement noise
 
+This is the SENSE model (Pruessmann, Weiger, Scheidegger & Boesiger, *SENSE: Sensitivity encoding
+for fast MRI*, Magnetic Resonance in Medicine 42(5), 952-962, 1999,
+<https://doi.org/10.1002/(SICI)1522-2594(199911)42:5%3C952::AID-MRM16%3E3.0.CO;2-S>); solving it
+iteratively, as `IterativeReconstruction` does, is CG-SENSE when no regularizer is added.
+Noise correlated across coils is assumed to have been whitened first (see [Pre-processing](high-level/preprocessing.md)).
+
 These operators are all linear maps, and they are usually represented as complex matrices in the literature. Even though, in practice, we implement them as efficient computational operators without explicitly forming large matrices, it gives theoretical background for defining adjoint operations (complex conjugate of transpose for matrices) that are essential for iterative reconstruction algorithms.
 
 ### Operator Components
@@ -98,7 +104,7 @@ Some regularization strategies do not fit a single image well but do fit a *sum*
 \hat{x}_1, \dots, \hat{x}_n = \arg\min_{x_1, \dots, x_n} \frac{1}{2}\left\|E\left(\sum_{i=1}^n x_i\right) - y\right\|_2^2 + \sum_{i=1}^n R_i(x_i)
 ```
 
-The reconstructed image is ``\hat{x} = \sum_i \hat{x}_i``; the individual ``\hat{x}_i`` remain available as well (e.g. the low-rank background and the sparse dynamic foreground). See [Image Decomposition](high-level/image_decomposition.md) for the `Component`/`DecomposedImage` API implementing this model — not to be confused with [Task Splitting](high-level/task_splitting.md), which splits a *single-image* problem over independent batch dimensions rather than into additive components.
+The reconstructed image is ``\hat{x} = \sum_i \hat{x}_i``; the individual ``\hat{x}_i`` remain available as well (e.g. the low-rank background and the sparse dynamic foreground). See [Image Decomposition](high-level/image_decomposition.md) for the `Component`/`ReconImage` API implementing this model — not to be confused with [Task Splitting](high-level/task_splitting.md), which splits a *single-image* problem over independent batch dimensions rather than into additive components.
 
 ### Optimization Algorithms
 

@@ -50,6 +50,22 @@ Sizes run from 0.1 MB to 5.4 GB. The largest files are loaded one slice at a tim
 (`load_raw(entry; slice = 1)`) so that memory stays bounded, and `run_all.jl` skips them
 unless they are named.
 
+## Last verified
+
+All 35 scripts ran to completion on 2026-10-09 at commit `0e3aabe1` (Julia 1.13.1, 8 threads, login
+node; the large files included). `m4raw/brain_t1.jl` needed a second attempt after a Zenodo download
+timed out, which is the server, not the script.
+
+| source | scripts | result |
+| --- | --- | --- |
+| mridata.org | 9 | ok |
+| OCMR | 2 | ok |
+| CMRxRecon2024 | 7 | ok |
+| CMRxRecon-300 | 3 | ok |
+| USC Speech | 1 | ok |
+| M4Raw | 4 | ok |
+| fastMRI | 9 | ok |
+
 ## What is where
 
 ### mridata.org — vendor-exported ISMRMRD, the least uniform source

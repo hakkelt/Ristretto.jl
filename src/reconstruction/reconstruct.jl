@@ -33,7 +33,8 @@ method and are passed to its constructor, e.g.
 `reconstruct(acq, POCS(; maxit = 20))`. Passing them to `reconstruct` throws.
 
 # Returns
-- The reconstructed image (NamedDimsArray if input is NamedDimsArray, otherwise standard Array).
+- A [`ReconImage`](@ref): the reconstructed image (a `NamedDimsArray` inside if the k-space was
+  named) with a copy of the acquisition's [`header`](@ref).
 """
 function reconstruct(
         acq_data::AcquisitionInfo,
@@ -60,7 +61,16 @@ function reconstruct(
     end
     t_end = time()
     log_message(config.verbosity, "Total time: ", format_time(t_end - t_start))
-    return x
+    return _with_header(x, acq_data)
+end
+
+# The image `reconstruct` returns: the solution with a copy of the acquisition's header, `spacing`
+# derived from `fov` when only that is known.
+function _with_header(x, acq_data)
+    nd = length(acq_data.image_size)
+    h = _derive_spacing!(copy(header(acq_data)), size(x)[1:nd])
+    x isa ReconImage || return ReconImage(x, h, nothing, nd)
+    return ReconImage(parent(x), h, components(x), nd)
 end
 
 """
@@ -233,11 +243,9 @@ function _reconstruct_dispatch_components(acq_data, method::IterativeReconstruct
     end
     if _has_dimnames(acq_data.kspace_data) && !(total_image(img) isa NamedDimsArray)
         img_dimnames = output_dims(method, acq_data)
-        img = DecomposedImage(
-            NamedDimsArray{img_dimnames}(unname(total_image(img))),
-            NamedTuple{keys(getfield(img, :components))}(
-                map(c -> NamedDimsArray{img_dimnames}(unname(c)), values(getfield(img, :components)))
-            ),
+        img = ReconImage(
+            NamedDimsArray{img_dimnames}(unname(total_image(img))), Header(),
+            map(c -> NamedDimsArray{img_dimnames}(unname(c)), getfield(img, :components)), _spatial_ndims(img),
         )
     end
     return img
@@ -281,8 +289,8 @@ function _reconstruct_components(
 end
 
 # The component counterpart of `_present_image`: sum the per-component iterates into the total
-# image and name both. An `on_iteration` callback on this path therefore receives the same
-# `DecomposedImage` type it gets back from `reconstruct`.
+# image and name both. An `on_iteration` callback on this path receives a `ReconImage` holding the
+# components, as `reconstruct` returns, without the acquisition's header.
 function _present_components(xs, names, method::IterativeReconstruction, acq_data)
     xs = _component_parts(xs)
     total_x = broadcast(+, xs...)
@@ -291,7 +299,7 @@ function _present_components(xs, names, method::IterativeReconstruction, acq_dat
         total_x = NamedDimsArray{img_dimnames}(total_x)
         xs = map(x -> NamedDimsArray{img_dimnames}(x), xs)
     end
-    return DecomposedImage(total_x, NamedTuple{names}(xs))
+    return ReconImage(total_x, Header(), NamedTuple{names}(xs), length(acq_data.image_size))
 end
 
 # `_extract_solution` hands back a `Tuple` of variables, but a solver *iterate* on the component

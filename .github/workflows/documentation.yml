@@ -24,6 +24,26 @@ jobs:
           show-versioninfo: true               # this causes versioninfo to be printed to the action log
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1  # if package requires Pkg.build()
+      # The real-data tutorials download their datasets into MRITestData's scratch space; keep it
+      # between runs. The key is fixed: the first run saves the datasets and later runs restore
+      # them, so bump it when a tutorial starts using another dataset. The datasets are fetched
+      # (with retries) and saved before the build, so a failing build still fills the cache.
+      - uses: actions/cache/restore@v4
+        id: mritestdata
+        with:
+          path: ~/.julia/scratchspaces/b3f1a2c4-5d6e-4a7b-9c8d-0e1f2a3b4c5d
+          key: mritestdata-${{ runner.os }}-v1
+      - name: Fetch tutorial datasets
+        if: steps.mritestdata.outputs.cache-hit != 'true'
+        run: |
+          julia --project=docs -e 'using Pkg; Pkg.develop(PackageSpec(path = pwd())); Pkg.instantiate()'
+          julia --project=docs docs/fetch_data.jl
+      - uses: actions/cache/save@v4
+        if: steps.mritestdata.outputs.cache-hit != 'true'
+        with:
+          path: ~/.julia/scratchspaces/b3f1a2c4-5d6e-4a7b-9c8d-0e1f2a3b4c5d
+          key: mritestdata-${{ runner.os }}-v1
       - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JULIA_NUM_THREADS: 2

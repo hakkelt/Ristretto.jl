@@ -69,7 +69,8 @@ end
 
         @test !isempty(trace)
         @test trace.iterations == 1:length(trace)
-        @test trace.values[end] ≈ Float64(sum(abs2, x̂))
+        # Both are Float32 sums over the same image, accumulated in a different order.
+        @test trace.values[end] ≈ Float64(sum(abs2, x̂)) rtol = 1.0e-6
         @test keys(trace.metrics[1]) == metric_keys
         @test all(isfinite, values(trace.metrics[1]))
     end
@@ -95,7 +96,7 @@ end
     end
 end
 
-@testitem "on_iteration on the component path yields a DecomposedImage" tags = [:reconstruction, :minimizer, :components] setup = [IterationCallbackSetup] begin
+@testitem "on_iteration on the component path yields a ReconImage with components" tags = [:reconstruction, :minimizer, :components] setup = [IterationCallbackSetup] begin
     acq, _ = square_acquisition()
 
     trace = IterationTrace()
@@ -106,7 +107,7 @@ end
     img = reconstruct(acq, method; verbosity = Silent())
 
     @test length(trace) == 4
-    @test all(v -> v isa DecomposedImage, trace.values)
+    @test all(v -> v isa ReconImage && haskey(components(v), :sparse), trace.values)
     @test propertynames(trace.values[end]) == propertynames(img)
     @test total_image(trace.values[end]) ≈ total_image(img)
     @test trace.values[end].sparse ≈ img.sparse

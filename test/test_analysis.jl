@@ -75,7 +75,7 @@ end
     )
     rec = reconstruct(acq_sim, method_subspace; verbosity = Silent())
 
-    @test rec isa NamedDimsArray
+    @test parent(rec) isa NamedDimsArray
     @test dimnames(rec) == (:x, :y, :time)
     @test size(rec) == (Nx, Ny, Nt)
 

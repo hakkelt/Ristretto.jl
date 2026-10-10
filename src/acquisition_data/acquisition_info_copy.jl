@@ -13,6 +13,7 @@ function _copy_with_overrides(config::CartesianAcquisitionInfo; kwargs...)
     subsampling = get(kw, :subsampling, config.subsampling)
     shifted_kspace_dims = get(kw, :shifted_kspace_dims, config.shifted_kspace_dims)
     shifted_image_dims = get(kw, :shifted_image_dims, config.shifted_image_dims)
+    header = get(kw, :header, config.header)
     return CartesianAcquisitionInfo(
         kspace_data;
         is3D,
@@ -21,6 +22,7 @@ function _copy_with_overrides(config::CartesianAcquisitionInfo; kwargs...)
         subsampling,
         shifted_kspace_dims,
         shifted_image_dims,
+        header,
     )
 end
 
@@ -39,6 +41,7 @@ function _copy_with_overrides(config::NonCartesianAcquisitionInfo; kwargs...)
     image_size = get(kw, :image_size, config.image_size)
     shifted_kspace_dims = get(kw, :shifted_kspace_dims, config.shifted_kspace_dims)
     shifted_image_dims = get(kw, :shifted_image_dims, config.shifted_image_dims)
+    header = get(kw, :header, config.header)
     return NonCartesianAcquisitionInfo(
         kspace_data;
         trajectory,
@@ -47,6 +50,7 @@ function _copy_with_overrides(config::NonCartesianAcquisitionInfo; kwargs...)
         image_size,
         shifted_kspace_dims,
         shifted_image_dims,
+        header,
     )
 end
 

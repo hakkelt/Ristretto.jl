@@ -1,164 +1,102 @@
 # Ristretto.jl
 
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://hakkelt.github.io/Ristretto.jl/)
+[![CI](https://github.com/hakkelt/Ristretto.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/hakkelt/Ristretto.jl/actions/workflows/CI.yml)
+[![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://hakkelt.github.io/Ristretto.jl/dev/)
+[![Codecov](https://codecov.io/gh/hakkelt/Ristretto.jl/graph/badge.svg)](https://codecov.io/gh/hakkelt/Ristretto.jl)
 
-_A comprehensive Julia package for MRI reconstruction_
+**Ristretto** (*Regularized Imaging Solvers Toolbox: Rapid, Efficient, Threaded, Tunable, Open*)
+reconstructs MRI images from k-space data: Cartesian and non-Cartesian, single- and multi-coil,
+2D, 3D and dynamic, from a direct adjoint through GRAPPA, SPIRiT and partial Fourier to
+compressed sensing, low-rank, low-rank + sparse and calibrationless structured low-rank models,
+on the CPU or a GPU. One call, `reconstruct(acq, method)`, covers the common cases; the operators
+and optimization problems underneath stay open for your own.
 
-## What is this package?
+## Installation
 
-Ristretto.jl provides everything you need to reconstruct images from MRI data. Whether you're working with simple single-coil acquisitions or complex parallel imaging with advanced regularization, this toolbox has you covered.
-
-**Perfect for:**
-- Researchers developing new MRI reconstruction methods
-- Students learning about MRI physics and reconstruction
-- Engineers prototyping imaging pipelines
-- Anyone working with MRI k-space data
-
-## Key Features
-
-✨ **Complete MRI Forward Model** - Models the entire acquisition process from image to k-space  
-🔧 **High-Level Interface** - Simple `reconstruct()` function gets you started in seconds  
-🎯 **Low-Level Control** - Fine-grained operator access for custom algorithms  
-🚀 **Parallel Imaging** - Full support for multi-coil data with sensitivity maps  
-⚡ **High Performance** - Multi-threaded operations and optimized FFTs  
-🎨 **Multiple Regularization** - Sparsity, wavelets, total variation, low-rank, and more  
-📐 **Named Dimensions** - Type-safe interface prevents dimension mix-ups  
-🔬 **Simulation Tools** - Built-in phantoms and sampling pattern generators
-
-## Quick Start
-
-### Installation
-
-**Note:** This package is not yet registered in the Julia General registry. The versions of AbstractOperators, OperatorCore, ProximalOperators, ProximalAlgorithms and StructuredOptimization it needs are still under review upstream, so they ship inside the package. Install it from GitHub:
+Install Julia with [juliaup](https://github.com/JuliaLang/juliaup)
+(`curl -fsSL https://install.julialang.org | sh` on Linux and macOS,
+`winget install --name Julia --id 9NJNWW8PVKMN -e` on Windows), then:
 
 ```julia
 using Pkg
-
-Pkg.add(url="https://github.com/hakkelt/Ristretto.jl")
+Pkg.add("Ristretto")
 ```
 
-### Your First Reconstruction
+## Examples
+
+`kspace` is `(kx, ky, coil)` k-space, `smaps` the matching sensitivity maps, `mask` the acquired
+phase encodes; an MRD file read with MRIFiles goes in as `AcquisitionInfo(raw)`.
 
 ```julia
 using Ristretto
 
-# Load your k-space data (or create synthetic data)
-ksp = rand(ComplexF32, 128, 128)  # Single-coil k-space data
-acq = AcquisitionInfo(ksp, is3D=false)
-
-# Reconstruct with one function call
+# Direct: zero-filled k-space through the adjoint, coils combined with the maps.
+acq = AcquisitionInfo(kspace; sensitivity_maps = smaps, subsampling = (:, mask))
 img = reconstruct(acq)
 
-# That's it! You have your image.
+# SENSE: the unregularized least-squares problem, solved by conjugate gradients.
+img = reconstruct(acq, IterativeReconstruction(; maxit = 30))
+
+# Compressed sensing: ℓ₁-wavelet and total-variation penalties.
+img = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(2.0f-3), TotalVariation2D(1.0f-3); maxit = 50))
 ```
 
-### Example with Parallel Imaging
+The result is a `ReconImage` carrying the acquisition's geometry, which FileIO's `save` writes to
+NIfTI, DICOM or MRD (`save("recon.nii", img)`). Underneath, the encoding operator and a
+[StructuredOptimization](https://github.com/JuliaFirstOrder/StructuredOptimization.jl) problem
+are a few lines away:
 
 ```julia
-# Multi-coil k-space data
-ksp = rand(ComplexF32, 128, 128, 8)  # 8 receiver coils
+using Ristretto: get_encoding_operator
+using Ristretto.StructuredOptimization
+using Ristretto.WaveletOperators: WaveletOp
 
-# Coil sensitivity maps
-smaps = rand(ComplexF32, 128, 128, 8)
-
-# Reconstruct with automatic coil combination
-acq = AcquisitionInfo(ksp; is3D=false, sensitivity_maps=smaps)
-img = reconstruct(acq)
+A = get_encoding_operator(acq)                            # mask ∘ FFT ∘ coil maps
+W = WaveletOp(ComplexF32, wavelet(WT.db4), size(smaps)[1:2])
+# The variable being optimized, initialized with the adjoint (zero-filled) image A'y.
+x = Variable(A' * acq.kspace_data)
+@minimize ls(A * x - acq.kspace_data) + 2.0f-3 * norm(W * x, 1) with FISTA(maxit = 50)
+img = ~x
 ```
 
-### Advanced: Compressed Sensing Reconstruction
+## Performance
 
-```julia
-# Multi-coil k-space data
-ksp = rand(ComplexF32, 128, 128, 8)
+Time to reach the same accuracy (NRMSE against the ground truth) on the benchmark cases, 8
+threads; see [Related packages](https://hakkelt.github.io/Ristretto.jl/dev/related_packages/)
+for the method, every case and the GPU numbers.
 
-# Undersampled k-space data
-pdf = VariableDensitySampling(PolynomialDistribution(3), 3.0, 0.1)
-pattern = create_sampling_pattern(pdf, (128, 128))
-ksp_sub = ksp[pattern..., :]
+<!-- BENCHMARK_TABLE: generated by docs/benchmark_tables.jl, readme_table() -->
 
-# Set up acquisition info with subsampling
-acq = AcquisitionInfo(ksp_sub;
-                      image_size=(128, 128),
-                      sensitivity_maps=smaps,
-                      subsampling=pattern)
-
-# Reconstruct with wavelet sparsity regularization
-img = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(5e-3)))
-```
-
-## Documentation
-
-📚 **[Full Documentation](https://hakkelt.github.io/Ristretto.jl/)** - Comprehensive guides and API reference
-
-**Quick Links:**
-- [Reconstruction Methods](https://hakkelt.github.io/Ristretto.jl/high-level/methods/) - The method taxonomy (direct, iterative, parallel imaging)
-- [Reconstruction](https://hakkelt.github.io/Ristretto.jl/high-level/reconstruction/) - The `reconstruct` entry point
-- [Regularization Options](https://hakkelt.github.io/Ristretto.jl/high-level/regularization/) - Available regularizers
-- [Simulation Tools](https://hakkelt.github.io/Ristretto.jl/high-level/simulation/) - Creating synthetic data
-
-**Real scanner data:** [`examples/`](examples/README.md) holds one runnable script per data type of
-every source in the [MRITestData](https://github.com/hakkelt/MRITestData.jl) catalog — mridata.org,
-OCMR, CMRxRecon2024, CMRxRecon-300, USC Speech, M4Raw and fastMRI — from single-coil Cartesian
-knees to spiral real-time speech and golden-angle stack-of-stars.
-
-## Design Philosophy
-
-**Beginner-Friendly, Expert-Powerful**
-
-The package provides two levels of interface:
-
-1. **High-Level API** - The `reconstruct()` function handles all the complexity for you. Just provide your data and optional regularization.
-
-2. **Low-Level API** - Direct access to encoding operators, optimization primitives, and algorithmic building blocks for maximum flexibility.
-
-You can start simple and progressively unlock more control as your needs grow.
-
-## Core Concepts
-
-### The MRI Forward Model
-
-MRI reconstruction solves an inverse problem. The forward model describes how images become k-space data:
-
-```
-Image → [Coil Sensitivities] → [Fourier Transform] → [Subsampling] → K-space Data
-```
-
-This package provides operators for each step, which can be combined or used individually.
-
-### Named Dimensions
-
-Avoid dimension confusion with named dimensions:
-
-```julia
-# Dimensions are labeled for clarity
-ksp = NamedDimsArray{(:kx, :ky, :coil)}(ksp_data)
-
-# The package knows which dimensions to FFT
-E = get_encoding_operator(ksp)  # Automatically detects structure
-```
-
-## Project Status
-
-This package is under active development. The core functionality is stable, but the API may evolve. Several dependencies are currently available only via GitHub (not yet in the Julia General registry).
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
+| case | method | Ristretto | BART | SigPy | MRIReco | MIRT | MRpro |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Shepp–Logan 2D 1 coil Cartesian | Anisotropic TV (NRMSE≤0.05859) | **22 ms** | 380 ms | 160 ms | 446 ms | — | — |
+| Shepp–Logan 2D 1 coil Cartesian | L1-Wavelet (NRMSE≤0.1993) | **44 ms** | 185 ms | 66 ms | 364 ms | — | 90 ms |
+| Shepp–Logan 2D 1 coil Cartesian | TGV (NRMSE≤0.02509) | **350 ms** | 709 ms | — | — | — | — |
+| Shepp–Logan 2D 1 coil Cartesian | Total Variation (NRMSE≤0.09241) | **23 ms** | 131 ms | 102 ms | — | — | — |
+| Shepp–Logan 2D 8 coils Cartesian | Anisotropic TV (NRMSE≤0.04141) | **47 ms** | 873 ms | 523 ms | 710 ms | — | — |
+| Shepp–Logan 2D 8 coils Cartesian | L1-Wavelet (NRMSE≤0.2653) | **80 ms** | 398 ms | 274 ms | 408 ms | — | 206 ms |
+| Shepp–Logan 2D 8 coils Cartesian | TGV (NRMSE≤0.0168) | **427 ms** | 1.6 s | — | — | — | — |
+| Shepp–Logan 2D 8 coils Cartesian | Total Variation (NRMSE≤0.08046) | **47 ms** | 200 ms | 561 ms | — | — | — |
+| Shepp–Logan 2D 8 coils radial | Total Variation (NRMSE≤0.1138) | **249 ms** | 401 ms | 5.2 s | — | — | — |
+| Shepp–Logan 3D 8 coils Cartesian | Total Variation (NRMSE≤0.1516) | **6.9 s** | 8.3 s | 106.2 s | — | — | — |
+| Shepp–Logan multi-slice 8 coils Cartesian | Total Variation (NRMSE≤0.1033) | **270 ms** | 9.5 s | 2.6 s | — | — | — |
+| torso cine 8 coils Cartesian | Global Low-Rank (NRMSE≤0.07693) | **1.1 s** | 6.4 s | 7.8 s | 3.2 s | 38.1 s | 10.8 s |
+| torso cine 8 coils Cartesian | L1-Wavelet (NRMSE≤0.1824) | **477 ms** | 2.8 s | 6.5 s | 1.5 s | — | 3.0 s |
+| torso cine 8 coils Cartesian | Locally Low-Rank (NRMSE≤0.0603) | **2.8 s** | 17.5 s | — | 5.5 s | — | — |
+| torso cine 8 coils Cartesian | Temporal TV (NRMSE≤0.01589) | **1.5 s** | 3.3 s | 13.7 s | — | — | — |
+| torso cine 8 coils radial | Global Low-Rank (NRMSE≤0.1248) | **2.5 s** | 4.4 s | 63.7 s | 3.7 s | 146.5 s | 13.0 s |
 
 ## Citation
-
-If you use this package in your research, please cite:
 
 ```bibtex
 @software{Ristretto,
   author = {Hakkel, Tamás},
-  title = {Ristretto.jl: A Julia Package for MRI Reconstruction},
-  year = {2025},
+  title = {Ristretto.jl: Regularized Imaging Solvers Toolbox for MRI reconstruction in Julia},
+  year = {2026},
   url = {https://github.com/hakkelt/Ristretto.jl}
 }
 ```
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT, see [LICENSE.txt](LICENSE.txt).

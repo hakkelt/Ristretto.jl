@@ -39,7 +39,7 @@
 
     # 2. Test Homodyne with LinearRamp
     rec_homodyne_linear = reconstruct(acq_pf, Homodyne(filter = LinearRamp()); verbosity = Silent())
-    @test rec_homodyne_linear isa NamedDimsArray
+    @test parent(rec_homodyne_linear) isa NamedDimsArray
     @test dimnames(rec_homodyne_linear) == (:x, :y)
     mask_obj = mag .> 0.5
     @test isapprox(abs.(unname(rec_homodyne_linear))[mask_obj], mag[mask_obj]; rtol = 0.08)
@@ -101,13 +101,13 @@ end
 
     # 1. GRAPPA reconstruction
     rec_grappa = reconstruct(acq, GRAPPA(kernel_size = (3, 2), calib_size = (32, 12)); verbosity = Silent())
-    @test rec_grappa isa NamedDimsArray
+    @test parent(rec_grappa) isa NamedDimsArray
     @test dimnames(rec_grappa) == (:x, :y)
     @test isapprox(abs.(unname(rec_grappa))[mask_obj], img[mask_obj]; rtol = 0.05)
 
     # 2. SPIRiT reconstruction
     rec_spirit = reconstruct(acq, SPIRiT(kernel_size = (5, 5), calib_size = (32, 12), maxit = 20); verbosity = Silent())
-    @test rec_spirit isa NamedDimsArray
+    @test parent(rec_spirit) isa NamedDimsArray
     @test dimnames(rec_spirit) == (:x, :y)
     # Tight tolerance: with its kernel applied in the calibration's own correlation convention
     # (see the `_spirit_gfft` test item) SPIRiT is accurate here, not merely in the right ballpark.
@@ -154,7 +154,7 @@ end
     )
 
     rec = reconstruct(acq, PhaseConstrained(); verbosity = Silent())
-    @test rec isa NamedDimsArray
+    @test parent(rec) isa NamedDimsArray
     @test dimnames(rec) == (:x, :y)
     obj = abs.(img) .> 0.2
     @test isapprox(abs.(unname(rec))[obj], abs.(img)[obj]; rtol = 0.05)
@@ -338,7 +338,7 @@ end
     )
 
     rec_iter = reconstruct(acq, SPIRiT(kernel_size = (5, 5), calib_size = (32, 12), maxit = 20, iterative = true); verbosity = Silent())
-    @test rec_iter isa NamedDimsArray
+    @test parent(rec_iter) isa NamedDimsArray
     @test dimnames(rec_iter) == (:x, :y)
     mask_obj = img .> 0.5
     @test norm(abs.(unname(rec_iter))[mask_obj] .- img[mask_obj]) / norm(img[mask_obj]) < 0.2

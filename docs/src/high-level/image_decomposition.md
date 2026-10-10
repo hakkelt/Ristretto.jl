@@ -1,5 +1,7 @@
 # Image Decomposition
 
+*Tutorial: [Dynamic imaging and decomposition](../tutorials/07_dynamic_and_decomposition.md).*
+
 Image decomposition models the reconstructed image as a sum of additive
 components, each with its own regularizer — the canonical example being
 low-rank + sparse (L+S) decomposition of dynamic MRI. This is a different
@@ -15,9 +17,9 @@ underlying optimization model.
 
 ```@docs
 Component
-DecomposedImage
 components
 total_image
+drop_components
 ```
 
 ## Basic Usage
@@ -47,8 +49,8 @@ println(typeof(img))
 println("Components: ", keys(components(img)))
 ```
 
-The result is a `DecomposedImage`, which behaves as an `AbstractArray` equal
-to the sum of the components:
+The result is a [`ReconImage`](@ref) whose array is the sum of the components,
+which it also holds:
 
 ```@example imgdecomp
 using LinearAlgebra
@@ -64,21 +66,25 @@ img.components.smooth isa AbstractArray
 img.smooth isa AbstractArray
 ```
 
-The struct's own fields (`total`, `components`) always resolve first, so a
-component cannot be named `total` or `components` — `reconstruct` (via
-`Component`/`check_components`) and the `DecomposedImage` constructor both
-reject that collision, since such a component would otherwise be unreachable
-through dot access:
+The components are plain arrays shaped like the image, which the image's
+[`header`](@ref Ristretto.header) describes. Keyword indexing selects the same part of
+every component, so `img[time = 3].smooth` is frame 3 of the smooth component. Once the
+components are no longer needed, `drop_components(img)` returns the image without them, so
+their memory can be released. The image's own properties (`data`, `header`,
+`components`) always resolve first, so a component cannot be named after one of
+them — `reconstruct` (via `Component`/`check_components`) and the `ReconImage`
+constructor both reject that collision, since such a component would otherwise
+be unreachable through dot access:
 
 ```@example imgdecomp
 try
-    Ristretto.DecomposedImage(zeros(2, 2), (total = zeros(2, 2),))
+    ReconImage(zeros(2, 2); components = (header = zeros(2, 2),))
 catch e
     println(e)
 end
 ```
 
-`propertynames(img)` lists both the real fields and every component name, and
+`propertynames(img)` lists both the image's own properties and every component name, and
 accessing an unknown property raises an `ArgumentError` naming the available
 ones:
 
@@ -91,8 +97,8 @@ catch e
 end
 ```
 
-To get a plain, mutable array of the sum (rather than the read-only
-`DecomposedImage`), use `Array`:
+To get a plain array of the sum, without the header and the components, use
+`Array`:
 
 ```@example imgdecomp
 x = Array(img)

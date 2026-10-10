@@ -18,6 +18,7 @@ abstract type AcquisitionInfo end
             dcf=nothing,
             shifted_kspace_dims::Union{Tuple,Integer,Symbol}=(),
             shifted_image_dims::Union{Tuple,Integer,Symbol}=(),
+            header=nothing,
     )
 
 Smart constructor that dispatches to either `CartesianAcquisitionInfo` or
@@ -29,6 +30,12 @@ Smart constructor that dispatches to either `CartesianAcquisitionInfo` or
 For non-Cartesian acquisitions, `dcf` may be provided as an optional density
 compensation array and `subsampling` is not allowed. Leaving `dcf` at `nothing` keeps
 the encoding operator's adjoint the true adjoint; see [`NonCartesianAcquisitionInfo`](@ref).
+
+`header` holds the acquisition's metadata (geometry, sequence parameters, anything else): a
+[`Header`](@ref), stored as given and not copied, or keywords for one as a `NamedTuple` or another
+dictionary. An empty header is created when none is given. Read it with [`header`](@ref) and
+attach tags with [`settag!`](@ref). Copies made with `AcquisitionInfo(acq; ...)` and by
+preprocessing share the header unless a new one is passed.
 
 `kspace_data` is normally an `AbstractArray` (plain or `NamedDimsArray`). For a Cartesian
 acquisition whose frames select *different numbers of samples* it is a [`PartitionedKSpace`](@ref)
@@ -48,6 +55,7 @@ function AcquisitionInfo(
         dcf = nothing,
         shifted_kspace_dims::Union{Tuple, Integer, Symbol} = (),
         shifted_image_dims::Union{Tuple, Integer, Symbol} = (),
+        header = nothing,
     )
     if isnothing(trajectory)
         @argcheck isnothing(dcf) "dcf can only be used with trajectory-based acquisitions"
@@ -59,6 +67,7 @@ function AcquisitionInfo(
             subsampling,
             shifted_kspace_dims,
             shifted_image_dims,
+            header,
         )
     end
     @argcheck isnothing(subsampling) "subsampling cannot be used with trajectory-based acquisitions"
@@ -70,8 +79,11 @@ function AcquisitionInfo(
         image_size,
         shifted_kspace_dims,
         shifted_image_dims,
+        header,
     )
 end
+
+header(info::AcquisitionInfo) = info.header
 
 # The k-space and the arrays reconstructed against it must all be in host memory or all in device
 # memory: every operator built from them runs where the k-space lives.

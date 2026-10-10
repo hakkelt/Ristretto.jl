@@ -46,7 +46,7 @@ carrying at least
 
 - `iteration::Int` — 1-based count of completed iterations,
 - `x` — the current image estimate, already inverse-scaled and re-wrapped as a `NamedDimsArray`
-  (or a `DecomposedImage` on the `Component` path), i.e. in the same units and shape as the value
+  (or a `ReconImage` holding the components on the `Component` path), i.e. in the same units and shape as the value
   `reconstruct` will return,
 - `elapsed_ns::UInt64` — nanoseconds since the solve started, from the monotonic `time_ns` clock,
 - `slice::String` — present only when the reconstruction was split into tasks, naming the slab.

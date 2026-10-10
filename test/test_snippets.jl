@@ -36,11 +36,14 @@ end
 @testmodule TestHelpers begin
     using Test: @test
     using LinearAlgebra: norm
+    using Ristretto: ReconImage
 
     export relative_error, test_type_stable
 
     relative_error(z, truth) = norm(z .- truth) / norm(truth)
+    # `reconstruct` returns a `ReconImage`; the type checked is that of the image it holds.
     test_type_stable(::Type{T}, value) where {T} = (@test typeof(value) == T; value)
+    test_type_stable(::Type{T}, value::ReconImage) where {T} = (@test typeof(parent(value)) == T; value)
 end
 
 @testmodule FiniteDiff begin
@@ -207,9 +210,11 @@ end
         test_on_devices(f, args...; rtol, backends = fft_backends())
 
     `f(args...)` on the host and on every backend's device copy of `args`: the device result must
-    be on the device and agree with the host one to `rtol`.
+    be on the device and agree with the host one to `rtol`. Without a backend nothing runs, not
+    even the host case, which the item checks on its own.
     """
     function test_on_devices(f, args...; rtol = 1.0e-4, backends = fft_backends())
+        isempty(backends) && return nothing
         ref = f(args...)
         for backend in backends
             @testset "$(backend.name)" begin

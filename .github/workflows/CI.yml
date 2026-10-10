@@ -32,9 +32,18 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1
-        with:
-          coverage: true
+      - name: Instantiate the test environment
+        run: julia --color=yes --project=test -e 'using Pkg; Pkg.instantiate()'
+      # Coverage is counted in src/ and ext/ only. `--code-coverage=user` would instrument the
+      # vendored packages under deps/ and every dependency as well, which makes the solver loops
+      # several times slower; a path restricts it to one directory, so ext/ gets a run of its own
+      # with the items that exercise the extensions.
+      - name: Run tests
+        run: julia --color=yes --check-bounds=yes --project=test --code-coverage=@${{ github.workspace }}/src test/runtests.jl
+      - name: Run extension tests
+        run: julia --color=yes --check-bounds=yes --project=test --code-coverage=@${{ github.workspace }}/ext test/runtests.jl
+        env:
+          RISTRETTO_TEST_TAGS: extension
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: src,ext

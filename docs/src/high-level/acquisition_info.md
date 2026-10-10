@@ -1,5 +1,7 @@
 # AcquisitionInfo
 
+*Tutorial: [AcquisitionInfo](../tutorials/02_acquisition_info.md).*
+
 `AcquisitionInfo` is a validated configuration container for MRI acquisition parameters. It centralizes k-space data, sensitivity maps, image dimensions, subsampling patterns, and FFT shift conventions, performing comprehensive validation at construction time to catch configuration errors early.
 
 Benefits:
@@ -240,13 +242,13 @@ info_named_shift = AcquisitionInfo(
 
 ### Building from raw ISMRMRD data (`MRIBase.RawAcquisitionData`)
 
-Loading `MRIBase.RawAcquisitionData` (from `MRIFiles.RawAcquisitionData`/`MRITestData.load_raw`) — a
-weak dependency: this constructor is available once `MRIBase` is loaded — derives the encoding
+An `MRIBase.RawAcquisitionData`, as `MRIFiles` reads it from an ISMRMRD file (`RawAcquisitionData(ISMRMRDFile(path))`, or `MRITestData.load_raw`),
+converts directly once `MRIFiles` is loaded (MRITestData loads it). The constructor derives the encoding
 matrix, k-space layout, coil dimension, subsampling pattern and Cartesian/non-Cartesian dispatch
 directly from the ISMRMRD header, instead of hand-assembling arrays from `raw.profiles`:
 
 ```julia
-using MRIBase   # loads the MRIBase extension
+using MRIFiles  # loads the MRIFiles extension
 using Ristretto
 
 info = AcquisitionInfo(raw)  # raw::MRIBase.RawAcquisitionData
@@ -306,6 +308,48 @@ k-space):
   as a batch dimension. Dynamic series that separate their frames that way (USC Speech's spiral
   files, for instance) therefore arrive as one long `:readout` axis; split `raw.profiles` into
   frames yourself, one `AcquisitionInfo` per frame, if you want an image per frame.
+
+## Metadata header
+
+An acquisition carries a [`Header`](@ref) with its metadata: geometry, sequence parameters, and
+anything else you pass. It is optional and may be incomplete; with no `header` keyword the
+acquisition gets an empty one. The images `reconstruct` returns carry a copy of it (see
+[`ReconImage`](@ref)), and the [export functions](export.md) write it.
+
+```@example acqinfo
+using Ristretto: header
+
+acq = AcquisitionInfo(rand(ComplexF32, 64, 48); is3D = false,
+    header = (; fov = (240, 180), TE = 4.2, protocol = "t1_se"))
+settag!(acq, :subject, "s01")
+header(acq)
+```
+
+The keys Ristretto knows (`fov`, `spacing`, `slice_spacing`, `slice_thickness`, `orientation`,
+`offset`, `TE`, `TR`, `TI`, `flip_angle`, `field_strength`) are checked and converted when set,
+and read as properties that are `nothing` when unset (`header(acq).TR`). Any other key is kept as
+given. When `fov`, `spacing` and the image size disagree you get a warning, not an error, since a
+scanner's field of view may describe the oversampled grid.
+
+A `Header` you pass is stored as given, not copied, and copies made with `AcquisitionInfo(acq;
+...)` or by preprocessing share it: they describe the same scan.
+
+**Coordinates.** Lengths are in mm, times in ms, angles in degrees and the field in T. Positions
+are in the patient coordinate system **LPS** (x towards the patient's left, y posterior, z
+superior), as MRD and DICOM store them; the NIfTI export converts to RAS. `orientation` is a 3×3
+matrix whose columns are the directions of the image axes x, y and z, `offset` the centre of the
+first voxel, and voxel `i` lies at `offset + orientation * ((i .- 1) .* spacing)`. For a
+multi-slice 2D acquisition, slice `k` is shifted by `(k - 1) * slice_spacing` along
+`orientation[:, 3]`. [`AcquisitionInfo(raw::RawAcquisitionData)`](#Building-from-raw-ISMRMRD-data-(MRIBase.RawAcquisitionData))
+fills all of these from the MRD header and profiles.
+
+```@docs
+Header
+Ristretto.header
+settag!
+gettag
+tags
+```
 
 ## Validation Rules
 
@@ -619,6 +663,13 @@ PipeMenonDCF
 VoronoiDCF
 correct_dcf_edges
 ```
+
+`PipeMenonDCF` iterates $w \leftarrow w / (C * w)$, with $C$ the gridding kernel convolution,
+until the weighted sampling density is flat (Pipe & Menon 1999); `VoronoiDCF` takes each sample's
+weight as the area of its Voronoi cell (Rasche et al. 1999).
+
+- Pipe, J. G., & Menon, P. (1999). *Sampling density compensation in MRI: Rationale and an iterative numerical solution.* Magnetic Resonance in Medicine, 41(1), 179-186. <https://doi.org/10.1002/(SICI)1522-2594(199901)41:1%3C179::AID-MRM25%3E3.0.CO;2-V>
+- Rasche, V., Proksa, R., Sinkus, R., Börnert, P., & Eggers, H. (1999). *Resampling of data between arbitrary grids using convolution interpolation.* IEEE Transactions on Medical Imaging, 18(5), 385-392.
 
 ## Integration with Other Functions
 
