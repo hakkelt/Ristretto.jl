@@ -54,6 +54,31 @@ costs and achieves different things in different solvers. Times are the fastest 
 after a warm-up, each planning its FFTs from scratch, from data on the host to an image on the
 host.
 
+**BART's FFT planning.** BART plans its FFTs with `FFTW_ESTIMATE` unless
+`BART_USE_FFTW_WISDOM=1`, which plans them with `FFTW_MEASURE` (slower to plan, faster to
+run). BART is timed both ways: the *BART (MEASURE)* column pays the measuring in every run, as
+no wisdom is kept between runs, just as every other toolbox plans from scratch.
+
+### Start-up and warm-up
+
+The tables below favour the toolboxes that are slow to start. They time warm solves, while a
+user also pays to start the toolbox: a BART call is a new process that starts in milliseconds, a
+Python toolbox has to be imported, and a Julia toolbox also compiles each solver the first time
+it is called. Measured on one case (Shepp–Logan 2D, 8 coils, Cartesian; ℓ₁-wavelet / CG-SENSE),
+8 threads, in fresh processes ([`benchmark/startup/`](https://github.com/hakkelt/Ristretto.jl/tree/master/benchmark/startup)):
+
+```@eval
+using Markdown
+Markdown.parse(Main.BenchmarkTables.startup_markdown())
+```
+
+The Julia numbers assume precompiled packages; precompiling Ristretto itself once takes about
+two minutes more. For BART every call is a fresh process, so its first and warm solves are the
+same and include the process start and file I/O that the tables below subtract. The first solve
+in a Julia session is therefore one to two orders of magnitude slower than the warm one, which
+matters for a script that reconstructs one image and hardly at all for a session that
+reconstructs many.
+
 ### Time to accuracy
 
 Target NRMSE against the ground truth in the method column; time per toolbox, the fastest in
@@ -97,6 +122,22 @@ Markdown.parse(Main.BenchmarkTables.comparison_markdown("cuda", 1; category = "S
 ```@eval
 using Markdown
 Markdown.parse(join(("- " * Main.BenchmarkTables.hardware_markdown(b, t) for (b, t) in (("openblas", 8), ("cuda", 1))), ""))
+```
+
+### Versions
+
+The toolbox versions behind the CPU tables (8 threads, OpenBLAS):
+
+```@eval
+using Markdown
+Markdown.parse(Main.BenchmarkTables.versions_markdown("openblas", 8))
+```
+
+and behind the GPU table:
+
+```@eval
+using Markdown
+Markdown.parse(Main.BenchmarkTables.versions_markdown("cuda", 1))
 ```
 
 ## The Julia MRI ecosystem

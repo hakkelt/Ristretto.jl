@@ -58,3 +58,4 @@ benchmark/comparison/results/runs/
 # other device backends found on the machine).
 /benchmark/comparison/gpu_env/
 /test/gpu_env/
+__pycache__/

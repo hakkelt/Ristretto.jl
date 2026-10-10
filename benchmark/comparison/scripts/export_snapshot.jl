@@ -38,6 +38,23 @@ const RUNS = Dict((get(d, "ts", ""), get(d, "backend", ""), get(d, "threads", 0)
 values_of(metas, key) = sort(unique(string(m[key]) for m in metas if get(m, key, nothing) !== nothing))
 date_of(ts) = "$(ts[1:4])-$(ts[5:6])-$(ts[7:8])"
 
+# The versions of the runs recorded before the harness stored them, per backend family.
+const INJECTED_VERSIONS = JSON.parsefile(joinpath(RESULTS_DIR, "toolkit_versions.json"))
+
+# Per toolkit, the versions the runs behind its rows recorded, or for a run that recorded none, the
+# injected ones. A row's toolkit is the first word of its framework label.
+function toolkit_versions(section_rows)
+    out = Dict{String, Vector{String}}()
+    for r in section_rows
+        meta = get(RUNS, (r.ts, r.backend, r.threads), Dict{String, Any}())
+        recorded = get(meta, "toolkit_versions", nothing)
+        recorded === nothing && (recorded = INJECTED_VERSIONS[r.backend == "cuda" ? "cuda" : "cpu"])
+        name = first(split(r.framework))
+        haskey(recorded, name) && union!(get!(out, name, String[]), [string(recorded[name])])
+    end
+    return Dict(k => sort(v) for (k, v) in out)
+end
+
 function run_record(section_rows)
     metas = [RUNS[(r.ts, r.backend, r.threads)] for r in section_rows if haskey(RUNS, (r.ts, r.backend, r.threads))]
     dates = sort(unique(date_of(r.ts) for r in section_rows))
@@ -51,6 +68,7 @@ function run_record(section_rows)
         "hostnames" => values_of(metas, "hostname"),
         "julia_version" => values_of(metas, "julia_version"),
         "blas_vendor" => unique(basename.(values_of(metas, "blas_vendor"))),
+        "toolkit_versions" => toolkit_versions(section_rows),
     )
 end
 

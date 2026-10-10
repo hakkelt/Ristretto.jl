@@ -77,7 +77,7 @@ every framework label.
 const BACKEND = ON_GPU ? "cuda" : USE_MKL ? "mkl" : "openblas"
 const BACKEND_LABEL = ON_GPU ? "CUDA" : USE_MKL ? "MKL" : "OpenBLAS"
 const FW = "Ristretto ($BACKEND_LABEL)"
-const BART_FW = "BART ($BACKEND_LABEL)"
+const BART_FW = get(ENV, "RISTRETTO_BENCH_BART_MEASURE", "0") == "1" ? "BART ($BACKEND_LABEL, MEASURE)" : "BART ($BACKEND_LABEL)"
 
 using ThreadPinning
 # Threads go only to allowed CPUs that are not SMT siblings: a sibling shares its core with another
@@ -95,9 +95,23 @@ const CPU_STR = join(PINNED_CPUS, ",")
 @info "Julia threads pinned" CPU_STR
 
 BART_AVAILABLE && (ENV["TOOLBOX_PATH"] = BART_BINARY)
-# No FFTW wisdom files: BART would read and write them under `$TOOLBOX_PATH/save/fftw/`, which
-# carries plans from one timed `bart` process to the next.
-ENV["BART_USE_FFTW_WISDOM"] = "0"
+# BART plans its FFTs with FFTW_ESTIMATE unless `BART_USE_FFTW_WISDOM=1`, which plans the
+# contiguous ones with FFTW_MEASURE and keeps the plans as wisdom files under
+# `$BART_TOOLBOX_PATH/save/fftw/`. `RISTRETTO_BENCH_BART_MEASURE=1` times BART that way, as its own
+# framework label, with the wisdom directory emptied before every run (`time_bart`), so each timed
+# process pays its planning as the in-process toolkits do.
+const BART_MEASURE = get(ENV, "RISTRETTO_BENCH_BART_MEASURE", "0") == "1"
+const BART_WISDOM_DIR = BART_MEASURE ? mktempdir() : ""
+ENV["BART_USE_FFTW_WISDOM"] = BART_MEASURE ? "1" : "0"
+BART_MEASURE && (ENV["BART_TOOLBOX_PATH"] = BART_WISDOM_DIR)
+function clear_bart_wisdom()
+    BART_MEASURE || return nothing
+    dir = joinpath(BART_WISDOM_DIR, "save", "fftw")
+    rm(dir; force = true, recursive = true)
+    mkpath(dir)
+    return nothing
+end
+clear_bart_wisdom()
 ENV["OMP_NUM_THREADS"] = string(NUM_THREADS)
 ENV["OPENBLAS_NUM_THREADS"] = string(NUM_THREADS)
 ENV["MKL_NUM_THREADS"] = string(NUM_THREADS)
@@ -326,20 +340,25 @@ end
     time_bart(cmd, inputs...; nout = 1, num_runs = 3) -> (t_min_s, t_med_s, result)
 
 Run BART `cmd` on `inputs`, timed `num_runs` times after a warm-up, with `bart_overhead(inputs...)`
-subtracted, and [`BART_GPU_INIT`](@ref) too when `cmd` runs on the GPU (`-g`). Every call is a fresh `bart` process with `BART_USE_FFTW_WISDOM=0`, so each timed run
-plans its FFTs from scratch, as [`time_run`](@ref) makes the in-process toolkits do.
+subtracted, and [`BART_GPU_INIT`](@ref) too when `cmd` runs on the GPU (`-g`). Every call is a fresh `bart` process with no FFTW wisdom
+to read (`BART_USE_FFTW_WISDOM=0`, or an emptied wisdom directory under
+`RISTRETTO_BENCH_BART_MEASURE=1`), so each timed run plans its FFTs from scratch, as
+[`time_run`](@ref) makes the in-process toolkits do.
 """
 function time_bart(cmd::AbstractString, inputs...; nout::Int = 1, num_runs::Int = RUNS[])
     if WARMUP[] == 0         # images only (calibration): one untimed-for-the-record run
+        clear_bart_wisdom()
         t0 = time_ns()
         res = run_bart(nout, cmd, inputs...)
         t = (time_ns() - t0) / 1.0e9
         return t, t, res
     end
     ovh = bart_overhead(inputs...) + (occursin(r"(^| )-g( |$)", cmd) ? BART_GPU_INIT : 0.0)
+    clear_bart_wisdom()
     res = run_bart(nout, cmd, inputs...)
     times = Float64[]
     for _ in 1:num_runs
+        clear_bart_wisdom()
         t0 = time_ns()
         res = run_bart(nout, cmd, inputs...)
         push!(times, (time_ns() - t0) / 1.0e9)
@@ -471,6 +490,30 @@ end
 using .BenchUtils.ResultsStore: record_run
 
 """
+    toolkit_versions() -> Dict{String, String}
+
+The version of every toolkit this process can time, and of the Ristretto checkout (its commit).
+"""
+function toolkit_versions()
+    v = Dict{String, String}()
+    v["Ristretto"] = let dir = pkgdir(Ristretto)
+        commit = strip(read(ignorestatus(`git -C $dir rev-parse --short HEAD`), String))
+        dirty = !isempty(strip(read(ignorestatus(`git -C $dir status --porcelain --untracked-files=no -- src ext deps`), String)))
+        string(pkgversion(Ristretto), " (", commit, dirty ? ", modified" : "", ")")
+    end
+    BART_AVAILABLE && (v["BART"] = strip(read(ignorestatus(`$BART_BINARY version`), String)))
+    v["MRIReco"] = string(pkgversion(MRIReco))
+    v["MIRT"] = string(pkgversion(ComparisonHarness.MIRTBridge.MIRT))
+    for (name, mod) in (("SigPy", "sigpy"), ("MRpro", "mrpro"), ("PyTorch", "torch"), ("CuPy", "cupy"))
+        try
+            v[name] = pyconvert(String, pyimport(mod).__version__)
+        catch
+        end
+    end
+    return v
+end
+
+"""
     flush_results!(name) -> path or nothing
 
 Write and clear whatever is currently in `results`, as its own immutable run file, right now.
@@ -492,6 +535,7 @@ function flush_results!(name::AbstractString)
         cases_filter = CASE_FILTER, frameworks_filter = FRAMEWORK_FILTER, data = DATA,
         small = small_mode(), cine_frames = cine_frames(), device = String(DEVICE),
         gpu = ON_GPU ? CUDA.name(CUDA.device()) : nothing,
+        toolkit_versions = toolkit_versions(),
     )
     for r in results
         @printf(

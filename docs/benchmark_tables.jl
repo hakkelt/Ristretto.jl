@@ -6,18 +6,20 @@ module BenchmarkTables
 using JSON: JSON
 using Printf: @sprintf
 
-export comparison_markdown, scaling_markdown, hardware_markdown, readme_table
+export comparison_markdown, scaling_markdown, hardware_markdown, versions_markdown, startup_markdown, readme_table
 
 const RESULTS = joinpath(@__DIR__, "..", "benchmark", "comparison", "results")
-const FRAMEWORKS = ("Ristretto", "BART", "SigPy", "MRIReco", "MIRT", "MRpro")
+const FRAMEWORKS = ("Ristretto", "BART", "BART (MEASURE)", "SigPy", "MRIReco", "MIRT", "MRpro")
 
 snapshot(backend, threads) = JSON.parsefile(joinpath(RESULTS, "benchmark_$(backend)_$(threads)threads.json"))
 available(backend, threads) = isfile(joinpath(RESULTS, "benchmark_$(backend)_$(threads)threads.json"))
 
-# "Ristretto (OpenBLAS)" and "BART (CUDA)" are columns "Ristretto" and "BART"; a variant label
-# such as "Ristretto (OpenBLAS) (m=3, σ=1.25)" is not one of the columns.
+# "Ristretto (OpenBLAS)" and "BART (CUDA)" are columns "Ristretto" and "BART", "BART (OpenBLAS,
+# MEASURE)" the column "BART (MEASURE)"; a variant label such as "Ristretto (OpenBLAS) (m=3,
+# σ=1.25)" is not one of the columns.
 function framework(label)
-    name = replace(label, r" \((OpenBLAS|MKL|CUDA)\)$" => "")
+    m = match(r"^(.*) \((?:OpenBLAS|MKL|CUDA)(, MEASURE)?\)$", label)
+    name = isnothing(m) ? label : m.captures[1] * (isnothing(m.captures[2]) ? "" : " (MEASURE)")
     return name in FRAMEWORKS ? name : nothing
 end
 
@@ -98,6 +100,40 @@ function hardware_markdown(backend, threads)
     gpu = isempty(part("gpu")) ? "" : ", GPU $(part("gpu"))"
     return "$(backend), $threads thread(s): $cpu$gpu; Julia $(part("julia_version")); " *
         "BLAS $(part("blas_vendor")); measured $(run["dates"][1]) to $(run["dates"][2]).\n"
+end
+
+# The toolkit versions behind a snapshot's rows, one line per toolkit.
+function versions_markdown(backend, threads)
+    available(backend, threads) || return ""
+    versions = get(get(snapshot(backend, threads), "run", Dict()), "toolkit_versions", Dict())
+    isempty(versions) && return ""
+    order = ("Ristretto", "BART", "SigPy", "MRIReco", "MIRT", "MRpro", "PyTorch", "CuPy")
+    io = IOBuffer()
+    println(io, "| toolkit | version |")
+    println(io, "|---|---|")
+    for k in sort!(collect(keys(versions)); by = k -> something(findfirst(==(k), order), length(order) + 1))
+        println(io, "| ", k, " | ", join(versions[k], ", "), " |")
+    end
+    return String(take!(io))
+end
+
+# What a fresh process pays before the warm times above: `benchmark/startup/results.json`, one row
+# per toolkit, the ℓ₁-wavelet and CG-SENSE solve times as "wavelet / CG".
+function startup_markdown(path = joinpath(@__DIR__, "..", "benchmark", "startup", "results.json"))
+    isfile(path) || return "*No start-up measurements.*\n"
+    d = JSON.parsefile(path)
+    rows = d["summary"]
+    s(x) = x >= 10 ? @sprintf("%.1f", x) : x >= 0.1 ? @sprintf("%.2f", x) : @sprintf("%.3f", x)
+    get_(tk, m, k) = (i = findfirst(r -> r["toolkit"] == tk && r["method"] == m, rows); isnothing(i) ? "—" : s(rows[i][k]))
+    pair(tk, k) = get_(tk, "wavelet", k) * " / " * get_(tk, "cgsense", k)
+    io = IOBuffer()
+    println(io, "| toolbox | import (s) | first solve (s) | warm solve (s) | fresh process, load and solve (s) |")
+    println(io, "|---|---:|---:|---:|---:|")
+    for tk in unique(r["toolkit"] for r in rows)
+        i = findfirst(r -> r["toolkit"] == tk, rows)
+        println(io, "| ", tk, " | ", s(rows[i]["import_s"]), " | ", pair(tk, "first_solve_s"), " | ", pair(tk, "warm_solve_s"), " | ", pair(tk, "end_to_end_s"), " |")
+    end
+    return String(take!(io))
 end
 
 # The README's table: the accuracy race at one backend and thread count, times only, without the
