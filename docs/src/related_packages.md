@@ -54,10 +54,26 @@ costs and achieves different things in different solvers. Times are the fastest 
 after a warm-up, each planning its FFTs from scratch, from data on the host to an image on the
 host.
 
-**BART's FFT planning.** BART plans its FFTs with `FFTW_ESTIMATE` unless
-`BART_USE_FFTW_WISDOM=1`, which plans them with `FFTW_MEASURE` (slower to plan, faster to
-run). BART is timed both ways: the *BART (MEASURE)* column pays the measuring in every run, as
-no wisdom is kept between runs, just as every other toolbox plans from scratch.
+**FFT planning.** FFTW chooses how to compute a transform when it is planned. `FFTW_ESTIMATE`
+guesses from the sizes and plans in well under a millisecond; `FFTW_MEASURE` times candidate
+algorithms on the machine, which costs about 0.1–0.2 s per 2D transform and 1–1.5 s per 3D one
+and gives a plan that runs faster. What FFTW learns by measuring ("wisdom") can be saved and
+reused by a later plan of the same transform. The toolboxes differ here:
+
+- **BART** plans with `FFTW_ESTIMATE` by default; with `BART_USE_FFTW_WISDOM=1` it plans with
+  `FFTW_MEASURE` and saves the wisdom to files, which later calls read.
+- **MRIReco.jl** always plans with `FFTW_MEASURE` and keeps the wisdom only in memory, so every
+  new Julia session measures again.
+- **Ristretto** chooses per reconstruction: `FFTW_MEASURE` when the transforms the solve will run
+  repay the measuring, else `FFTW_ESTIMATE` (`fft_planning = :auto`, the default), and saves the
+  wisdom to disk for later sessions.
+- **SigPy and MRpro** do not use FFTW: NumPy's and PyTorch's FFTs plan without a measuring step.
+  On the GPU every toolbox uses cuFFT.
+
+The benchmarks charge every run its planning: no wisdom survives from one run to the next, neither
+in memory nor on disk. MRIReco therefore pays its measuring in every run, about 0.3 s per solve on
+the 128² Shepp–Logan case, most of its time there. BART is timed both ways: the
+*BART (MEASURE)* column measures in every run, the *BART* column estimates.
 
 ### Start-up and warm-up
 
@@ -74,7 +90,7 @@ Markdown.parse(Main.BenchmarkTables.startup_markdown())
 
 The Julia numbers assume precompiled packages; precompiling Ristretto itself once takes about
 two minutes more. For BART every call is a fresh process, so its first and warm solves are the
-same and include the process start and file I/O that the tables below subtract. The first solve
+same and include the process start and file I/O that the tables below leave out. The first solve
 in a Julia session is therefore one to two orders of magnitude slower than the warm one, which
 matters for a script that reconstructs one image and hardly at all for a session that
 reconstructs many.

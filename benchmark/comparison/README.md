@@ -74,8 +74,9 @@ one, under the same row labels with a `(CUDA)` suffix and recorded under backend
 Every row is timed from host data to a host image: the copies to the device and back are inside
 the timed region for every toolkit, since BART cannot be timed any other way. A BART process also
 creates its CUDA context and loads cuFFT and cuBLAS on every call, which an in-process toolkit
-does once, in its warm-up; that cost (`BART_GPU_INIT`, measured on an 8×8 problem) is subtracted
-along with the process spawn and file I/O. After each toolkit's row the memory pools of CUDA.jl,
+does once, in its warm-up; that cost (`BART_GPU_INIT`, measured on an 8×8 problem) is subtracted.
+The process start and the file I/O are not in BART's times at all: each is the `Total Time` that
+`pics` reports itself. After each toolkit's row the memory pools of CUDA.jl,
 CuPy and PyTorch are emptied, so each toolkit starts with the whole device. λ and ρ are the CPU
 calibration's: the problem is the same, and so is the precision (`ComplexF32`).
 

@@ -263,7 +263,7 @@ function with_mrireco_blas(f)
 end
 
 include(joinpath(@__DIR__, "..", "src", "ComparisonHarness.jl"))
-using .ComparisonHarness: check_nrmse, run_bart
+using .ComparisonHarness: check_nrmse, run_bart, run_bart_timed
 
 # The case catalog, Ristretto's reconstruction of each method, `time_run` and the result store, shared
 # with the Ristretto harness (benchmark/run.jl). No section prepares data of its own.
@@ -293,78 +293,47 @@ BART_AVAILABLE && @info @sprintf("BART spawn cost: %.1f ms", BART_SPAWN * 1000)
 What a `pics -g` process pays to start using the GPU before it solves anything: creating the CUDA
 context and loading cuFFT and cuBLAS. Every BART call is a fresh process and pays it again, while
 an in-process toolkit pays it once, in its warm-up. Measured as the difference between the fastest
-of five `pics -g` and five `pics` calls on an 8×8 single-coil problem, one iteration each, and
-subtracted from every BART GPU timing alongside [`bart_overhead`](@ref). 0 on a CPU run.
+`Total Time` of five `pics -g` and five `pics` calls on an 8×8 single-coil problem, one iteration
+each, and subtracted from every BART GPU timing. 0 on a CPU run.
 """
 const BART_GPU_INIT = (ON_GPU && BART_AVAILABLE) ? let
         k = ones(ComplexF32, 8, 8, 1, 1)
         s = ones(ComplexF32, 8, 8, 1, 1)
-        best(cmd) = minimum(1:5) do _
-            t0 = time_ns()
-            run_bart(1, cmd, k, s)
-            (time_ns() - t0) / 1.0e9
-    end
+        best(cmd) = minimum(_ -> last(run_bart_timed(1, cmd, k, s)), 1:5)
         run_bart(1, "pics -g -S -w 1 -i 1", k, s)                 # the first context also JIT-loads
         max(0.0, best("pics -g -S -w 1 -i 1") - best("pics -S -w 1 -i 1"))
 end : 0.0
 ON_GPU && BART_AVAILABLE && @info @sprintf("BART GPU initialisation: %.1f ms", BART_GPU_INIT * 1000)
 
 """
-    bart_overhead(inputs...; reps = 5) -> seconds
-
-What a real `pics` call pays outside its solver: one process spawn, reading each input
-`.cfl/.hdr` from disk, and writing one output. `bart copy in out` spawns once and does one read
-**and** one write of the array, so `(copy_time − spawn)` ≈ read + write ≈ 2·read for that array.
-A `pics` call only *reads* each input (no write-back) and writes a single (image-sized) output,
-so the estimate is `spawn + Σᵢ (copyᵢ − spawn)/2 + (mean inputs)/2` — half the measured per-array
-transfer per input, plus one more half for the output. Subtracted from BART recon timings so the
-reported figure is solver time, comparable to the in-process toolkits.
-"""
-function bart_overhead(inputs...; reps = 5)
-    isempty(inputs) && return BART_SPAWN
-    io = Float64[]
-    for inp in inputs
-        run_bart(1, "copy", inp)                       # warm the path
-        ts = Float64[]
-        for _ in 1:reps
-            t0 = time_ns()
-            run_bart(1, "copy", inp)
-            push!(ts, (time_ns() - t0) / 1.0e9)
-        end
-        push!(io, max(0.0, minimum(ts) - BART_SPAWN) / 2)   # one-way transfer for this array
-    end
-    return BART_SPAWN + sum(io) + sum(io) / length(io)      # + one output write (≈ mean input)
-end
-
-"""
     time_bart(cmd, inputs...; nout = 1, num_runs = 3) -> (t_min_s, t_med_s, result)
 
-Run BART `cmd` on `inputs`, timed `num_runs` times after a warm-up, with `bart_overhead(inputs...)`
-subtracted, and [`BART_GPU_INIT`](@ref) too when `cmd` runs on the GPU (`-g`). Every call is a fresh `bart` process with no FFTW wisdom
-to read (`BART_USE_FFTW_WISDOM=0`, or an emptied wisdom directory under
-`RISTRETTO_BENCH_BART_MEASURE=1`), so each timed run plans its FFTs from scratch, as
-[`time_run`](@ref) makes the in-process toolkits do.
+Run BART `cmd` (`pics`) on `inputs` `num_runs` times after a warm-up, each run's time being the
+`Total Time` the tool reports itself (`run_bart_timed`), less [`BART_GPU_INIT`](@ref) when `cmd`
+runs on the GPU (`-g`). That time starts once the process is loaded and ends with the image
+written to its memory-mapped output, so it leaves out the process start and the harness' file
+writes and reads, as the in-process toolkits' times leave out their loading, and it keeps the
+mapping of the inputs into memory, as theirs keep the copies from and to the host. Every call is
+a fresh `bart` process with no FFTW wisdom to read (`BART_USE_FFTW_WISDOM=0`, or an emptied
+wisdom directory under `RISTRETTO_BENCH_BART_MEASURE=1`), so each timed run plans its FFTs from
+scratch, as [`time_run`](@ref) makes the in-process toolkits do.
 """
 function time_bart(cmd::AbstractString, inputs...; nout::Int = 1, num_runs::Int = RUNS[])
     if WARMUP[] == 0         # images only (calibration): one untimed-for-the-record run
         clear_bart_wisdom()
-        t0 = time_ns()
-        res = run_bart(nout, cmd, inputs...)
-        t = (time_ns() - t0) / 1.0e9
+        res, t = run_bart_timed(nout, cmd, inputs...)
         return t, t, res
     end
-    ovh = bart_overhead(inputs...) + (occursin(r"(^| )-g( |$)", cmd) ? BART_GPU_INIT : 0.0)
+    init = occursin(r"(^| )-g( |$)", cmd) ? BART_GPU_INIT : 0.0
     clear_bart_wisdom()
-    res = run_bart(nout, cmd, inputs...)
+    res, _ = run_bart_timed(nout, cmd, inputs...)
     times = Float64[]
     for _ in 1:num_runs
         clear_bart_wisdom()
-        t0 = time_ns()
-        res = run_bart(nout, cmd, inputs...)
-        push!(times, (time_ns() - t0) / 1.0e9)
+        res, t = run_bart_timed(nout, cmd, inputs...)
+        push!(times, t - init)
     end
-    @info @sprintf("BART '%s': overhead %.1f ms", first(split(cmd)), ovh * 1000)
-    return max(1.0e-5, minimum(times) - ovh), max(1.0e-5, median(times) - ovh), res
+    return max(1.0e-5, minimum(times)), max(1.0e-5, median(times)), res
 end
 
 """

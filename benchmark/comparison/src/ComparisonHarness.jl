@@ -37,7 +37,7 @@ else
     )
 end
 
-export run_bart
+export run_bart, run_bart_timed
 export setup_matlab_paths
 export MIRT
 export nrmse, check_nrmse

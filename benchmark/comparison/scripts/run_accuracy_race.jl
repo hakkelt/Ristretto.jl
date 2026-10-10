@@ -30,7 +30,8 @@
 # NRMSE at the top of its ladder, which is logged: that target is reachable by Ristretto by construction
 # and says nothing about whether the others can reach it.
 #
-# BART's process spawn and cfl I/O are subtracted (`time_bart`), so every figure is solver time.
+# BART's time is the `Total Time` `pics` reports itself (`time_bart`), without the process start and
+# the cfl file I/O, so every figure is solver time.
 include(joinpath(@__DIR__, "_setup.jl"))
 include(joinpath(@__DIR__, "_toolkits.jl"))
 include(joinpath(@__DIR__, "_methods.jl"))

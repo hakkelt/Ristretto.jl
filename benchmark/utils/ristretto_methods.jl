@@ -172,5 +172,5 @@ function ristretto_reconstructor(
         IterativeReconstruction(; regularization = reg, algorithm = ristretto_algorithm(method, maxit; rho), maxit, reltol = 0.0)
     end
     device === nothing && return () -> reconstruct(a, m; verbosity = Silent())
-    return () -> Array(parent(reconstruct(Ristretto.Adapt.adapt(device, a), m; verbosity = Silent())))
+    return () -> Array(reconstruct(Ristretto.Adapt.adapt(device, a), m; verbosity = Silent()))
 end

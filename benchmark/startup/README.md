@@ -21,8 +21,9 @@ L1-wavelet row (FISTA, 20 iterations; not MIRT, which has no wavelet prox) and t
 
 Every Julia number except the last assumes the packages are already precompiled. For BART every
 solve is its own `bart pics` process on `.cfl` files in `/dev/shm`, so first, warm and end-to-end
-are one number. The comparison tables subtract BART's process spawn and file I/O from that number
-(`bart_overhead` in `../comparison/scripts/_setup.jl`); this one keeps them.
+are one number. The comparison tables leave BART's process start and file I/O out, taking the
+`Total Time` that `pics` reports itself (`time_bart` in `../comparison/scripts/_setup.jl`); this one
+keeps them.
 
 Each toolkit's solve is a standalone script (`solve_<toolkit>.jl` / `.py`) that loads only that
 toolkit and repeats the call the comparison harness times (`../comparison/scripts/_toolkits.jl`,
