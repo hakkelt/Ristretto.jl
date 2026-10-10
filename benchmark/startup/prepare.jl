@@ -8,6 +8,7 @@
 # k-space and maps as BART's `ksp.cfl` / `sens.cfl` (`(nx, ny, 1, coil)`), and `meta.json` with the
 # sizes, the iteration counts and each toolkit's calibrated λ of the L1-wavelet row.
 
+using BartIO: write_cfl
 using JSON
 
 include(joinpath(@__DIR__, "..", "utils", "bench_utils.jl"))
@@ -28,17 +29,8 @@ writeraw("smaps.c64", ComplexF32.(c.smaps))
 writeraw("reference.c64", ComplexF32.(c.reference))
 writeraw("mask.u8", UInt8.(c.mask))
 
-# BART's `.cfl` is the same column-major complex64 data, its `.hdr` the dimensions.
-function writecfl(name, a, dims)
-    writeraw(name * ".cfl", ComplexF32.(a))
-    open(joinpath(DIR, name * ".hdr"), "w") do io
-        println(io, "# Dimensions")
-        println(io, join(dims, " "))
-    end
-    return nothing
-end
-writecfl("ksp", c.kspace, (nx, ny, 1, nc, ntuple(_ -> 1, 12)...))
-writecfl("sens", c.smaps, (nx, ny, 1, nc, ntuple(_ -> 1, 12)...))
+write_cfl(joinpath(DIR, "ksp"), reshape(ComplexF32.(c.kspace), nx, ny, 1, nc))
+write_cfl(joinpath(DIR, "sens"), reshape(ComplexF32.(c.smaps), nx, ny, 1, nc))
 
 lambda = JSON.parsefile(joinpath(@__DIR__, "..", "comparison", "results", "lambda", "$CASE.json"))["lambda"]["wavelet"]
 meta = Dict(

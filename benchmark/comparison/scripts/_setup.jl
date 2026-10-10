@@ -77,7 +77,8 @@ every framework label.
 const BACKEND = ON_GPU ? "cuda" : USE_MKL ? "mkl" : "openblas"
 const BACKEND_LABEL = ON_GPU ? "CUDA" : USE_MKL ? "MKL" : "OpenBLAS"
 const FW = "Ristretto ($BACKEND_LABEL)"
-const BART_FW = get(ENV, "RISTRETTO_BENCH_BART_MEASURE", "0") == "1" ? "BART ($BACKEND_LABEL, MEASURE)" : "BART ($BACKEND_LABEL)"
+const BART_MEASURE = get(ENV, "RISTRETTO_BENCH_BART_MEASURE", "0") == "1"
+const BART_FW = BART_MEASURE ? "BART ($BACKEND_LABEL, MEASURE)" : "BART ($BACKEND_LABEL)"
 
 using ThreadPinning
 # Threads go only to allowed CPUs that are not SMT siblings: a sibling shares its core with another
@@ -100,7 +101,6 @@ BART_AVAILABLE && (ENV["TOOLBOX_PATH"] = BART_BINARY)
 # `$BART_TOOLBOX_PATH/save/fftw/`. `RISTRETTO_BENCH_BART_MEASURE=1` times BART that way, as its own
 # framework label, with the wisdom directory emptied before every run (`time_bart`), so each timed
 # process pays its planning as the in-process toolkits do.
-const BART_MEASURE = get(ENV, "RISTRETTO_BENCH_BART_MEASURE", "0") == "1"
 const BART_WISDOM_DIR = BART_MEASURE ? mktempdir() : ""
 ENV["BART_USE_FFTW_WISDOM"] = BART_MEASURE ? "1" : "0"
 BART_MEASURE && (ENV["BART_TOOLBOX_PATH"] = BART_WISDOM_DIR)
@@ -276,17 +276,6 @@ const sp_app = pyimport("sigpy.mri.app")
 
 @info "comparison setup" host = gethostname() julia = VERSION threads = Threads.nthreads() blas = BLAS.get_config().loaded_libs[1].libname mkl = USE_MKL bart = BART_BINARY
 
-# Bare process spawn cost (`bart version` does no file I/O) — the floor for an input-less call.
-const BART_SPAWN = BART_AVAILABLE ? let times = Float64[]
-        for _ in 1:10
-            t0 = time_ns()
-            read(pipeline(ignorestatus(`$BART_BINARY version`)), String)
-            push!(times, (time_ns() - t0) / 1.0e9)
-    end
-        minimum(times)
-end : NaN
-BART_AVAILABLE && @info @sprintf("BART spawn cost: %.1f ms", BART_SPAWN * 1000)
-
 """
     BART_GPU_INIT -> seconds
 
@@ -299,8 +288,8 @@ each, and subtracted from every BART GPU timing. 0 on a CPU run.
 const BART_GPU_INIT = (ON_GPU && BART_AVAILABLE) ? let
         k = ones(ComplexF32, 8, 8, 1, 1)
         s = ones(ComplexF32, 8, 8, 1, 1)
-        best(cmd) = minimum(_ -> last(run_bart_timed(1, cmd, k, s)), 1:5)
-        run_bart(1, "pics -g -S -w 1 -i 1", k, s)                 # the first context also JIT-loads
+        best(cmd) = minimum(last(run_bart_timed(1, cmd, k, s; runs = 5)))
+        run_bart_timed(1, "pics -g -S -w 1 -i 1", k, s; runs = 5)    # untimed: JIT cache, idle GPU clocks
         max(0.0, best("pics -g -S -w 1 -i 1") - best("pics -S -w 1 -i 1"))
 end : 0.0
 ON_GPU && BART_AVAILABLE && @info @sprintf("BART GPU initialisation: %.1f ms", BART_GPU_INIT * 1000)
@@ -309,8 +298,8 @@ ON_GPU && BART_AVAILABLE && @info @sprintf("BART GPU initialisation: %.1f ms", B
     time_bart(cmd, inputs...; nout = 1, num_runs = 3) -> (t_min_s, t_med_s, result)
 
 Run BART `cmd` (`pics`) on `inputs` `num_runs` times after a warm-up, each run's time being the
-`Total Time` the tool reports itself (`run_bart_timed`), less [`BART_GPU_INIT`](@ref) when `cmd`
-runs on the GPU (`-g`). That time starts once the process is loaded and ends with the image
+`Total Time` the tool reports itself (`run_bart_timed`), less [`BART_GPU_INIT`](@ref) on a GPU
+run. That time starts once the process is loaded and ends with the image
 written to its memory-mapped output, so it leaves out the process start and the harness' file
 writes and reads, as the in-process toolkits' times leave out their loading, and it keeps the
 mapping of the inputs into memory, as theirs keep the copies from and to the host. Every call is
@@ -319,20 +308,11 @@ wisdom directory under `RISTRETTO_BENCH_BART_MEASURE=1`), so each timed run plan
 scratch, as [`time_run`](@ref) makes the in-process toolkits do.
 """
 function time_bart(cmd::AbstractString, inputs...; nout::Int = 1, num_runs::Int = RUNS[])
-    if WARMUP[] == 0         # images only (calibration): one untimed-for-the-record run
-        clear_bart_wisdom()
-        res, t = run_bart_timed(nout, cmd, inputs...)
-        return t, t, res
-    end
-    init = occursin(r"(^| )-g( |$)", cmd) ? BART_GPU_INIT : 0.0
-    clear_bart_wisdom()
-    res, _ = run_bart_timed(nout, cmd, inputs...)
-    times = Float64[]
-    for _ in 1:num_runs
-        clear_bart_wisdom()
-        res, t = run_bart_timed(nout, cmd, inputs...)
-        push!(times, t - init)
-    end
+    # `WARMUP[] == 0` (calibration) wants the image only: one run, no warm-up.
+    warmup, runs = WARMUP[] == 0 ? (0, 1) : (WARMUP[], num_runs)
+    res, seconds = run_bart_timed(nout, cmd, inputs...; runs = warmup + runs, before_each = clear_bart_wisdom)
+    times = seconds[(warmup + 1):end] .- BART_GPU_INIT
+    any(<=(0), times) && @warn "BART run shorter than the GPU initialisation subtracted from it" cmd seconds BART_GPU_INIT
     return max(1.0e-5, minimum(times)), max(1.0e-5, median(times)), res
 end
 
@@ -459,11 +439,11 @@ end
 using .BenchUtils.ResultsStore: record_run
 
 """
-    toolkit_versions() -> Dict{String, String}
+    TOOLKIT_VERSIONS -> Dict{String, String}
 
 The version of every toolkit this process can time, and of the Ristretto checkout (its commit).
 """
-function toolkit_versions()
+const TOOLKIT_VERSIONS = let
     v = Dict{String, String}()
     v["Ristretto"] = let dir = pkgdir(Ristretto)
         commit = strip(read(ignorestatus(`git -C $dir rev-parse --short HEAD`), String))
@@ -473,13 +453,15 @@ function toolkit_versions()
     BART_AVAILABLE && (v["BART"] = strip(read(ignorestatus(`$BART_BINARY version`), String)))
     v["MRIReco"] = string(pkgversion(MRIReco))
     v["MIRT"] = string(pkgversion(ComparisonHarness.MIRTBridge.MIRT))
+    # Only the modules the setup already imported: CuPy just on a GPU run.
     for (name, mod) in (("SigPy", "sigpy"), ("MRpro", "mrpro"), ("PyTorch", "torch"), ("CuPy", "cupy"))
+        mod == "cupy" && !ON_GPU && continue
         try
             v[name] = pyconvert(String, pyimport(mod).__version__)
         catch
         end
     end
-    return v
+    v
 end
 
 """
@@ -500,11 +482,10 @@ function flush_results!(name::AbstractString)
         julia_threads = Threads.nthreads(), blas_vendor = BLAS.get_config().loaded_libs[1].libname,
         use_mkl = USE_MKL, bart_binary = BART_BINARY, pinned_cpus = CPU_STR,
         placement = get(ENV, "RISTRETTO_BENCH_PLACEMENT", "isolated"),
-        bart_spawn_ms = BART_SPAWN * 1000,
         cases_filter = CASE_FILTER, frameworks_filter = FRAMEWORK_FILTER, data = DATA,
         small = small_mode(), cine_frames = cine_frames(), device = String(DEVICE),
         gpu = ON_GPU ? CUDA.name(CUDA.device()) : nothing,
-        toolkit_versions = toolkit_versions(),
+        toolkit_versions = TOOLKIT_VERSIONS,
     )
     for r in results
         @printf(

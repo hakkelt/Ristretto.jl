@@ -107,7 +107,7 @@ function versions_markdown(backend, threads)
     available(backend, threads) || return ""
     versions = get(get(snapshot(backend, threads), "run", Dict()), "toolkit_versions", Dict())
     isempty(versions) && return ""
-    order = ("Ristretto", "BART", "SigPy", "MRIReco", "MIRT", "MRpro", "PyTorch", "CuPy")
+    order = (FRAMEWORKS..., "PyTorch", "CuPy")
     io = IOBuffer()
     println(io, "| toolkit | version |")
     println(io, "|---|---|")

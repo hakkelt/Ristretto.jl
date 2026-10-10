@@ -2,33 +2,11 @@
 #
 #   julia --project=benchmark/comparison benchmark/startup/run.jl
 #
-# The comparison tables report warm solves (the fastest of three after a warm-up), which leaves out
-# what a user pays before the first image: starting the runtime, loading the package and, for the
-# Julia toolkits, compiling the solve on its first call. This script measures those on the
-# `shepp_logan_2d_8ch_cartesian` case (128², 8 coils), for the L1-wavelet row (20 iterations, every
-# toolkit but MIRT, which has no wavelet prox) and the CG-SENSE row (10 iterations, every toolkit):
-#
-#   * `runtime`: wall time of a process that does nothing (`julia -e 0`, `python -c pass`);
-#   * `import`: wall time of a process that only loads the toolkit (`using Ristretto`,
-#     `import sigpy`, ...; for BART, `bart version`);
-#   * `first` / `warm`: in a fresh process, the first solve (compilation included) and the
-#     median of `STARTUP_NWARM` further solves;
-#   * `end_to_end`: wall time of a fresh process that loads the toolkit, reads the case and solves
-#     it once. For BART every solve is such a process (`bart pics`), so its first, warm and
-#     end-to-end times are one number.
-#   * `precompile`: once, the time `Base.compilecache` takes to precompile Ristretto into an empty
-#     depot (its dependencies' caches already exist). Every other Julia number assumes Ristretto,
-#     MRIReco and MIRT are precompiled.
-#
-# Every child runs on the same `STARTUP_THREADS` physical cores of one NUMA domain (`numactl`),
-# with OpenMP, OpenBLAS, MKL and PyTorch at that thread count, Julia at `-t STARTUP_THREADS`, and
-# BLAS and FFTW as the comparison harness sets them (`_setup.jl`). Toolkits are interleaved within
-# each repetition. Run it through `benchmark/startup/startup.sh` on a compute node.
-#
-# Environment: STARTUP_THREADS (8), STARTUP_REPS (5, fresh processes per measurement),
-# STARTUP_WARM_REPS (3, fresh processes timing first and warm solves), STARTUP_NWARM (10),
-# STARTUP_DATADIR (`tempdir()/ristretto-startup`), STARTUP_OUT (`benchmark/startup/results.json`).
-# Machine paths (the BART build, the Python interpreter) come from `benchmark/slurm/site.env`.
+# What a user pays before the first image (runtime start, package load, first-call compilation,
+# end-to-end process) for every toolkit of the cross-toolkit comparison, each in fresh pinned
+# processes. The quantities, the placement and the `STARTUP_*` overrides are described in
+# `README.md` next to this file. Machine paths (the BART build, the Python interpreter) come from
+# `benchmark/slurm/site.env`; run it through `benchmark/startup/startup.sh` on a compute node.
 
 using Dates, JSON, Printf, Statistics, TOML
 
@@ -127,12 +105,12 @@ end
 # ---------------------------------------------------------------- the toolkits
 
 const TOOLKITS = [
-    (name = "Ristretto", key = "Ristretto", lang = :julia, script = "solve_ristretto.jl", imp = "using Ristretto", methods = ("wavelet", "cgsense")),
-    (name = "MRIReco", key = "MRIReco", lang = :julia, script = "solve_mrireco.jl", imp = "using MRIReco", methods = ("wavelet", "cgsense")),
-    (name = "MIRT", key = "MIRT", lang = :julia, script = "solve_mirt.jl", imp = "using MIRT", methods = ("cgsense",)),
-    (name = "SigPy", key = "SigPy", lang = :python, script = "solve_sigpy.py", imp = "import sigpy, sigpy.mri.app", methods = ("wavelet", "cgsense")),
-    (name = "MRpro", key = "MRpro", lang = :python, script = "solve_mrpro.py", imp = "import mrpro", methods = ("wavelet", "cgsense")),
-    (name = "BART", key = "BART", lang = :bart, script = "", imp = "", methods = ("wavelet", "cgsense")),
+    (name = "Ristretto", lang = :julia, script = "solve_ristretto.jl", imp = "using Ristretto", methods = ("wavelet", "cgsense")),
+    (name = "MRIReco", lang = :julia, script = "solve_mrireco.jl", imp = "using MRIReco", methods = ("wavelet", "cgsense")),
+    (name = "MIRT", lang = :julia, script = "solve_mirt.jl", imp = "using MIRT", methods = ("cgsense",)),
+    (name = "SigPy", lang = :python, script = "solve_sigpy.py", imp = "import sigpy, sigpy.mri.app", methods = ("wavelet", "cgsense")),
+    (name = "MRpro", lang = :python, script = "solve_mrpro.py", imp = "import mrpro", methods = ("wavelet", "cgsense")),
+    (name = "BART", lang = :bart, script = "", imp = "", methods = ("wavelet", "cgsense")),
 ]
 
 function available(tk)
@@ -145,18 +123,18 @@ for tk in TOOLKITS
     tk in ACTIVE || @warn "$(tk.name) is not configured on this machine (benchmark/slurm/site.env), skipped"
 end
 
-λ(tk, m) = m == "cgsense" ? 0.0 : Float64(META["lambda_wavelet"][tk.key])
+λ(name, m) = m == "cgsense" ? 0.0 : Float64(META["lambda_wavelet"][name])
 
 import_cmd(tk) = tk.lang === :julia ? `$JL -e $(tk.imp)` : tk.lang === :python ? `$PYTHON -c $(tk.imp)` : `$BART version`
 
 function solve_cmd(tk, m, nwarm)
-    args = [DATADIR, m, string(nwarm), string(NX), string(NY), string(NC), string(MAXIT[m]), string(λ(tk, m))]
+    args = [DATADIR, m, string(nwarm), string(NX), string(NY), string(NC), string(MAXIT[m]), string(λ(tk.name, m))]
     script = joinpath(@__DIR__, tk.script)
     return tk.lang === :julia ? `$JL $script $args` : `$PYTHON $script $args`
 end
 
 bart_pics(m) = m == "wavelet" ?
-    `$BART pics -S -w 1 -e -i $(MAXIT[m]) -R W:3:0:$(λ((key = "BART",), m)) ksp sens out_$m` :
+    `$BART pics -S -w 1 -e -i $(MAXIT[m]) -R W:3:0:$(λ("BART", m)) ksp sens out_$m` :
     `$BART pics -S -w 1 -i $(MAXIT[m]) ksp sens out_$m`
 
 function parse_result(out)
@@ -173,7 +151,6 @@ rec!(keys...; value) = push!(get!(raw, join(keys, "/"), Any[]), value)
 
 # One run of each command first, untimed: page cache, and a precompile check of the Julia envs.
 println("warming the file system cache...")
-timed(`$JL -e 'using Ristretto, MRIReco, MIRT'`)
 for tk in ACTIVE
     timed(import_cmd(tk))
 end

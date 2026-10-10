@@ -47,7 +47,7 @@ source_tag(hostname::AbstractString = gethostname()) = occursin(r"^x\d+c", hostn
 
 Write one immutable JSON file recording this process's rows for `section` at (`backend`,
 `threads`). `rows` is a `Vector{BenchResult}` (see `_setup.jl`). `kwargs` are extra metadata
-(hostname, julia_version, blas_vendor, bart_binary, pinned_cpus, bart_spawn_ms, cases_filter, ...)
+(hostname, julia_version, blas_vendor, bart_binary, pinned_cpus, cases_filter, ...)
 stored alongside, exactly as the old per-section JSON did.
 
 The filename encodes everything a query needs to filter without opening the file: timestamp,
