@@ -39,8 +39,10 @@ struct ReconImage{T, N, A <: AbstractArray{T, N}, C <: Union{Nothing, NamedTuple
         return new{T, N, A, C}(data, header, components, spatial_ndims)
     end
 end
-ReconImage(data::AbstractArray, header = Header(); components = nothing, spatial_ndims::Integer = _guess_spatial_ndims(data, _to_header(header))) =
-    ReconImage(data, _to_header(header), components, spatial_ndims)
+function ReconImage(data::AbstractArray, header = Header(); components = nothing, spatial_ndims::Union{Nothing, Integer} = nothing)
+    h = _to_header(header)
+    return ReconImage(data, h, components, something(spatial_ndims, _guess_spatial_ndims(data, h)))
+end
 
 # `ReconImage`'s real properties; a component of one of these names would be unreachable through
 # `img.<name>`, so `check_components` rejects it up front.
@@ -117,7 +119,7 @@ The image itself, without the header: the sum of the components for a reconstruc
 total_image(img::ReconImage) = parent(img)
 
 function Base.getproperty(img::ReconImage, name::Symbol)
-    (name === :data || name === :header || name === :components) && return getfield(img, name)
+    name in _RECON_IMAGE_RESERVED_NAMES && return getfield(img, name)
     c = getfield(img, :components)
     !isnothing(c) && haskey(c, name) && return c[name]
     throw(ArgumentError("ReconImage has no property `$name`; available properties: $(join(propertynames(img), ", "))."))
@@ -125,7 +127,7 @@ end
 
 function Base.propertynames(img::ReconImage, ::Bool = false)
     c = getfield(img, :components)
-    return isnothing(c) ? (:data, :header, :components) : (:data, :header, :components, keys(c)...)
+    return isnothing(c) ? _RECON_IMAGE_RESERVED_NAMES : (_RECON_IMAGE_RESERVED_NAMES..., keys(c)...)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", img::ReconImage)

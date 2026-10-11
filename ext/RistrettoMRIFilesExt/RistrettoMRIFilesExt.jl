@@ -2,7 +2,7 @@ module RistrettoMRIFilesExt
 
 using Ristretto
 using Ristretto: CartesianAcquisitionInfo, NonCartesianAcquisitionInfo, Header, ReconImage, header,
-    _spatial_ndims, _export_volume, _lps_affine
+    _export_geometry, _derive_spacing!
 using LinearAlgebra: dot, norm
 using ArgCheck: @argcheck
 using NamedDims: NamedDimsArray

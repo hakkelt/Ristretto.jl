@@ -212,7 +212,6 @@ end
 # `NamedTuple` or another dictionary converted.
 _to_header(::Nothing) = Header()
 _to_header(h::Header) = h
-_to_header(h::NamedTuple) = Header(h)
 _to_header(h) = Header(pairs(h))
 
 """

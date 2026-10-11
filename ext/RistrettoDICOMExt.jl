@@ -1,10 +1,10 @@
 module RistrettoDICOMExt
 
 using Ristretto
-using Ristretto: ReconImage, header, _spatial_ndims, _export_volume, _lps_affine, _json
+using Ristretto: ReconImage, header, _export_geometry, _json
 using DICOM: DICOM, dcm_write
 using FileIO: FileIO, File, @format_str
-using LinearAlgebra: norm, cross, dot
+using LinearAlgebra: cross, dot
 using Printf: @sprintf
 using Random: RandomDevice
 
@@ -25,17 +25,16 @@ _is(x::Integer) = [string(x)]
 _even(s::AbstractString) = isodd(ncodeunits(s)) ? s * " " : s
 
 function fileio_save(f::File{format"DCM"}, img::ReconImage; series_description::AbstractString = "Ristretto", series_number::Integer = 1)
-    vol, _, _ = _export_volume(img)
+    (; vol, orientation, spacing, affine) = _export_geometry(img)
+    A = affine
     h = header(img)
     nx, ny, nz = size(vol, 1), size(vol, 2), size(vol, 3)
     nextra = prod(size(vol)[4:end]; init = 1)
-    A = _lps_affine(h, (nx, ny, nz), _spatial_ndims(img))
-    spacing = [norm(A[1:3, j]) for j in 1:3]
-    row_dir, col_dir = A[1:3, 1] ./ spacing[1], A[1:3, 2] ./ spacing[2]
+    row_dir, col_dir = orientation[:, 1], orientation[:, 2]
     normal = cross(row_dir, col_dir)
 
-    mag = reshape(abs.(vol), nx, ny, nz, nextra)
-    peak = maximum(mag; init = 0.0)
+    vol = reshape(vol, nx, ny, nz, nextra)
+    peak = maximum(abs, vol; init = 0.0)
     slope = peak > 0 ? Float64(peak) / typemax(UInt16) : 1.0
 
     study, series, frame = _uid(), _uid(), _uid()
@@ -47,7 +46,7 @@ function fileio_save(f::File{format"DCM"}, img::ReconImage; series_description::
         n = length(files) + 1
         position = (A * [0, 0, z - 1, 1])[1:3]
         # DICOM stores rows of the image one after the other, x running along a row.
-        pixels = permutedims(round.(UInt16, clamp.(mag[:, :, z, e] ./ slope, 0, typemax(UInt16))))
+        pixels = permutedims(round.(UInt16, clamp.(abs.(view(vol, :, :, z, e)) ./ slope, 0, typemax(UInt16))))
         instance = _uid()
         meta = Dict{Tuple{UInt16, UInt16}, Any}(
             (0x0008, 0x0008) => ["DERIVED", "PRIMARY"],

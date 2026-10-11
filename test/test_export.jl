@@ -24,22 +24,21 @@ end
 @testitem "export: layout and geometry shared by the writers" tags = [:export, :extension] setup = [ExportCase] begin
     using Test
     using Ristretto
-    using Ristretto: _export_volume, _lps_affine, _json
+    using Ristretto: _export_geometry, _json
     using LinearAlgebra: I
 
-    vol, extra, multislice = _export_volume(img)
-    @test size(vol) == (24, 16, 3, 2) && extra == [:time] && multislice
-    A = _lps_affine(h, (24, 16, 3), 2)
-    @test A * [4, 5, 2, 1] ≈ [voxel_lps(5, 6, 3); 1]
+    g = _export_geometry(img)
+    @test size(g.vol) == (24, 16, 3, 2) && g.extra_names == [:time] && g.nd == 2
+    @test g.spacing == (2.0, 2.0, 4.0) && g.orientation == h.orientation
+    @test g.affine * [4, 5, 2, 1] ≈ [voxel_lps(5, 6, 3); 1]
 
     # A 2D image without a slice axis gets one of length one; a bare header still exports.
-    vol, extra, multislice = _export_volume(ReconImage(NamedDimsArray{(:x, :y, :echo)}(rand(8, 6, 2)); spatial_ndims = 2))
-    @test size(vol) == (8, 6, 1, 2) && extra == [:echo] && !multislice
-    A = @test_logs (:warn,) _lps_affine(Header(), (8, 6, 1), 2)
-    @test A[1:3, 1:3] == I(3)
-    @test A * [4, 3, 0, 1] ≈ [0, 0, 0, 1]
+    g = @test_logs (:warn,) _export_geometry(ReconImage(NamedDimsArray{(:x, :y, :echo)}(rand(8, 6, 2)), Header(); spatial_ndims = 2))
+    @test size(g.vol) == (8, 6, 1, 2) && g.extra_names == [:echo]
+    @test g.affine[1:3, 1:3] == I(3)
+    @test g.affine * [4, 3, 0, 1] ≈ [0, 0, 0, 1]
 
-    @test_throws ArgumentError _export_volume(ReconImage(rand(4); spatial_ndims = 1))
+    @test_throws ArgumentError _export_geometry(ReconImage(rand(4); spatial_ndims = 1))
     @test _json(Dict("a" => Any[1, 2.5], "b\"" => nothing, "c" => "x\ny")) == "{\"a\": [1, 2.5], \"b\\\"\": null, \"c\": \"x\\u000ay\"}"
 end
 

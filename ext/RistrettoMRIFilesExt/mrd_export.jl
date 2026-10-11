@@ -9,22 +9,20 @@ _mrd_eltype(::Type) = Float32
 
 function FileIO.save(f::ISMRMRDFile, img::ReconImage; group::AbstractString = "image_0")
     path = f.filename
-    vol, extra_names, multislice = _export_volume(img)
+    (; vol, extra_names, nd, orientation, spacing, affine) = _export_geometry(img)
+    A = affine
     h = header(img)
-    nd = _spatial_ndims(img)
     nx, ny, nz = size(vol, 1), size(vol, 2), size(vol, 3)
     extra_size = size(vol)[4:end]
     nextra = prod(extra_size; init = 1)
-    A = _lps_affine(h, (nx, ny, nz), nd)
-    spacing = [norm(A[1:3, j]) for j in 1:3]
-    dirs = [A[1:3, j] ./ spacing[j] for j in 1:3]
+    dirs = [orientation[:, j] for j in 1:3]
     T = _mrd_eltype(eltype(vol))
-    data = reshape(convert(Array{T}, vol), nx, ny, nz, nextra)
 
-    # A 3D image is one MRD image; each slice of a 2D image is one.
+    # A 3D image is one MRD image; each slice of a 2D image is one. Image `n` is slice `s` of
+    # extra index `e`, `n = (e - 1) * nslices + s`, which is the order of `vol` itself.
     per_image_z = nd == 3 ? nz : 1
     nslices = nd == 3 ? 1 : nz
-    images = Array{T}(undef, nx, ny, per_image_z, 1, nslices * nextra)
+    images = reshape(convert(Array{T}, vol), nx, ny, per_image_z, 1, nslices * nextra)
     headers = Vector{NTuple{_IMAGE_HEADER_SIZE, UInt8}}(undef, nslices * nextra)
     attributes = Vector{String}(undef, nslices * nextra)
     time_axis = findfirst(==(:time), extra_names)
@@ -34,8 +32,6 @@ function FileIO.save(f::ISMRMRDFile, img::ReconImage; group::AbstractString = "i
     n = 0
     for e in 1:nextra, s in 1:nslices
         n += 1
-        zs = nd == 3 ? (1:nz) : (s:s)
-        images[:, :, :, 1, n] = data[:, :, zs, e]
         # MRD positions an image by its centre.
         centre = A * [nx ÷ 2, ny ÷ 2, nd == 3 ? nz ÷ 2 : s - 1, 1]
         phase = isnothing(time_axis) ? 0 : CartesianIndices(extra_size)[e][time_axis] - 1

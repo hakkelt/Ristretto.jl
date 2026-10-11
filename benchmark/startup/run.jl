@@ -9,6 +9,7 @@
 # `benchmark/slurm/site.env`; run it through `benchmark/startup/startup.sh` on a compute node.
 
 using Dates, JSON, Printf, Statistics, TOML
+using BartIO: read_cfl
 
 include(joinpath(@__DIR__, "..", "utils", "config.jl"))
 load_site_env!()
@@ -91,7 +92,8 @@ end
 isfile(joinpath(DATADIR, "meta.json")) ||
     run(`$JULIA --startup-file=no --project=$PROJECT $(joinpath(@__DIR__, "prepare.jl")) $DATADIR $CASE`)
 const META = JSON.parsefile(joinpath(DATADIR, "meta.json"))
-META["wavelet_levels"] == 3 || error("child_common.jl assumes 3 wavelet levels, the harness uses $(META["wavelet_levels"])")
+(META["wavelet_name"], META["wavelet_levels"]) == ("db2", 3) ||
+    error("the solve scripts assume 3 levels of db2 wavelets, the harness uses $(META["wavelet_levels"]) of $(META["wavelet_name"])")
 const NX, NY, NC = META["nx"], META["ny"], META["coils"]
 const MAXIT = Dict("wavelet" => META["wavelet_iterations"], "cgsense" => META["cgsense_iterations"])
 const REFERENCE = read!(joinpath(DATADIR, "reference.c64"), Array{ComplexF32}(undef, NX, NY))
@@ -196,7 +198,7 @@ for rep in 1:REPS
 end
 for m in ("wavelet", "cgsense")
     isfile(BART) || break
-    out = read!(joinpath(DATADIR, "out_$m.cfl"), Array{ComplexF32}(undef, NX, NY))
+    out = reshape(read_cfl(joinpath(DATADIR, "out_$m")), NX, NY)
     rec!("nrmse", "BART", m; value = mag_nrmse(out, REFERENCE))
 end
 

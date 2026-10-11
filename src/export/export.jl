@@ -3,30 +3,33 @@
 
 # ---------------------------------------------------------------- layout and geometry
 
-# `img` as a host `Array` whose first three axes are x, y and z, the names of its other axes, and
-# whether a 2D image's z axis holds its slices (`true`) or was added (`false`; length one).
-function _export_volume(img::ReconImage)
-    data = Array(img)
+# `img` as the writers need it:
+# - `vol`: its data as a host `Array` whose first three axes are x, y and z (a 2D image without a
+#   slice axis gets one of length one), not copied when it already is one;
+# - `extra_names`: the names of its other axes;
+# - `nd`: the number of image axes, 2 or 3;
+# - `orientation` (columns: the LPS directions of x, y, z), `spacing` (mm, along x, y, z) and
+#   `affine`, the 4×4 map from 0-based voxel indices to LPS coordinates in mm.
+# What the header lacks is filled in so that a file can still be written: identity orientation,
+# 1 mm voxels, a slice spacing equal to the slice thickness, and the image centre at the origin.
+function _export_geometry(img::ReconImage)
+    data = unname(parent(img))
+    data isa Array || (data = Array(data))
     nd = _spatial_ndims(img)
     @argcheck nd in (2, 3) "only 2D and 3D images can be exported, this one has $nd image axes"
     names = parent(img) isa NamedDimsArray ? collect(Symbol, dimnames(img)) : fill(:_, ndims(data))
-    nd == 3 && return data, names[4:end], false
-    if ndims(data) >= 3 && names[3] in (:z, :slice)
-        return data, names[4:end], true
+    vol, extra_names = if nd == 3 || (ndims(data) >= 3 && names[3] in (:z, :slice))
+        data, names[4:end]
+    else
+        reshape(data, size(data, 1), size(data, 2), 1, size(data)[3:end]...), names[3:end]
     end
-    vol = reshape(data, size(data, 1), size(data, 2), 1, size(data)[3:end]...)
-    return vol, names[3:end], false
-end
-
-# The 4×4 map from 0-based voxel indices (x, y, z) to LPS coordinates in mm. What the header
-# lacks is filled in so that a file can still be written: identity orientation, 1 mm voxels, a
-# slice spacing equal to the slice thickness, and the image centre at the origin.
-function _lps_affine(h::Header, vol_size::NTuple{3, Int}, nd::Integer)
-    R = something(h.orientation, Matrix{Float64}(I, 3, 3))
-    sp = _export_spacing(h, vol_size, nd)
-    M = R * Diagonal(collect(sp))
+    h = header(img)
+    vol_size = size(vol)[1:3]
+    orientation = something(h.orientation, Matrix{Float64}(I, 3, 3))
+    spacing = _export_spacing(h, vol_size, nd)
+    M = orientation * Diagonal(collect(spacing))
     offset = isnothing(h.offset) ? -(M * collect(Float64, vol_size .÷ 2)) : collect(h.offset)
-    return [M offset; 0 0 0 1]
+    return (; vol, extra_names, nd, orientation, spacing, affine = [M offset; 0 0 0 1])
 end
 
 function _export_spacing(h::Header, vol_size, nd)

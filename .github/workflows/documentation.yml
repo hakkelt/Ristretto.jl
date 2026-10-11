@@ -22,7 +22,10 @@ jobs:
         with:
           version: '1'
           show-versioninfo: true               # this causes versioninfo to be printed to the action log
+      # The datasets in MRITestData's scratch space have a cache of their own (below).
       - uses: julia-actions/cache@v2
+        with:
+          cache-scratchspaces: false
       - uses: julia-actions/julia-buildpkg@v1  # if package requires Pkg.build()
       # The real-data tutorials download their datasets into MRITestData's scratch space; keep it
       # between runs. The key is fixed: the first run saves the datasets and later runs restore

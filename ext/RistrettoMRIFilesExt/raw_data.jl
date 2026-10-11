@@ -94,7 +94,7 @@ function _raw_header(raw::RawAcquisitionData, profiles, img_size)
     fov = get(params, "encodedFOV", nothing)
     if !isnothing(fov) && all(>(0), fov)
         h.fov = fov[1:nd]
-        h.spacing = h.fov ./ img_size
+        _derive_spacing!(h, img_size)
         nd == 2 && length(fov) >= 3 && (h.slice_thickness = fov[3])
     end
     for (key, name) in (("TE", :TE), ("TR", :TR), ("TI", :TI), ("flipAngle_deg", :flip_angle))
@@ -112,8 +112,11 @@ function _raw_header(raw::RawAcquisitionData, profiles, img_size)
         h.orientation = R
         # The first slice of a multi-slice acquisition (lowest slice index, the first along `:z`)
         # and the signed distance between neighbouring slices along the slice direction.
-        slices = sort!(unique(Int(p.head.idx.slice) for p in profiles))
-        centres = [collect(Float64.(first(p for p in profiles if Int(p.head.idx.slice) == s).head.position)) for s in slices]
+        first_position = Dict{Int, Vector{Float64}}()
+        for p in profiles
+            get!(() -> collect(Float64.(p.head.position)), first_position, Int(p.head.idx.slice))
+        end
+        centres = [first_position[s] for s in sort!(collect(keys(first_position)))]
         if nd == 2 && length(centres) > 1
             steps = [dot(centres[i + 1] - centres[i], R[:, 3]) for i in 1:(length(centres) - 1)]
             h.slice_spacing = steps[1]

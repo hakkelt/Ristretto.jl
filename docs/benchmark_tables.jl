@@ -11,8 +11,9 @@ export comparison_markdown, scaling_markdown, hardware_markdown, versions_markdo
 const RESULTS = joinpath(@__DIR__, "..", "benchmark", "comparison", "results")
 const FRAMEWORKS = ("Ristretto", "BART", "BART (MEASURE)", "SigPy", "MRIReco", "MIRT", "MRpro")
 
-snapshot(backend, threads) = JSON.parsefile(joinpath(RESULTS, "benchmark_$(backend)_$(threads)threads.json"))
-available(backend, threads) = isfile(joinpath(RESULTS, "benchmark_$(backend)_$(threads)threads.json"))
+snapshot_path(backend, threads) = joinpath(RESULTS, "benchmark_$(backend)_$(threads)threads.json")
+snapshot(backend, threads) = JSON.parsefile(snapshot_path(backend, threads))
+available(backend, threads) = isfile(snapshot_path(backend, threads))
 
 # "Ristretto (OpenBLAS)" and "BART (CUDA)" are columns "Ristretto" and "BART", "BART (OpenBLAS,
 # MEASURE)" the column "BART (MEASURE)"; a variant label such as "Ristretto (OpenBLAS) (m=3,
@@ -30,7 +31,7 @@ const CASE_WORDS = Dict(
 )
 case_label(id) = join(filter(!isempty, [get(CASE_WORDS, w, w) for w in split(id, '_')]), " ")
 
-fmt_ms(t) = t < 0 ? "—" : t < 10 ? @sprintf("%.2f", t) : t < 1000 ? @sprintf("%.0f", t) : @sprintf("%.1f s", t / 1000)
+fmt_ms(t) = t < 0 ? "—" : t < 10 ? @sprintf("%.2f ms", t) : t < 1000 ? @sprintf("%.0f ms", t) : @sprintf("%.1f s", t / 1000)
 
 # One row per (case, method), one column per toolkit: time, and the NRMSE against the ground
 # truth when `nrmse`. The fastest time in a row is bold. A row only Ristretto ran compares
@@ -56,7 +57,7 @@ function comparison_markdown(backend, threads; category, nrmse = true, method_fi
         out = map(cols) do f
             haskey(cells, f) || return "—"
             b = cells[f]
-            s = fmt_ms(b["time_ms"]) * (b["time_ms"] < 1000 && b["time_ms"] >= 0 ? " ms" : "")
+            s = fmt_ms(b["time_ms"])
             b["time_ms"] == best && (s = "**$s**")
             nrmse && b["nrmse_gt"] >= 0 ? s * @sprintf(" (%.3f)", b["nrmse_gt"]) : s
         end
@@ -82,7 +83,7 @@ function scaling_markdown(backend; category = "Sparsity", method_filter = m -> s
     println(io, "| case | method | ", join(("$t thread" * (t == 1 ? "" : "s") for t in ths), " | "), " | speed-up |")
     println(io, "|---|---|", repeat("---:|", length(ths) + 1))
     for ((case, method), times) in sort!(collect(data); by = first)
-        cells = [haskey(times, t) ? fmt_ms(times[t]) * (times[t] < 1000 ? " ms" : "") : "—" for t in ths]
+        cells = [haskey(times, t) ? fmt_ms(times[t]) : "—" for t in ths]
         speedup = haskey(times, ths[1]) && haskey(times, ths[end]) ? @sprintf("%.1f×", times[ths[1]] / times[ths[end]]) : "—"
         println(io, "| ", case_label(case), " | ", method, " | ", join(cells, " | "), " | ", speedup, " |")
     end

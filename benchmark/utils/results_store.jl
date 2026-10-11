@@ -163,14 +163,17 @@ end
 
 """
     load_rows(root = RESULTS_DIR; schema_version = SCHEMA_VERSION) -> Vector{Row}
+    load_rows(run_files; schema_version = SCHEMA_VERSION) -> Vector{Row}
 
-Every comparison row from every run file of the store at `root`, flattened. Rows from an older
-schema (measured on other inputs than the catalog's cases) are left out unless `schema_version`
-is lowered.
+Every comparison row from every run file of the store at `root` (or of the parsed `run_files`,
+as `load_run_files` returns them), flattened. Rows from an older schema (measured on other inputs
+than the catalog's cases) are left out unless `schema_version` is lowered.
 """
-function load_rows(root::AbstractString = RESULTS_DIR; schema_version::Integer = SCHEMA_VERSION)
+load_rows(root::AbstractString = RESULTS_DIR; schema_version::Integer = SCHEMA_VERSION) =
+    load_rows(load_run_files(root); schema_version)
+function load_rows(run_files::AbstractVector; schema_version::Integer = SCHEMA_VERSION)
     rows = Row[]
-    for d in load_run_files(root)
+    for d in run_files
         v = get(d, "schema_version", 1)
         v < schema_version && continue
         backend = get(d, "backend", "")

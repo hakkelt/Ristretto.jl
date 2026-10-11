@@ -23,7 +23,8 @@ const ARG = Dict(
     m.captures[1] => m.captures[2] for m in (match(r"^--([\w-]+)=(.*)$", a) for a in ARGS) if m !== nothing
 )
 
-rows = load_rows()
+const RUN_FILES = load_run_files(RESULTS_DIR)
+rows = load_rows(RUN_FILES)
 isempty(rows) && (@info "no rows in results/runs/ -- nothing to export"; exit(0))
 
 haskey(ARG, "backend") && filter!(r -> r.backend == ARG["backend"], rows)
@@ -33,7 +34,7 @@ latest = latest_per_case(rows; prefer_source = "slurm")
 isempty(latest) && (@info "no source=\"slurm\" rows match; nothing exported (rerun on the cluster first)"; exit(0))
 
 # The metadata of every run file, by (timestamp, backend, threads): what a row records of its run.
-const RUNS = Dict((get(d, "ts", ""), get(d, "backend", ""), get(d, "threads", 0)) => d for d in load_run_files(RESULTS_DIR))
+const RUNS = Dict((get(d, "ts", ""), get(d, "backend", ""), get(d, "threads", 0)) => d for d in RUN_FILES)
 
 values_of(metas, key) = sort(unique(string(m[key]) for m in metas if get(m, key, nothing) !== nothing))
 date_of(ts) = "$(ts[1:4])-$(ts[5:6])-$(ts[7:8])"
