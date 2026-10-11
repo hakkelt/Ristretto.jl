@@ -76,22 +76,20 @@ function pseudo_replica(
         end
     end
 
-    first_res = first(results)
-    mean_img = sum(results) ./ replicas
-    diff_sq_sum = sum(abs2.(unname(r) .- unname(mean_img)) for r in results)
+    images = [parent(r) for r in results]
+    mean_img = sum(unname, images) ./ replicas
+    diff_sq_sum = sum(abs2.(unname(r) .- mean_img) for r in images)
     std_img = sqrt.(diff_sq_sum ./ (replicas - 1))
 
     # Compute g-factor map: g(r) = σ_recon(r) / (σ_ref * √R)
     g_factor = std_img ./ (ref_std * sqrt(R_acc))
 
-    if first_res isa NamedDimsArray
-        out_dims = dimnames(first_res)
-        return (
-            mean = NamedDimsArray{out_dims}(unname(mean_img)),
-            std = NamedDimsArray{out_dims}(std_img),
-            g_factor = NamedDimsArray{out_dims}(g_factor),
-        )
-    else
-        return (mean = mean_img, std = std_img, g_factor = g_factor)
-    end
+    first_img = first(images)
+    first_img isa NamedDimsArray || return (mean = mean_img, std = std_img, g_factor = g_factor)
+    out_dims = dimnames(first_img)
+    return (
+        mean = NamedDimsArray{out_dims}(mean_img),
+        std = NamedDimsArray{out_dims}(std_img),
+        g_factor = NamedDimsArray{out_dims}(g_factor),
+    )
 end

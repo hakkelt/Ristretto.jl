@@ -43,9 +43,14 @@ function FileIO.save(f::ISMRMRDFile, img::ReconImage; group::AbstractString = "i
         attributes[n] = meta
     end
 
-    HDF5.h5open(path, "w") do file
-        write(file, "/dataset/xml", [_xml_header(h, (nx, ny, per_image_z), fov, nslices)])
-        g = HDF5.create_group(file["dataset"], group)
+    # An existing file keeps what it holds, its raw data and XML header among it; only an image
+    # group of the same name is replaced.
+    HDF5.h5open(path, "cw") do file
+        haskey(file, "dataset") || HDF5.create_group(file, "dataset")
+        dataset = file["dataset"]
+        haskey(dataset, "xml") || write(dataset, "xml", [_xml_header(h, (nx, ny, per_image_z), fov, nslices)])
+        haskey(dataset, group) && HDF5.delete_object(dataset, group)
+        g = HDF5.create_group(dataset, group)
         _write_headers(g, "header", headers)
         _write_data(g, "data", images)
         write(g, "attributes", attributes)

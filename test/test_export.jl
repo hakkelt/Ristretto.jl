@@ -131,3 +131,62 @@ end
         @test occursin("<H1resonanceFrequency_Hz>127732434</H1resonanceFrequency_Hz>", xml)
     end
 end
+
+@testitem "export: signed slice spacing and scaled orientation" tags = [:export, :extension] begin
+    using Test
+    using Ristretto
+    using Ristretto: _export_geometry
+    using DICOM
+    using FileIO: save
+
+    # Slices stored against the slice normal, and an orientation whose columns are not unit
+    # vectors: the affine keeps both, the writers get unit directions and positive spacings.
+    h = Header(; spacing = (1, 1), slice_spacing = -6, orientation = [2.0 0 0; 0 2 0; 0 0 1], offset = (0, 0, 0))
+    img = ReconImage(NamedDimsArray{(:x, :y, :z)}(rand(Float32, 4, 3, 2)), h)
+    g = _export_geometry(img)
+    @test g.spacing == (2.0, 2.0, 6.0)
+    @test g.orientation == [1.0 0 0; 0 1 0; 0 0 -1]
+    @test g.affine * [1, 1, 1, 1] ≈ [2, 2, -6, 1]
+    d = dcm_parse(first(save(joinpath(mktempdir(), "img.dcm"), img)))
+    @test d[(0x0018, 0x0088)] ≈ 6 && d[(0x0018, 0x0050)] ≈ 6
+    @test d[(0x0028, 0x0030)] ≈ [2, 2]
+end
+
+@testitem "export: DICOM sequence parameters per echo" tags = [:export, :extension] begin
+    using Test
+    using Ristretto
+    using DICOM
+    using FileIO: save
+
+    h = Header(; fov = (8, 6), TE = [2.0, 4.0, 6.0], TR = 10, flip_angle = [10, 20])
+    img = ReconImage(NamedDimsArray{(:x, :y, :echo)}(rand(Float32, 4, 3, 3)), h; spatial_ndims = 2)
+    files = save(joinpath(mktempdir(), "img.dcm"), img)
+    ds = dcm_parse.(files)
+    @test [d[(0x0018, 0x0081)] for d in ds] ≈ [2, 4, 6]
+    @test all(d -> d[(0x0018, 0x0080)] ≈ 10, ds)
+    # Two flip angles match no axis of the image, so none is written.
+    @test all(d -> !haskey(d.meta, (0x0018, 0x1314)), ds)
+end
+
+@testitem "export: MRD into an existing file" tags = [:export, :extension] setup = [ExportCase] begin
+    using Test
+    using Ristretto
+    using MRIFiles
+    using FileIO: save
+
+    HDF5 = MRIFiles.HDF5
+    path = joinpath(mktempdir(), "scan.h5")
+    HDF5.h5open(path, "w") do f
+        write(f, "/dataset/xml", ["<ismrmrdHeader>raw</ismrmrdHeader>"])
+        write(f, "/dataset/data", collect(1:4))
+    end
+    save(ISMRMRDFile(path), img)
+    save(ISMRMRDFile(path), img[time = 1]; group = "image_1")
+    save(ISMRMRDFile(path), img[time = 2]; group = "image_1")
+    HDF5.h5open(path) do f
+        @test read(f["dataset/data"]) == 1:4
+        @test only(read(f["dataset/xml"])) == "<ismrmrdHeader>raw</ismrmrdHeader>"
+        @test length(read(f["dataset/image_0/header"])) == 6
+        @test length(read(f["dataset/image_1/header"])) == 3
+    end
+end

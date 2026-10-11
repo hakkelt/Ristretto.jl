@@ -36,13 +36,18 @@ other header entries and the tags. Returns the path.
 index of any non-image axis, `recon_00001.dcm`, `recon_00002.dcm`, ... next to the path given (a
 single image keeps the name given), and returns the file names. The pixel data is the magnitude
 as 16-bit integers with a rescale slope, so `RescaleSlope * stored` recovers it to 1 part in 65535
-of the maximum. Patient and study fields are left empty except for generated UIDs; fill them in
-with a DICOM tool before archiving.
+of the maximum. A sequence parameter with one value per echo or inversion (`TE = [2, 4, 6]`) gives
+each file the value of its index on the non-image axis of that length (preferably one named
+`:contrast`, `:echo` or `:inversion`); when no axis matches, the parameter is left out. Patient and
+study fields are left empty except for generated UIDs; fill them in with a DICOM tool before
+archiving.
 
 **MRD** (`group = "image_0"`): images under `/dataset/<group>` with an `ismrmrdHeader` XML holding
 the field of view, the matrix size and the sequence parameters. A 3D image is one MRD image, a 2D
 image one per slice; each non-image axis index is another image, numbered by `image_index`, with
-a `:time` index also in the `phase` counter. Returns the path.
+a `:time` index also in the `phase` counter. Saving into an existing file, such as the raw data
+the image was reconstructed from, adds the group and keeps everything else, including the XML
+header already there; only a group of the same name is replaced. Returns the path.
 
 ## Geometry
 

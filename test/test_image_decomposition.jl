@@ -102,7 +102,7 @@ end
 
     plain = drop_components(img)
     @test parent(plain) === parent(img)
-    @test header(plain) === header(img)
+    @test header(plain) !== header(img) && header(plain).spacing == header(img).spacing
     @test_throws ArgumentError components(plain)
     @test propertynames(plain) == (:data, :header, :components)
 end

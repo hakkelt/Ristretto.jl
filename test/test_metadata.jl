@@ -155,6 +155,13 @@ end
     @test _spatial_ndims(ms) == 2
     @test collect(header(ms[z = 4]).offset) ≈ R[:, 3] .* 15
     @test _spatial_ndims(ms[z = 4]) == 2
+    # Every other slice: twice the slice spacing, from the first slice kept.
+    @test header(ms[z = 2:2:4]).slice_spacing == 10.0
+    @test collect(header(ms[z = 2:2:4]).offset) ≈ R[:, 3] .* 5
+    @test header(ms[z = :]).offset == h2.offset && header(ms[z = :]).slice_spacing == 5.0
+    # The slice axis may also be named `:slice`.
+    ms2 = ReconImage(NamedDimsArray{(:x, :y, :slice)}(rand(8, 6, 4)), h2)
+    @test collect(header(ms2[slice = 3]).offset) ≈ R[:, 3] .* 10
 end
 
 @testitem "ReconImage moves to a device with its header" tags = [:gpu, :reconstruction] setup = [GpuEnvSetup, GpuHelpers] begin
@@ -174,6 +181,7 @@ end
 
 @testitem "ReconImage: array interface and spatial axes" tags = [:reconstruction] begin
     using Test
+    import LinearAlgebra
     using Ristretto
     using Ristretto: header, _spatial_ndims
     using NamedDims
@@ -202,16 +210,37 @@ end
     @test_throws ArgumentError NamedDimsArray(ReconImage(rand(2, 2)))
     @test_throws ArgumentError ReconImage(rand(2, 2))[x = 1]
 
-    # A selection that is not a range drops the offset; a single row leaves a profile, which
-    # the header's geometry cannot describe.
+    # `:` changes nothing; a vector with a constant step is a range; one without drops the
+    # geometry, with a warning. A single row leaves a profile, which the header's geometry cannot
+    # describe.
     h = Header(; fov = (8, 6), spacing = (2, 2), orientation = [1.0 0 0; 0 1 0; 0 0 1], offset = (0, 0, 0))
     img2 = ReconImage(NamedDimsArray{(:x, :y)}(rand(4, 3)), h)
-    picked = img2[x = [1, 3]]
-    @test isnothing(header(picked).offset)
+    same(a, b) = all(f -> isequal(getfield(a, f), getfield(b, f)), fieldnames(Header))
+    @test same(header(img2[x = :, y = :]), h)
+    @test same(header(img2[x = [2, 4]]), header(img2[x = 2:2:4]))
+    @test header(img2[x = [2, 4]]).fov == (8.0, 6.0) && header(img2[x = [2, 4]]).spacing == (4.0, 2.0)
+    @test collect(header(img2[x = Bool[0, 1, 0, 0]]).offset) ≈ [2, 0, 0]
+    picked = @test_logs (:warn,) img2[x = [1, 2, 4]]
+    @test isnothing(header(picked).offset) && isnothing(header(picked).fov) && isnothing(header(picked).spacing)
+    # A reversed axis points the other way, from the last voxel.
+    rev = header(img2[x = 4:-1:1])
+    @test collect(rev.offset) ≈ [6, 0, 0] && rev.orientation[:, 1] == [-1, 0, 0] && rev.spacing == (2.0, 2.0)
     profile = img2[y = 2]
     @test _spatial_ndims(profile) == 1
     @test isnothing(header(profile).fov) && isnothing(header(profile).spacing)
     @test img2[x = 1, y = 1] isa Real
+
+    # Reductions act on the image itself, in the same order as on it.
+    @test sum(abs2, img) === sum(abs2, parent(img))
+    @test maximum(abs, img) === maximum(abs, parent(img))
+    @test LinearAlgebra.norm(img) === LinearAlgebra.norm(parent(img))
+    @test sum(img; dims = :time) == sum(parent(img); dims = :time)
+
+    # An image derived without copying its data still has a header of its own.
+    for derived in (drop_components(img), Ristretto.Adapt.adapt(Array, img))
+        settag!(derived, "reader", "B")
+        @test isnothing(gettag(img, "reader", nothing))
+    end
 end
 
 @testitem "Header: dictionary interface" tags = [:acquisition] begin

@@ -25,10 +25,12 @@ function _export_geometry(img::ReconImage)
     end
     h = header(img)
     vol_size = size(vol)[1:3]
-    orientation = something(h.orientation, Matrix{Float64}(I, 3, 3))
-    spacing = _export_spacing(h, vol_size, nd)
-    M = orientation * Diagonal(collect(spacing))
+    M = something(h.orientation, Matrix{Float64}(I, 3, 3)) * Diagonal(collect(_export_spacing(h, vol_size, nd)))
     offset = isnothing(h.offset) ? -(M * collect(Float64, vol_size .÷ 2)) : collect(h.offset)
+    # The header's slice spacing is signed along the slice normal, and its orientation need not
+    # have unit columns; the writers want unit directions and positive spacings.
+    spacing = Tuple(norm(c) for c in eachcol(M))
+    orientation = M ./ collect(spacing)'
     return (; vol, extra_names, nd, orientation, spacing, affine = [M offset; 0 0 0 1])
 end
 

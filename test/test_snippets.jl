@@ -41,9 +41,10 @@ end
     export relative_error, test_type_stable
 
     relative_error(z, truth) = norm(z .- truth) / norm(truth)
-    # `reconstruct` returns a `ReconImage`; the type checked is that of the image it holds.
+    # `reconstruct` returns a `ReconImage` without components around an image of type `T`.
     test_type_stable(::Type{T}, value) where {T} = (@test typeof(value) == T; value)
-    test_type_stable(::Type{T}, value::ReconImage) where {T} = (@test typeof(parent(value)) == T; value)
+    test_type_stable(::Type{T}, value::ReconImage) where {T <: AbstractArray} =
+        (@test typeof(value) == ReconImage{eltype(T), ndims(T), T, Nothing}; value)
 end
 
 @testmodule FiniteDiff begin

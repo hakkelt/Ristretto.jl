@@ -25,11 +25,12 @@ _is(x::Integer) = [string(x)]
 _even(s::AbstractString) = isodd(ncodeunits(s)) ? s * " " : s
 
 function fileio_save(f::File{format"DCM"}, img::ReconImage; series_description::AbstractString = "Ristretto", series_number::Integer = 1)
-    (; vol, orientation, spacing, affine) = _export_geometry(img)
+    (; vol, extra_names, orientation, spacing, affine) = _export_geometry(img)
     A = affine
     h = header(img)
     nx, ny, nz = size(vol, 1), size(vol, 2), size(vol, 3)
-    nextra = prod(size(vol)[4:end]; init = 1)
+    extra_size = size(vol)[4:end]
+    nextra = prod(extra_size; init = 1)
     row_dir, col_dir = orientation[:, 1], orientation[:, 2]
     normal = cross(row_dir, col_dir)
 
@@ -83,7 +84,7 @@ function fileio_save(f::File{format"DCM"}, img::ReconImage; series_description::
             meta[(0x0020, 0x0100)] = _is(e)
             meta[(0x0020, 0x0105)] = _is(nextra)
         end
-        _set_sequence!(meta, h)
+        _set_sequence!(meta, h, extra_names, extra_size, CartesianIndices(extra_size)[e])
         isnothing(comments) || (meta[(0x0020, 0x4000)] = comments)
         _set_file_meta!(meta, instance)
         file = nz * nextra == 1 ? path : _numbered(path, n)
@@ -107,14 +108,30 @@ function __init__()
     return nothing
 end
 
-function _set_sequence!(meta, h)
-    first_value(x) = x isa AbstractVector ? first(x) : x
-    isnothing(h.TR) || (meta[(0x0018, 0x0080)] = _ds(h.TR))
-    isnothing(h.TE) || (meta[(0x0018, 0x0081)] = _ds(first_value(h.TE)))
-    isnothing(h.TI) || (meta[(0x0018, 0x0082)] = _ds(first_value(h.TI)))
-    isnothing(h.field_strength) || (meta[(0x0018, 0x0087)] = _ds(h.field_strength))
-    isnothing(h.flip_angle) || (meta[(0x0018, 0x1314)] = _ds(first_value(h.flip_angle)))
+# The sequence parameters of the image at `index` of the non-image axes `extra_names`.
+function _set_sequence!(meta, h, extra_names, extra_size, index)
+    params = (
+        (0x0018, 0x0080) => h.TR, (0x0018, 0x0081) => h.TE, (0x0018, 0x0082) => h.TI,
+        (0x0018, 0x0087) => h.field_strength, (0x0018, 0x1314) => h.flip_angle,
+    )
+    for (tag, v) in params
+        x = _image_value(v, extra_names, extra_size, index)
+        isnothing(x) || (meta[tag] = _ds(x))
+    end
     return meta
+end
+
+# A parameter with one value per contrast (echo, inversion, ...) takes the value of the image at
+# `index` on the non-image axis of that length, one named for a contrast if several have it.
+# Without such an axis no one value describes the image, and none is written.
+const _CONTRAST_AXES = (:contrast, :echo, :inversion)
+_image_value(v, extra_names, extra_size, index) = v
+function _image_value(v::AbstractVector, extra_names, extra_size, index)
+    length(v) == 1 && return only(v)
+    candidates = filter(k -> extra_size[k] == length(v), eachindex(extra_size))
+    named = filter(k -> extra_names[k] in _CONTRAST_AXES, candidates)
+    k = !isempty(named) ? first(named) : length(candidates) == 1 ? only(candidates) : nothing
+    return isnothing(k) ? nothing : v[index[k]]
 end
 
 # The file meta group (0002), whose group length is the byte count of the elements after it.
