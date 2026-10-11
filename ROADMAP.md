@@ -17,7 +17,7 @@ apply throughout; in particular, changes to vendored packages go on fork branche
 | **P1 — done** (PR #2, 2026-10-09) | 5 (rename), 9, 2, 11, 1 (measurement + quick wins), 3 |
 | **P2 — documentation (next)** | 28, 30, 29, 31, 6, 7 + 8, 10, 23, 4 |
 | **P3 — strengthens the paper** | 19, 20 (Python wrapper), 22 |
-| **Deferred** | 12, 13, 14, 15, rest of 1, 16, 17, 18, 24, 25, 26, 27, 32–38 |
+| **Deferred** | 12, 13, 14, 15, rest of 1, 16, 17, 18, 24, 25, 26, 27, 32–38, 39 (to discuss) |
 
 Ordering constraints: 5 before 4, 10 and 20 (a rename touches all of them); 9 and 7 before 10
 (notebooks are rewritten only once); 9 before 22 (simulated benchmark cases change); 7 before 8;
@@ -183,6 +183,76 @@ related-packages page (item 23). The review file is deleted. **Tier:** P2. **Bef
 `src/`: what is implemented is compacted into the documentation page where the feature lives (a
 few lines and the seminal reference each), the toolbox feature matrix goes to the related-packages
 page (item 23), and what is not implemented becomes roadmap items. Then delete the file.
+
+### 39. Design follow-ups from the P2 review
+**Status:** to discuss. **Tier:** deferred.
+
+A `/simplify` review of the P2 branch (2026-10-11) found these. Each changes a design rather than a
+few lines, so each needs a decision before any code. A sub-item that is rejected is deleted from
+the list.
+
+- **A carrier for components.** The component path uses `ReconImage` for its intermediate results,
+  with an empty `Header()`; `_with_header` (`reconstruct.jl`) then has to tell a `ReconImage` from a
+  plain array to put the real header in. As a result, `ReconImage` also means "has components":
+  `stack_slices_like` and `rescale!` on a `ReconImage` call `components(img)`, which throws for one
+  without components. An `on_iteration` callback receives a header-less `ReconImage` on the
+  component path but a bare `NamedDimsArray` on the plain path. Options:
+  - a small internal carrier (the total plus a `NamedTuple` of components);
+  - or dispatch on `ReconImage{…, <:NamedTuple}`.
+  Either way, the header is attached in one place, and both paths hand callbacks the same type.
+- **Geometry always on three axes.** A multi-slice 2D image is a special case in four places:
+  - the separate `slice_spacing` header key;
+  - `name === :z && nd == 2` in `_slice_geometry` (`recon_image.jl`);
+  - the `nd == 2` branch of `_export_spacing` (`src/export/export.jl`);
+  - `[h.spacing..., 0.0]` in `_raw_header` (`RistrettoMRIFilesExt/raw_data.jl`).
+  The slice axis is also named inconsistently: export accepts `:z` or `:slice`, while
+  `_slice_geometry` and `CartesianAcquisitionInfo` accept only `:z`, so cropping a `:slice`-named
+  image does not move the offset the way export assumes. Storing the slice spacing as
+  `spacing[3]`, with the image rank saying how many axes are encoded, and naming the slice axis in
+  one constant would remove all four branches. This changes the `Header` keys, a public API.
+- **Spacing derived from fov in one place.** The fallback from `fov` to `spacing` is written four
+  times, each with its own length check:
+  - `_derive_spacing!` (`header.jl`);
+  - `_export_spacing`;
+  - `_guess_spatial_ndims` (`recon_image.jl`);
+  - `_raw_header`.
+  Deriving it once, where the image size is first known (the acquisition constructors and the
+  `ReconImage` constructor), would let everything downstream read `h.spacing`.
+- **`tags` as an ordinary header field.** `tags` is a third kind of key next to the known keys and
+  `extra`. Its `k === :tags` branch is repeated in `_isset`, `_getkey`, `setindex!`, `delete!` and
+  `_set_keys`. In addition, `_HEADER_KNOWN_KEYS` repeats `fieldnames(Header)`. One "unset" rule
+  over `fieldnames(Header)` would make `tags` a plain field, so a new dictionary method or a new
+  field is written once.
+- **One rule for the voxel-centre offset.** The relation between the centre voxel (`n ÷ 2`) and
+  the offset of the first voxel is written three times:
+  - in `_raw_header` (import);
+  - in `_export_geometry` (the default offset);
+  - in the MRD writer (the image centre).
+  A pair of helpers next to `_export_geometry` would keep the convention in one place.
+- **Saver registration.** The NIfTI and DICOM extensions' `__init__` both repeat "register the
+  saver, then move it to the front of FileIO's list". A shared helper in `src/export/export.jl`
+  would save three lines per format, so it is only worth adding with a third format.
+- **Math syntax of the tutorials.** `docs/make.jl` rewrites notebook-style `$x$`/`$$x$$` into
+  Documenter math with hand-written regexes (`documenter_math`, `_math_prose`). Literate already
+  converts the other way: with the default flavour, `Literate.notebook` turns ```` ```math ````
+  blocks and ``` ``x`` ``` into `$$…$$` and `$x$`. Writing the scripts in Documenter syntax would
+  remove the post-processing step, at the cost of rewriting the math in every tutorial.
+- **Startup suite: BART in the common loop.** `benchmark/startup/run.jl` special-cases BART
+  (`tk.lang === :bart`) in five places. Its first and warm solves are both the end-to-end time,
+  and its NRMSE is read from the last run's output outside the loop. A small wrapper script that
+  runs `pics` and prints the same `RESULT` line as the other toolkits (with `pics`'s Total Time)
+  would remove the branches. The setup time every child prints in that line is never recorded;
+  either record it or drop it from the protocol.
+- **Startup suite: shared case and solver definitions.** `benchmark/startup/solve_ristretto.jl`
+  rewrites the acquisition, the FISTA/CGNR choice and the ℓ₁-wavelet regularizer instead of using
+  `ristretto_acquisition`, `ristretto_algorithm` and `ristretto_regularizer` (`benchmark/utils/`).
+  Those helpers take a `BenchCase` and bring the whole harness with them, which the child process
+  deliberately avoids loading. `prepare.jl` likewise parses the λ file itself instead of using
+  `_lambda_from` (`comparison/scripts/_methods.jl`). Possible fix: move the toolkit-independent
+  parts into a file that loads only Ristretto, or at least test that the two definitions agree.
+- **Snapshot rows joined by run id.** `export_snapshot.jl` matches each row to its run's metadata
+  by `(ts, backend, threads)`, because `load_rows` (`benchmark/utils/results_store.jl`) drops the
+  `run_id` every run file stores. Keeping `run_id` on `Row` would make the join exact.
 
 ## User-facing features
 
