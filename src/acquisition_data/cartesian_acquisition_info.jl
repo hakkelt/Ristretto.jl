@@ -103,7 +103,7 @@ struct CartesianAcquisitionInfo{K, I, S, Sub, SD, ID} <: AcquisitionInfo
         end
 
         hdr = _to_header(hdr)
-        _check_geometry(hdr, img_size)
+        _complete_geometry!(hdr, img_size)
         return new{typeof(ksp), typeof(img_size), typeof(smaps), typeof(subs), typeof(sK), typeof(sI)}(
             ksp, is3D, img_size, smaps, subs, sK, sI, hdr
         )

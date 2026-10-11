@@ -185,7 +185,9 @@ few lines and the seminal reference each), the toolbox feature matrix goes to th
 page (item 23), and what is not implemented becomes roadmap items. Then delete the file.
 
 ### 39. Design follow-ups from the P2 review
-**Status:** to discuss. **Tier:** deferred.
+**Status:** to discuss. Done 2026-10-11: geometry on three axes, spacing derived from fov in one
+place, one rule for the voxel-centre offset; snapshot rows joined by run id is next, with the BART
+1.0 snapshot export. **Tier:** deferred.
 
 A `/simplify` review of the P2 branch (2026-10-11) found these. Each changes a design rather than a
 few lines, so each needs a decision before any code. A sub-item that is rejected is deleted from
@@ -200,35 +202,11 @@ the list.
   - a small internal carrier (the total plus a `NamedTuple` of components);
   - or dispatch on `ReconImage{…, <:NamedTuple}`.
   Either way, the header is attached in one place, and both paths hand callbacks the same type.
-- **Geometry always on three axes.** A multi-slice 2D image is a special case in four places:
-  - the separate `slice_spacing` header key;
-  - `name === :z && nd == 2` in `_slice_geometry` (`recon_image.jl`);
-  - the `nd == 2` branch of `_export_spacing` (`src/export/export.jl`);
-  - `[h.spacing..., 0.0]` in `_raw_header` (`RistrettoMRIFilesExt/raw_data.jl`).
-  The slice axis is also named inconsistently: export accepts `:z` or `:slice`, while
-  `_slice_geometry` and `CartesianAcquisitionInfo` accept only `:z`, so cropping a `:slice`-named
-  image does not move the offset the way export assumes. Storing the slice spacing as
-  `spacing[3]`, with the image rank saying how many axes are encoded, and naming the slice axis in
-  one constant would remove all four branches. This changes the `Header` keys, a public API.
-- **Spacing derived from fov in one place.** The fallback from `fov` to `spacing` is written four
-  times, each with its own length check:
-  - `_derive_spacing!` (`header.jl`);
-  - `_export_spacing`;
-  - `_guess_spatial_ndims` (`recon_image.jl`);
-  - `_raw_header`.
-  Deriving it once, where the image size is first known (the acquisition constructors and the
-  `ReconImage` constructor), would let everything downstream read `h.spacing`.
 - **`tags` as an ordinary header field.** `tags` is a third kind of key next to the known keys and
   `extra`. Its `k === :tags` branch is repeated in `_isset`, `_getkey`, `setindex!`, `delete!` and
   `_set_keys`. In addition, `_HEADER_KNOWN_KEYS` repeats `fieldnames(Header)`. One "unset" rule
   over `fieldnames(Header)` would make `tags` a plain field, so a new dictionary method or a new
   field is written once.
-- **One rule for the voxel-centre offset.** The relation between the centre voxel (`n ÷ 2`) and
-  the offset of the first voxel is written three times:
-  - in `_raw_header` (import);
-  - in `_export_geometry` (the default offset);
-  - in the MRD writer (the image centre).
-  A pair of helpers next to `_export_geometry` would keep the convention in one place.
 - **Saver registration.** The NIfTI and DICOM extensions' `__init__` both repeat "register the
   saver, then move it to the front of FileIO's list". A shared helper in `src/export/export.jl`
   would save three lines per format, so it is only worth adding with a third format.

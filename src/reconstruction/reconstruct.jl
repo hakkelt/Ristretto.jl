@@ -64,11 +64,10 @@ function reconstruct(
     return _with_header(x, acq_data)
 end
 
-# The image `reconstruct` returns: the solution with a copy of the acquisition's header, `spacing`
-# derived from `fov` when only that is known.
+# The image `reconstruct` returns: the solution with a copy of the acquisition's header.
 function _with_header(x, acq_data)
     nd = length(acq_data.image_size)
-    h = _derive_spacing!(copy(header(acq_data)), size(x)[1:nd])
+    h = copy(header(acq_data))
     x isa ReconImage || return ReconImage(x, h, nothing, nd)
     return ReconImage(parent(x), h, components(x), nd)
 end

@@ -18,34 +18,30 @@ function _export_geometry(img::ReconImage)
     nd = _spatial_ndims(img)
     @argcheck nd in (2, 3) "only 2D and 3D images can be exported, this one has $nd image axes"
     names = parent(img) isa NamedDimsArray ? collect(Symbol, dimnames(img)) : fill(:_, ndims(data))
-    vol, extra_names = if nd == 3 || (ndims(data) >= 3 && names[3] in (:z, :slice))
+    vol, extra_names = if nd == 3 || (ndims(data) >= 3 && names[3] === _SLICE_AXIS)
         data, names[4:end]
     else
         reshape(data, size(data, 1), size(data, 2), 1, size(data)[3:end]...), names[3:end]
     end
     h = header(img)
     vol_size = size(vol)[1:3]
-    M = something(h.orientation, Matrix{Float64}(I, 3, 3)) * Diagonal(collect(_export_spacing(h, vol_size, nd)))
-    offset = isnothing(h.offset) ? -(M * collect(Float64, vol_size .÷ 2)) : collect(h.offset)
-    # The header's slice spacing is signed along the slice normal, and its orientation need not
-    # have unit columns; the writers want unit directions and positive spacings.
+    M = something(h.orientation, Matrix{Float64}(I, 3, 3)) * Diagonal(collect(_export_spacing(h, nd)))
+    offset = isnothing(h.offset) ? _offset_from_centre(zeros(3), M, vol_size) : collect(h.offset)
+    # The writers want unit directions, which a user's orientation need not have.
     spacing = Tuple(norm(c) for c in eachcol(M))
     orientation = M ./ collect(spacing)'
     return (; vol, extra_names, nd, orientation, spacing, affine = [M offset; 0 0 0 1])
 end
 
-function _export_spacing(h::Header, vol_size, nd)
+function _export_spacing(h::Header, nd)
     sp = h.spacing
-    if isnothing(sp) || length(sp) != nd
-        fov = h.fov
-        sp = !isnothing(fov) && length(fov) == nd ? fov ./ vol_size[1:nd] : nothing
-    end
     if isnothing(sp)
         @warn "the header has no spacing or fov; exporting with 1 mm voxels" maxlog = 1
-        sp = ntuple(_ -> 1.0, nd)
+        sp = (1.0, 1.0)
     end
-    nd == 3 && return Tuple(Float64.(sp))
-    return (Float64(sp[1]), Float64(sp[2]), something(h.slice_spacing, h.slice_thickness, 1.0))
+    length(sp) == 3 && return sp
+    @argcheck nd == 2 "the header's spacing has 2 entries but the image has 3 axes"
+    return (sp[1], sp[2], something(h.slice_thickness, 1.0))
 end
 
 # ---------------------------------------------------------------- metadata as text

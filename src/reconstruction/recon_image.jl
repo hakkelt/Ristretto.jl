@@ -3,10 +3,11 @@
 
 The result of [`reconstruct`](@ref): the image `data` (a `NamedDimsArray` when the k-space was
 named, on the host or a device) together with a copy of the acquisition's [`header`](@ref), which
-carries the geometry (`fov`, `spacing`, `slice_spacing`, `orientation`, `offset`), the sequence
+carries the geometry (`fov`, `spacing`, `orientation`, `offset`), the sequence
 parameters and the tags (see [`Header`](@ref)). The first `spatial_ndims` axes of `data` are the
-image axes. When it is not given, it is the length of the header's `spacing` or `fov`, or else
-the number of leading axes named `:x`, `:y`, `:z`.
+image axes. When it is not given, it is the length of the header's `fov`, or else the number of
+leading axes named `:x`, `:y`, `:z`, or else the length of its `spacing`; a multi-slice 2D image
+whose header has no `fov` therefore needs it. A `fov` without a `spacing` gives the spacing.
 
 It is an `AbstractArray` that behaves as `data`: positional indexing, `size` (also by dimension
 name, `size(img, :x)`), broadcasting and `Array(img)` all act on the image. `parent(img)` returns `data` and `dimnames(img)` its dimension
@@ -40,8 +41,10 @@ struct ReconImage{T, N, A <: AbstractArray{T, N}, C <: Union{Nothing, NamedTuple
     end
 end
 function ReconImage(data::AbstractArray, header = Header(); components = nothing, spatial_ndims::Union{Nothing, Integer} = nothing)
-    h = _to_header(header)
-    return ReconImage(data, h, components, something(spatial_ndims, _guess_spatial_ndims(data, h)))
+    h = copy(_to_header(header))
+    nd = something(spatial_ndims, _guess_spatial_ndims(data, h))
+    nd <= ndims(data) && _complete_geometry!(h, size(data)[1:nd])
+    return ReconImage(data, h, components, nd)
 end
 
 # `ReconImage`'s real properties; a component of one of these names would be unreachable through
@@ -49,16 +52,18 @@ end
 const _RECON_IMAGE_RESERVED_NAMES = (:data, :header, :components)
 
 function _guess_spatial_ndims(data, h::Header)
-    sp, fov = h.spacing, h.fov
-    isnothing(sp) || return min(length(sp), ndims(data))
+    fov = h.fov
     isnothing(fov) || return min(length(fov), ndims(data))
-    data isa NamedDimsArray || return min(ndims(data), 2)
-    names = dimnames(data)
-    n = 0
-    while n < min(3, length(names)) && names[n + 1] === (:x, :y, :z)[n + 1]
-        n += 1
+    if data isa NamedDimsArray
+        names = dimnames(data)
+        n = 0
+        while n < min(3, length(names)) && names[n + 1] === (:x, :y, :z)[n + 1]
+            n += 1
+        end
+        return n
     end
-    return n
+    sp = h.spacing
+    return min(isnothing(sp) ? 2 : length(sp), ndims(data))
 end
 
 header(img::ReconImage) = getfield(img, :header)
@@ -155,73 +160,64 @@ function _keyword_index(f, img::ReconImage, sel::NamedTuple)
     out = f(data; pairs(sel)...)
     out isa AbstractArray || return out
     comps = _map_components(c -> f(c; pairs(sel)...), img)
-    h, nd = _slice_geometry(header(img), dimnames(data)[1:_spatial_ndims(img)], sel)
+    h, nd = _slice_geometry(header(img), dimnames(data), _spatial_ndims(img), sel)
     return ReconImage(out, h, comps, nd)
 end
 
-# The header of a part of an image whose image axes are named `spatial`: for each image axis the
-# offset moves to the first voxel kept and the axis shrinks to the voxels kept (its spacing scaled
-# by the step of a range), or is dropped when an integer selects one. The slice axis of a
-# multi-slice 2D image (`:z` or `:slice`) moves the offset and scales the slice spacing the same
-# way. A selection with no constant step has no geometry the header can describe, so it drops the
-# geometry with a warning. Any other axis leaves the geometry alone. Returns the header and the
-# number of image axes kept.
-function _slice_geometry(h0::Header, spatial, sel::NamedTuple)
+# The header of a part of an image. Its geometry has three axes: the image axes, and for a 2D
+# image the slice axis (`_SLICE_AXIS`, right after `:x` and `:y`), whose spacing is `spacing[3]`.
+# For each axis selected, the offset moves to the first voxel kept and the axis shrinks to the
+# voxels kept (its spacing scaled by the step of a range, reversed for a negative step), or is
+# dropped when an integer selects one. A selection with no constant step has no geometry the header
+# can describe, so it drops the geometry with a warning. Any other axis leaves the geometry alone.
+# Returns the header and the number of image axes kept.
+function _slice_geometry(h0::Header, names, nd::Int, sel::NamedTuple)
     h = copy(h0)
-    nd = length(spatial)
-    fov0, spacing0 = h.fov, h.spacing
-    fov = isnothing(fov0) || length(fov0) != nd ? nothing : collect(fov0)
-    spacing = isnothing(spacing0) || length(spacing0) != nd ? nothing : collect(spacing0)
+    geometry_names = nd == 3 ? names[1:3] : (names[1:2]..., length(names) >= 3 && names[3] === _SLICE_AXIS ? names[3] : nothing)
+    sp0, fov0, orientation0 = h.spacing, h.fov, h.orientation
+    spacing = Union{Nothing, Float64}[isnothing(sp0) || g > length(sp0) ? nothing : sp0[g] for g in 1:3]
+    fov = Union{Nothing, Float64}[isnothing(fov0) || g > length(fov0) ? nothing : fov0[g] for g in 1:3]
     offset = isnothing(h.offset) ? nothing : collect(h.offset)
-    orientation0 = h.orientation
     orientation = isnothing(orientation0) ? nothing : copy(orientation0)
-    keep = collect(1:nd)
+    dropped = falses(3)
     for (name, idx0) in pairs(sel)
+        g = findfirst(==(name), geometry_names)
         idx = _regular_index(idx0)
-        idx isa Colon && continue
-        axis = findfirst(==(name), spatial)
-        if axis === nothing
-            nd == 2 && name in (:z, :slice) || continue
-            if idx === nothing
-                @warn "selecting slices with no constant step drops the slice geometry" maxlog = 1
-                offset, h.slice_spacing = nothing, nothing
-                continue
-            end
-            offset = _moved(offset, orientation, 3, idx, h.slice_spacing)
-            if idx isa AbstractRange && !isnothing(h.slice_spacing)
-                h.slice_spacing *= abs(step(idx))
-                step(idx) < 0 && (orientation = _flipped(orientation, 3))
-            end
-            continue
-        end
-        a = findfirst(==(axis), keep)
-        if idx === nothing
+        (isnothing(g) || idx isa Colon) && continue
+        if isnothing(idx)
             @warn "selecting voxels with no constant step along `$name` drops the image geometry" maxlog = 1
-            offset, fov, spacing = nothing, nothing, nothing
+            offset = nothing
+            fill!(spacing, nothing)
+            fill!(fov, nothing)
             continue
         end
-        offset = _moved(offset, orientation, axis, idx, isnothing(spacing) ? nothing : spacing[a])
+        offset = _moved(offset, orientation, g, idx, spacing[g])
         if idx isa Integer
-            isnothing(spacing) || (h.slice_thickness = spacing[a])
-            isnothing(fov) || deleteat!(fov, a)
-            isnothing(spacing) || deleteat!(spacing, a)
-            deleteat!(keep, a)
+            dropped[g] = true
+            g <= nd && !isnothing(spacing[g]) && (h.slice_thickness = spacing[g])
         else
-            isnothing(spacing) || (spacing[a] *= abs(step(idx)))
-            isnothing(fov) || isnothing(spacing) || (fov[a] = length(idx) * spacing[a])
-            step(idx) < 0 && (orientation = _flipped(orientation, axis))
+            isnothing(spacing[g]) || (spacing[g] *= abs(step(idx)))
+            fov[g] = isnothing(spacing[g]) ? nothing : length(idx) * spacing[g]
+            step(idx) < 0 && (orientation = _flipped(orientation, g))
         end
     end
-    # Kept axes first, so that the first columns of the orientation stay the image's own axes.
-    if !isnothing(orientation) && length(keep) < nd
-        orientation = orientation[:, vcat(keep, setdiff(1:3, keep))]
+    image_axes = [g for g in 1:nd if !dropped[g]]
+    # A 2D image keeps the spacing of the slice axis as its third entry.
+    third = length(image_axes) == 2 && nd == 2 && !dropped[3] ? spacing[3] : nothing
+    kept_spacing = [spacing[g] for g in image_axes]
+    isnothing(third) || push!(kept_spacing, third)
+    # Kept image axes first, so that the first columns of the orientation stay the image's own axes.
+    if !isnothing(orientation) && length(image_axes) < nd
+        orientation = orientation[:, vcat(image_axes, setdiff(1:3, image_axes))]
     end
     h.orientation = orientation
     # One image axis left is a profile, which the header's 2- or 3-axis geometry cannot describe.
-    h.fov = isnothing(fov) || length(fov) < 2 ? nothing : fov
-    h.spacing = isnothing(spacing) || length(spacing) < 2 ? nothing : spacing
+    keep_geometry = length(image_axes) >= 2
+    h.spacing = keep_geometry && all(!isnothing, kept_spacing) ? Tuple(kept_spacing) : nothing
+    kept_fov = [fov[g] for g in image_axes]
+    h.fov = keep_geometry && !isnothing(fov0) && all(!isnothing, kept_fov) ? Tuple(kept_fov) : nothing
     h.offset = offset
-    return h, length(keep)
+    return h, length(image_axes)
 end
 
 # An index as an integer, a range or `:`, or `nothing` when it has no constant step.

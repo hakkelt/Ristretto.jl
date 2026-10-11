@@ -2,8 +2,8 @@ module RistrettoMRIFilesExt
 
 using Ristretto
 using Ristretto: CartesianAcquisitionInfo, NonCartesianAcquisitionInfo, Header, ReconImage, header,
-    _export_geometry, _derive_spacing!
-using LinearAlgebra: dot, norm
+    _export_geometry, _complete_geometry!, _offset_from_centre, _centre_from_offset, _SLICE_AXIS
+using LinearAlgebra: Diagonal, dot, norm
 using ArgCheck: @argcheck
 using NamedDims: NamedDimsArray
 using MRIFiles: MRIFiles, ISMRMRDFile

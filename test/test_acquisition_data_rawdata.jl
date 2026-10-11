@@ -229,14 +229,26 @@ end
     )
     h = header(AcquisitionInfo(raw))
     @test h.fov == (160.0, 80.0)
-    @test h.spacing == (20.0, 10.0)
+    @test h.spacing == (20.0, 10.0, 6.0)   # the third entry is the slice spacing
     @test h.slice_thickness == 3.0
     @test h.TE == 4.5 && h.TR == 300.0 && h.flip_angle == 15.0
     @test h.field_strength ≈ 3.0 atol = 1.0e-3
     @test h.orientation == [-1.0 0 0; 0 0 1; 0 1 0]
-    @test h.slice_spacing == 6.0
     # The centre voxel (index n ÷ 2 + 1 = 5) of the first slice is at its `position`.
     @test collect(h.offset) + h.orientation * ([4, 4, 0] .* [20.0, 10.0, 0]) ≈ [10, 20, 30]
+
+    # Slices stored against `slice_dir` reverse it, so that the spacing stays positive.
+    reversed = Profile[
+        make_profile(
+            ones(ComplexF32, 8, 1); step1, slice, center_sample = 4,
+            position = (10, 20 - 6 * slice, 30), read_dir, phase_dir, slice_dir,
+        )
+            for slice in (0, 1) for step1 in 0:7
+    ]
+    hr = header(AcquisitionInfo(make_raw(reversed; encoded_size = (8, 8, 1), lim1 = Limit(0, 7, 4), encodedFOV = [160.0, 80.0, 3.0])))
+    @test hr.spacing == (20.0, 10.0, 6.0)
+    @test hr.orientation[:, 3] == [0, -1, 0]
+    @test collect(hr.offset) + hr.orientation * ([4, 4, 1] .* [20.0, 10.0, 6.0]) ≈ [10, 14, 30]
 
     # Without direction cosines the geometry is left unset.
     raw0 = make_raw(

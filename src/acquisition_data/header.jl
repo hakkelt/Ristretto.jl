@@ -13,10 +13,10 @@ superior), as MRD and DICOM store them.
 
 | key | meaning |
 |---|---|
-| `fov`, `spacing` | per image axis; `spacing` is the centre-to-centre voxel distance |
-| `slice_spacing` | distance between neighbouring slices of a multi-slice 2D acquisition, along `orientation[:, 3]` |
+| `fov` | per encoded image axis, 2 or 3 entries |
+| `spacing` | centre-to-centre voxel distance along x, y and z, positive; a 2D image's third entry, when given, is the distance between neighbouring slices |
 | `slice_thickness` | excited slice thickness |
-| `orientation` | 3×3, columns the unit directions of the image axes x, y and z (read, phase, slice) |
+| `orientation` | 3×3, columns the unit directions of the axes x, y and z (read, phase, slice) |
 | `offset` | centre of the first voxel, index `(1, 1, 1)`; voxel `i` is at `offset + orientation * ((i .- 1) .* spacing)` |
 | `TE`, `TR`, `TI`, `flip_angle`, `field_strength` | sequence parameters |
 | `tags` | user tags, see [`settag!`](@ref) |
@@ -35,7 +35,6 @@ h.offset         # nothing
 mutable struct Header <: AbstractDict{Symbol, Any}
     fov::Union{Nothing, NTuple{2, Float64}, NTuple{3, Float64}}
     spacing::Union{Nothing, NTuple{2, Float64}, NTuple{3, Float64}}
-    slice_spacing::Union{Nothing, Float64}
     slice_thickness::Union{Nothing, Float64}
     orientation::Union{Nothing, Matrix{Float64}}
     offset::Union{Nothing, NTuple{3, Float64}}
@@ -49,7 +48,7 @@ mutable struct Header <: AbstractDict{Symbol, Any}
 
     function Header(pairs)
         h = new(
-            nothing, nothing, nothing, nothing, nothing, nothing,
+            nothing, nothing, nothing, nothing, nothing,
             nothing, nothing, nothing, nothing, nothing,
             Dict{String, Any}(), Dict{Symbol, Any}(),
         )
@@ -63,7 +62,7 @@ Header(; kwargs...) = Header(kwargs)
 Header(nt::NamedTuple) = Header(pairs(nt))
 
 const _HEADER_KNOWN_KEYS = (
-    :fov, :spacing, :slice_spacing, :slice_thickness, :orientation, :offset,
+    :fov, :spacing, :slice_thickness, :orientation, :offset,
     :TE, :TR, :TI, :flip_angle, :field_strength,
 )
 
@@ -79,8 +78,11 @@ end
 
 _normalize(::Val, v) = v
 _normalize(::Val{:fov}, v) = _axis_tuple(:fov, v)
-_normalize(::Val{:spacing}, v) = _axis_tuple(:spacing, v)
-_normalize(::Val{:slice_spacing}, v) = _float(v)
+function _normalize(::Val{:spacing}, v)
+    sp = _axis_tuple(:spacing, v)
+    @argcheck isnothing(sp) || all(>(0), sp) "spacing must be positive; a reversed axis is a reversed orientation column"
+    return sp
+end
 _normalize(::Val{:slice_thickness}, v) = _float(v)
 _normalize(::Val{:TR}, v) = _float(v)
 _normalize(::Val{:field_strength}, v) = _float(v)
@@ -172,38 +174,36 @@ function Base.show(io::IO, h::Header)
 end
 Base.show(io::IO, ::MIME"text/plain", h::Header) = show(io, h)
 
-# ---------------------------------------------------------------- consistency with the image size
+# ---------------------------------------------------------------- geometry
 
-# Warn when `fov`, `spacing` and the image size are all known and disagree. A scanner's `fov` may
+# The name of the slice axis of a multi-slice 2D image, the axis right after `:x` and `:y`.
+const _SLICE_AXIS = :z
+
+# The voxel at the centre of an axis of `n` voxels, 0-based: `n ÷ 2`, the FFT-shifted origin, which
+# is where MRD positions a slice or slab. `M` maps 0-based voxel steps to mm (orientation × spacing).
+_centre_from_offset(offset, M, n) = collect(Float64, offset) .+ M * collect(Float64, n .÷ 2)
+_offset_from_centre(centre, M, n) = collect(Float64, centre) .- M * collect(Float64, n .÷ 2)
+
+# Fill `spacing` from `fov` and the image size `img_size` (one entry per encoded axis) when only
+# `fov` is known, and warn when `fov`, `spacing` and the image size disagree. A scanner's `fov` may
 # describe the oversampled grid, so a mismatch is not an error.
-function _check_geometry(h::Header, img_size)
-    isnothing(img_size) && return nothing
+function _complete_geometry!(h::Header, img_size)
+    isnothing(img_size) && return h
+    nd = length(img_size)
     fov, sp = h.fov, h.spacing
-    (_axes_mismatch(:fov, fov, img_size) || _axes_mismatch(:spacing, sp, img_size)) && return nothing
-    (isnothing(fov) || isnothing(sp)) && return nothing
-    _check_fov(fov, sp, img_size)
-    return nothing
-end
-
-_axes_mismatch(k, ::Nothing, img_size) = false
-function _axes_mismatch(k, v, img_size)
-    length(v) == length(img_size) && return false
-    @warn "the header's $k has $(length(v)) entries but the image has $(length(img_size)) axes" maxlog = 1
-    return true
-end
-
-function _check_fov(fov::Tuple, sp::Tuple, img_size)
-    if !all(i -> isapprox(fov[i], sp[i] * img_size[i]; rtol = 1.0e-3), eachindex(fov))
-        @warn "the header's fov $fov does not equal spacing × image size $(sp .* img_size)" maxlog = 1
+    if !isnothing(fov) && length(fov) != nd
+        @warn "the header's fov has $(length(fov)) entries but the image has $nd axes" maxlog = 1
+        return h
     end
-    return nothing
-end
-
-# Fill `spacing` from `fov` and the image size when only `fov` is known.
-function _derive_spacing!(h::Header, img_size)
-    fov = h.fov
-    if isnothing(h.spacing) && !isnothing(fov) && length(fov) == length(img_size)
-        h.spacing = fov ./ img_size
+    if !isnothing(sp) && !(length(sp) == nd || (nd == 2 && length(sp) == 3))
+        @warn "the header's spacing has $(length(sp)) entries but the image has $nd axes" maxlog = 1
+        return h
+    end
+    isnothing(fov) && return h
+    if isnothing(sp)
+        h.spacing = fov ./ Tuple(img_size)
+    elseif !all(i -> isapprox(fov[i], sp[i] * img_size[i]; rtol = 1.0e-3), 1:nd)
+        @warn "the header's fov $fov does not equal spacing × image size $(sp[1:nd] .* Tuple(img_size))" maxlog = 1
     end
     return h
 end

@@ -21,7 +21,7 @@ Derived automatically:
 - **Encoding matrix / image size** from `raw.params["encodedSize"]`.
 - **Header** ([`Header`](@ref Ristretto.Header)): `fov` and `spacing` from `encodedFOV`, `TE`,
   `TR`, `TI` and `flip_angle` from the sequence parameters, `field_strength` from
-  `H1resonanceFrequency_Hz`, and `orientation`, `offset` and `slice_spacing` from the profiles'
+  `H1resonanceFrequency_Hz`, and `orientation`, `offset` and the slice spacing (`spacing[3]`) from the profiles'
   `position`, `read_dir`, `phase_dir` and `slice_dir` (LPS, as MRD stores them).
 - **Cartesian vs. non-Cartesian dispatch**, from `raw.params["trajectory"]`: `"cartesian"``
   (case-insensitive) builds a [`CartesianAcquisitionInfo`](@ref); anything else builds a
@@ -94,7 +94,7 @@ function _raw_header(raw::RawAcquisitionData, profiles, img_size)
     fov = get(params, "encodedFOV", nothing)
     if !isnothing(fov) && all(>(0), fov)
         h.fov = fov[1:nd]
-        _derive_spacing!(h, img_size)
+        _complete_geometry!(h, img_size)
         nd == 2 && length(fov) >= 3 && (h.slice_thickness = fov[3])
     end
     for (key, name) in (("TE", :TE), ("TR", :TR), ("TI", :TI), ("flipAngle_deg", :flip_angle))
@@ -111,24 +111,29 @@ function _raw_header(raw::RawAcquisitionData, profiles, img_size)
     if all(c -> norm(c) > 0.5, eachcol(R))
         h.orientation = R
         # The first slice of a multi-slice acquisition (lowest slice index, the first along `:z`)
-        # and the signed distance between neighbouring slices along the slice direction.
+        # and the distance between neighbouring slices; slices stored against the slice direction
+        # reverse it, so that the spacing stays positive.
         first_position = Dict{Int, Vector{Float64}}()
         for p in profiles
             get!(() -> collect(Float64.(p.head.position)), first_position, Int(p.head.idx.slice))
         end
         centres = [first_position[s] for s in sort!(collect(keys(first_position)))]
+        sp = h.spacing
         if nd == 2 && length(centres) > 1
             steps = [dot(centres[i + 1] - centres[i], R[:, 3]) for i in 1:(length(centres) - 1)]
-            h.slice_spacing = steps[1]
             if !all(st -> isapprox(st, steps[1]; rtol = 1.0e-3, atol = 1.0e-3), steps) ||
                     !all(i -> norm(centres[i + 1] - centres[i] - steps[i] * R[:, 3]) < 1.0e-3, eachindex(steps))
-                @warn "the slices of this acquisition are not equidistant and parallel; the header's slice_spacing describes the first two"
+                @warn "the slices of this acquisition are not equidistant and parallel; the header's slice spacing describes the first two"
+            end
+            if abs(steps[1]) > 0
+                steps[1] < 0 && (R[:, 3] .*= -1)
+                h.orientation = R
+                isnothing(sp) || (h.spacing = sp = (sp[1], sp[2], abs(steps[1])))
             end
         end
-        if !isnothing(h.spacing)
-            sp = nd == 3 ? collect(h.spacing) : [h.spacing..., 0.0]
-            n = nd == 3 ? collect(img_size) : [img_size..., 1]
-            h.offset = centres[1] .- R * ((n .÷ 2) .* sp)
+        if !isnothing(sp)
+            M = R * Diagonal([collect(sp); zeros(3 - length(sp))])
+            h.offset = _offset_from_centre(centres[1], M, nd == 3 ? img_size : (img_size..., 1))
         end
     end
     return h
@@ -219,7 +224,7 @@ function _cartesian_acquisition_info(raw::RawAcquisitionData; sensitivity_maps =
     # include :z as the first batch dimension"). Only counters that actually vary contribute a
     # dimension.
     batch_candidates = (
-        (:z, p -> Int(p.head.idx.slice)),
+        (_SLICE_AXIS, p -> Int(p.head.idx.slice)),
         (:contrast, p -> Int(p.head.idx.contrast)),
         (:time, p -> Int(p.head.idx.phase)),
         (:repetition, p -> Int(p.head.idx.repetition)),
@@ -331,7 +336,7 @@ function _noncartesian_acquisition_info(raw::RawAcquisitionData; sensitivity_map
     # counting profiles, not repetitions, and turning that into a batch dimension would give one
     # readout per "frame".
     batch_candidates = (
-        (:z, p -> Int(p.head.idx.slice)),
+        (_SLICE_AXIS, p -> Int(p.head.idx.slice)),
         (:contrast, p -> Int(p.head.idx.contrast)),
         (:time, p -> Int(p.head.idx.phase)),
         (:repetition, p -> Int(p.head.idx.repetition)),

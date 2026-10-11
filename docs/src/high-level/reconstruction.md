@@ -46,7 +46,7 @@ using NamedDims
 using Ristretto: header
 
 ksp = NamedDimsArray{(:kx, :ky, :z)}(rand(ComplexF32, 64, 64, 3))
-acq = AcquisitionInfo(ksp; header = (; fov = (220, 220), slice_spacing = 5,
+acq = AcquisitionInfo(ksp; header = (; fov = (220, 220), spacing = (220 / 64, 220 / 64, 5),
     orientation = [1.0 0 0; 0 1 0; 0 0 1], offset = (-110, -110, 0)))
 img = reconstruct(acq)
 header(img[z = 2]).offset        # moved by one slice spacing

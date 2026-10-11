@@ -56,6 +56,10 @@ end
     given = Header(; fov = (160, 120))
     acq = AcquisitionInfo(rand(ComplexF32, 16, 12); is3D = false, header = given)
     @test header(acq) === given
+    @test given.spacing == (10.0, 10.0)   # a fov alone gives the spacing
+    @test_throws ArgumentError Header(; spacing = (1, -1))
+    # A 2D image's spacing may have a third entry, the slice spacing.
+    @test header(AcquisitionInfo(rand(ComplexF32, 16, 12); is3D = false, header = (; fov = (160, 120), spacing = (10, 10, 4)))).spacing == (10.0, 10.0, 4.0)
 
     # A mismatch between fov, spacing and the image size is warned about, not rejected.
     @test_logs (:warn, r"fov") AcquisitionInfo(rand(ComplexF32, 16, 12); is3D = false, header = (; fov = (1, 2), spacing = (1, 1)))
@@ -92,15 +96,14 @@ end
     using NamedDims
 
     ksp = NamedDimsArray{(:kx, :ky, :z)}(rand(ComplexF32, 16, 16, 3))
-    acq = AcquisitionInfo(ksp; is3D = false, header = (; fov = (160, 160), slice_spacing = 5))
+    acq = AcquisitionInfo(ksp; is3D = false, header = (; fov = (160, 160), spacing = (10, 10, 5)))
     settag!(acq, :subject, "s1")
     img = reconstruct(acq)
     @test img isa ReconImage
     @test parent(img) isa NamedDimsArray
     @test dimnames(img) == (:x, :y, :z)
     @test _spatial_ndims(img) == 2
-    @test header(img).spacing == (10.0, 10.0)
-    @test isnothing(header(acq).spacing)   # derived on the image's copy only
+    @test header(img).spacing == (10.0, 10.0, 5.0)
     @test gettag(img, :subject) == "s1"
 
     # The image's header is a copy: tagging it leaves the acquisition alone.
@@ -150,18 +153,24 @@ end
     @test _spatial_ndims(frame) == 3
 
     # A 2D multi-slice image: `z` moves the offset by the slice spacing.
-    h2 = Header(; spacing = (1, 1), slice_spacing = 5, orientation = R, offset = (0, 0, 0))
-    ms = ReconImage(NamedDimsArray{(:x, :y, :z)}(rand(8, 6, 4)), h2)
+    h2 = Header(; spacing = (1, 1, 5), orientation = R, offset = (0, 0, 0))
+    ms = ReconImage(NamedDimsArray{(:x, :y, :z)}(rand(8, 6, 4)), h2; spatial_ndims = 2)
     @test _spatial_ndims(ms) == 2
     @test collect(header(ms[z = 4]).offset) ≈ R[:, 3] .* 15
     @test _spatial_ndims(ms[z = 4]) == 2
+    @test header(ms[z = 4]).spacing == (1.0, 1.0)   # one slice has no neighbours
+    @test header(ms[x = 2:3]).spacing == (1.0, 1.0, 5.0)
     # Every other slice: twice the slice spacing, from the first slice kept.
-    @test header(ms[z = 2:2:4]).slice_spacing == 10.0
+    @test header(ms[z = 2:2:4]).spacing == (1.0, 1.0, 10.0)
     @test collect(header(ms[z = 2:2:4]).offset) ≈ R[:, 3] .* 5
-    @test header(ms[z = :]).offset == h2.offset && header(ms[z = :]).slice_spacing == 5.0
-    # The slice axis may also be named `:slice`.
-    ms2 = ReconImage(NamedDimsArray{(:x, :y, :slice)}(rand(8, 6, 4)), h2)
-    @test collect(header(ms2[slice = 3]).offset) ≈ R[:, 3] .* 10
+    @test header(ms[z = :]).offset == h2.offset && header(ms[z = :]).spacing == (1.0, 1.0, 5.0)
+    # Reversed slices: the slice direction flips, the spacing stays positive.
+    rev = header(ms[z = 4:-1:1])
+    @test rev.spacing == (1.0, 1.0, 5.0) && rev.orientation[:, 3] == -R[:, 3]
+    @test collect(rev.offset) ≈ R[:, 3] .* 15
+    # Only `:z` is the slice axis; another batch axis leaves the geometry alone.
+    ms2 = ReconImage(NamedDimsArray{(:x, :y, :slice)}(rand(8, 6, 4)), h2; spatial_ndims = 2)
+    @test header(ms2[slice = 3]).offset == h2.offset
 end
 
 @testitem "ReconImage moves to a device with its header" tags = [:gpu, :reconstruction] setup = [GpuEnvSetup, GpuHelpers] begin

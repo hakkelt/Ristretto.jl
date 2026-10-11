@@ -26,7 +26,7 @@ plain HDF5 to FileIO, so MRD output goes through MRIFiles' `ISMRMRDFile`, the wa
 raw data.
 
 **NIfTI** (`sidecar = true`): the first three axes of the file are x, y and z; a 2D image gets a z
-axis of length one, or its slices when the axis after `x` and `y` is named `:z` or `:slice`.
+axis of length one, or its slices when the axis after `x` and `y` is named `:z`.
 Further axes (time, echoes, ...) follow. Complex images are written as `complex64` or
 `complex128`; save `abs.(img)` for a magnitude image. The sidecar next to the file holds the
 sequence parameters under their BIDS names (`EchoTime`, `RepetitionTime`, ... in seconds), the
@@ -65,7 +65,7 @@ has all of it.
 | Header | NIfTI | DICOM | MRD |
 |---|---|---|---|
 | `spacing`, `orientation`, `offset` | `sform` affine, `pixdim` | `PixelSpacing`, `ImageOrientationPatient`, `ImagePositionPatient` | `field_of_view`, `read_dir`/`phase_dir`/`slice_dir`, `position` |
-| `slice_spacing`, `slice_thickness` | third axis of the affine | `SpacingBetweenSlices`, `SliceThickness` | slice `position` |
+| `spacing[3]` of a 2D image, `slice_thickness` | third axis of the affine | `SpacingBetweenSlices`, `SliceThickness` | slice `position` |
 | `TE`, `TR`, `TI`, `flip_angle`, `field_strength` | sidecar, BIDS names, in seconds | `EchoTime`, `RepetitionTime`, ... | `ismrmrdHeader` XML |
 | other keys | sidecar | — | — |
 | tags | sidecar, `Tags` | `ImageComments` as JSON | meta attributes of each image |

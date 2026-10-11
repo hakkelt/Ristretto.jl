@@ -9,7 +9,7 @@ using TestItems
     # along LPS y, y along LPS z, the slices along LPS x.
     const R = [0 0 1.0; 1 0 0; 0 1 0]
     const h = Header(;
-        fov = (48, 32), orientation = R, offset = (10, -20, 5), slice_spacing = 4, slice_thickness = 3,
+        fov = (48, 32), spacing = (2, 2, 4), orientation = R, offset = (10, -20, 5), slice_thickness = 3,
         TE = 4.2, TR = 10, flip_angle = 15, field_strength = 3, protocol = "test",
     )
     settag!(h, "subject", "s01")
@@ -132,17 +132,17 @@ end
     end
 end
 
-@testitem "export: signed slice spacing and scaled orientation" tags = [:export, :extension] begin
+@testitem "export: reversed slice direction and scaled orientation" tags = [:export, :extension] begin
     using Test
     using Ristretto
     using Ristretto: _export_geometry
     using DICOM
     using FileIO: save
 
-    # Slices stored against the slice normal, and an orientation whose columns are not unit
-    # vectors: the affine keeps both, the writers get unit directions and positive spacings.
-    h = Header(; spacing = (1, 1), slice_spacing = -6, orientation = [2.0 0 0; 0 2 0; 0 0 1], offset = (0, 0, 0))
-    img = ReconImage(NamedDimsArray{(:x, :y, :z)}(rand(Float32, 4, 3, 2)), h)
+    # A reversed slice direction and an orientation whose columns are not unit vectors: the
+    # affine keeps both, the writers get unit directions and positive spacings.
+    h = Header(; spacing = (1, 1, 6), orientation = [2.0 0 0; 0 2 0; 0 0 -1], offset = (0, 0, 0))
+    img = ReconImage(NamedDimsArray{(:x, :y, :z)}(rand(Float32, 4, 3, 2)), h; spatial_ndims = 2)
     g = _export_geometry(img)
     @test g.spacing == (2.0, 2.0, 6.0)
     @test g.orientation == [1.0 0 0; 0 1 0; 0 0 -1]

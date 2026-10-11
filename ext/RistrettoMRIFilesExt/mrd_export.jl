@@ -33,11 +33,11 @@ function FileIO.save(f::ISMRMRDFile, img::ReconImage; group::AbstractString = "i
     for e in 1:nextra, s in 1:nslices
         n += 1
         # MRD positions an image by its centre.
-        centre = A * [nx ÷ 2, ny ÷ 2, nd == 3 ? nz ÷ 2 : s - 1, 1]
+        centre = _centre_from_offset((A * [0, 0, s - 1, 1])[1:3], A[1:3, 1:3], (nx, ny, per_image_z))
         phase = isnothing(time_axis) ? 0 : CartesianIndices(extra_size)[e][time_axis] - 1
         headers[n] = _image_header(;
             data_type = _mrd_data_type(T), matrix_size = (nx, ny, per_image_z), fov,
-            position = centre[1:3], dirs, slice = nd == 3 ? 0 : s - 1, phase,
+            position = centre, dirs, slice = nd == 3 ? 0 : s - 1, phase,
             image_index = n, attribute_string_len = ncodeunits(meta),
         )
         attributes[n] = meta
