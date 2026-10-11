@@ -160,8 +160,10 @@ query, done fresh each time:
   ```
 - **`export_snapshot.jl`** — writes `results/benchmark_<backend>_<n>threads.json`, the committed
   snapshot of a full cluster run, one per (backend, threads) pair found, from the latest
-  `source = "slurm"` row per case. Run this after any cluster rerun that should update the
-  committed numbers:
+  `source = "slurm"` row per case. A toolkit's rows measured with an older release than its
+  latest run's are left out, also where the new release recorded no row (a solver that no longer
+  reaches the accuracy target), so a table never mixes releases. Run this after any cluster rerun
+  that should update the committed numbers:
   ```sh
   julia --project=benchmark/comparison benchmark/comparison/scripts/export_snapshot.jl
   ```

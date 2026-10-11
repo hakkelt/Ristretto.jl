@@ -186,8 +186,8 @@ page (item 23), and what is not implemented becomes roadmap items. Then delete t
 
 ### 39. Design follow-ups from the P2 review
 **Status:** to discuss. Done 2026-10-11: geometry on three axes, spacing derived from fov in one
-place, one rule for the voxel-centre offset; snapshot rows joined by run id is next, with the BART
-1.0 snapshot export. **Tier:** deferred.
+place, one rule for the voxel-centre offset, snapshot rows joined to their run by run id.
+**Tier:** deferred.
 
 A `/simplify` review of the P2 branch (2026-10-11) found these. Each changes a design rather than a
 few lines, so each needs a decision before any code. A sub-item that is rejected is deleted from
@@ -228,9 +228,6 @@ the list.
   deliberately avoids loading. `prepare.jl` likewise parses the λ file itself instead of using
   `_lambda_from` (`comparison/scripts/_methods.jl`). Possible fix: move the toolkit-independent
   parts into a file that loads only Ristretto, or at least test that the two definitions agree.
-- **Snapshot rows joined by run id.** `export_snapshot.jl` matches each row to its run's metadata
-  by `(ts, backend, threads)`, because `load_rows` (`benchmark/utils/results_store.jl`) drops the
-  `run_id` every run file stores. Keeping `run_id` on `Row` would make the join exact.
 
 ## User-facing features
 

@@ -142,7 +142,7 @@ end
 """
     Row
 
-One benchmark row, flattened with its run's metadata (backend, threads, source, ts). Shared by
+One benchmark row, flattened with its run's metadata (backend, threads, source, ts, run_id). Shared by
 `query_results.jl` and `export_snapshot.jl` so both read `results/runs/` the same way.
 """
 struct Row
@@ -159,6 +159,7 @@ struct Row
     case_id::String
     data_source::String
     schema_version::Int
+    run_id::String
 end
 
 """
@@ -180,13 +181,14 @@ function load_rows(run_files::AbstractVector; schema_version::Integer = SCHEMA_V
         threads = get(d, "threads", 0)
         source = get(d, "source", "unknown")
         ts = get(d, "ts", "")
+        run_id = get(d, "run_id", "")
         for b in get(d, "benchmarks", [])
             haskey(b, "category") || continue
             push!(
                 rows, Row(
                     backend, threads, b["category"], b["method"], b["framework"],
                     Float64(b["time_ms"]), Float64(b["nrmse_gt"]), Float64(b["nrmse_ristretto"]), source, ts,
-                    get(b, "case_id", ""), get(b, "data_source", ""), v,
+                    get(b, "case_id", ""), get(b, "data_source", ""), v, run_id,
                 )
             )
         end

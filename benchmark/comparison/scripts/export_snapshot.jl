@@ -30,11 +30,8 @@ isempty(rows) && (@info "no rows in results/runs/ -- nothing to export"; exit(0)
 haskey(ARG, "backend") && filter!(r -> r.backend == ARG["backend"], rows)
 haskey(ARG, "threads") && filter!(r -> r.threads == parse(Int, ARG["threads"]), rows)
 
-latest = latest_per_case(rows; prefer_source = "slurm")
-isempty(latest) && (@info "no source=\"slurm\" rows match; nothing exported (rerun on the cluster first)"; exit(0))
-
-# The metadata of every run file, by (timestamp, backend, threads): what a row records of its run.
-const RUNS = Dict((get(d, "ts", ""), get(d, "backend", ""), get(d, "threads", 0)) => d for d in RUN_FILES)
+# The metadata of every run file, by run id: what a row records of its run.
+const RUNS = Dict(get(d, "run_id", "") => d for d in RUN_FILES)
 
 values_of(metas, key) = sort(unique(string(m[key]) for m in metas if get(m, key, nothing) !== nothing))
 date_of(ts) = "$(ts[1:4])-$(ts[5:6])-$(ts[7:8])"
@@ -42,22 +39,51 @@ date_of(ts) = "$(ts[1:4])-$(ts[5:6])-$(ts[7:8])"
 # The versions of the runs recorded before the harness stored them, per backend family.
 const INJECTED_VERSIONS = JSON.parsefile(joinpath(RESULTS_DIR, "toolkit_versions.json"))
 
-# Per toolkit, the versions the runs behind its rows recorded, or for a run that recorded none, the
-# injected ones. A row's toolkit is the first word of its framework label.
+# A row's toolkit is the first word of its framework label; its version is the one its run
+# recorded, or for a run that recorded none, the injected one.
+toolkit(r) = first(split(r.framework))
+function toolkit_version(r)
+    recorded = get(get(RUNS, r.run_id, Dict{String, Any}()), "toolkit_versions", nothing)
+    recorded === nothing && (recorded = INJECTED_VERSIONS[r.backend == "cuda" ? "cuda" : "cpu"])
+    v = get(recorded, toolkit(r), nothing)
+    return v === nothing ? nothing : string(v)
+end
+# A Ristretto version carries the commit it was measured at; the release is what identifies it.
+release(v) = replace(v, r" \(.*\)$" => "")
+
+# A toolkit's rows measured with an older release than its latest run's are left out, also where
+# the latest release recorded no row for the case (a solver that no longer reaches the accuracy
+# target, say): a table would otherwise mix releases and show a time the current one cannot reach.
+function current_release_rows(rows)
+    newest = Dict{Tuple{String, String}, Tuple{String, String}}()
+    for r in rows
+        v = toolkit_version(r)
+        v === nothing && continue
+        key = (r.backend == "cuda" ? "cuda" : "cpu", toolkit(r))
+        (!haskey(newest, key) || r.ts > newest[key][1]) && (newest[key] = (r.ts, release(v)))
+    end
+    return filter(rows) do r
+        v = toolkit_version(r)
+        key = (r.backend == "cuda" ? "cuda" : "cpu", toolkit(r))
+        v === nothing || !haskey(newest, key) || release(v) == newest[key][2]
+    end
+end
+
+latest = latest_per_case(current_release_rows(rows); prefer_source = "slurm")
+isempty(latest) && (@info "no source=\"slurm\" rows match; nothing exported (rerun on the cluster first)"; exit(0))
+
+# Per toolkit, the versions of the runs behind its rows.
 function toolkit_versions(section_rows)
     out = Dict{String, Vector{String}}()
     for r in section_rows
-        meta = get(RUNS, (r.ts, r.backend, r.threads), Dict{String, Any}())
-        recorded = get(meta, "toolkit_versions", nothing)
-        recorded === nothing && (recorded = INJECTED_VERSIONS[r.backend == "cuda" ? "cuda" : "cpu"])
-        name = first(split(r.framework))
-        haskey(recorded, name) && union!(get!(out, name, String[]), [string(recorded[name])])
+        v = toolkit_version(r)
+        v === nothing || union!(get!(out, toolkit(r), String[]), [v])
     end
     return Dict(k => sort(v) for (k, v) in out)
 end
 
 function run_record(section_rows)
-    metas = [RUNS[(r.ts, r.backend, r.threads)] for r in section_rows if haskey(RUNS, (r.ts, r.backend, r.threads))]
+    metas = [RUNS[r.run_id] for r in section_rows if haskey(RUNS, r.run_id)]
     dates = sort(unique(date_of(r.ts) for r in section_rows))
     cpu = values_of(metas, "cpu_model")
     isempty(cpu) && haskey(ARG, "cpu-model") && (cpu = [ARG["cpu-model"]])

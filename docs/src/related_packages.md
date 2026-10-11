@@ -73,7 +73,9 @@ reused by a later plan of the same transform. The toolboxes differ here:
 The benchmarks charge every run its planning: no wisdom survives from one run to the next, neither
 in memory nor on disk. MRIReco therefore pays its measuring in every run, about 0.3 s per solve on
 the 128² Shepp–Logan case, most of its time there. BART is timed both ways: the
-*BART (MEASURE)* column measures in every run, the *BART* column estimates.
+*BART (MEASURE)* column measures in every run, the *BART* column estimates. Measuring costs BART
+about 0.3 s per 2D solve, several times its estimating time there, and about breaks even on the
+3D and cine cases, where the faster plans run long enough to repay it.
 
 ### Start-up and warm-up
 
