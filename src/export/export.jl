@@ -9,7 +9,8 @@
 # - `extra_names`: the names of its other axes;
 # - `nd`: the number of image axes, 2 or 3;
 # - `orientation` (columns: the LPS directions of x, y, z), `spacing` (mm, along x, y, z) and
-#   `affine`, the 4×4 map from 0-based voxel indices to LPS coordinates in mm.
+#   `affine`, the 4×4 map from 0-based voxel indices to LPS coordinates in mm;
+# - `thickness`: the extent of a voxel along z, the slice thickness of a 2D image.
 # What the header lacks is filled in so that a file can still be written: identity orientation,
 # 1 mm voxels, a slice spacing equal to the slice thickness, and the image centre at the origin.
 function _export_geometry(img::ReconImage)
@@ -30,7 +31,9 @@ function _export_geometry(img::ReconImage)
     # The writers want unit directions, which a user's orientation need not have.
     spacing = Tuple(norm(c) for c in eachcol(M))
     orientation = M ./ collect(spacing)'
-    return (; vol, extra_names, nd, orientation, spacing, affine = [M offset; 0 0 0 1])
+    vs = h.voxel_size
+    thickness = nd == 3 ? (isnothing(vs) ? spacing[3] : vs[3]) : something(h.slice_thickness, spacing[3])
+    return (; vol, extra_names, nd, orientation, spacing, thickness, affine = [M offset; 0 0 0 1])
 end
 
 function _export_spacing(h::Header, nd)

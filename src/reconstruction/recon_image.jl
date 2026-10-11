@@ -168,15 +168,18 @@ end
 # image the slice axis (`_SLICE_AXIS`, right after `:x` and `:y`), whose spacing is `spacing[3]`.
 # For each axis selected, the offset moves to the first voxel kept and the axis shrinks to the
 # voxels kept (its spacing scaled by the step of a range, reversed for a negative step), or is
-# dropped when an integer selects one. A selection with no constant step has no geometry the header
-# can describe, so it drops the geometry with a warning. Any other axis leaves the geometry alone.
-# Returns the header and the number of image axes kept.
+# dropped when an integer selects one, which makes its voxel size the slice thickness. A stride
+# leaves the voxel size alone, so `voxel_size` is set once it differs from the spacing. A selection
+# with no constant step has no geometry the header can describe, so it drops the geometry with a
+# warning. Any other axis leaves the geometry alone. Returns the header and the number of image
+# axes kept.
 function _slice_geometry(h0::Header, names, nd::Int, sel::NamedTuple)
     h = copy(h0)
     geometry_names = nd == 3 ? names[1:3] : (names[1:2]..., length(names) >= 3 && names[3] === _SLICE_AXIS ? names[3] : nothing)
-    sp0, fov0, orientation0 = h.spacing, h.fov, h.orientation
+    sp0, fov0, vs0, orientation0 = h.spacing, h.fov, h.voxel_size, h.orientation
     spacing = Union{Nothing, Float64}[isnothing(sp0) || g > length(sp0) ? nothing : sp0[g] for g in 1:3]
     fov = Union{Nothing, Float64}[isnothing(fov0) || g > length(fov0) ? nothing : fov0[g] for g in 1:3]
+    voxel_size = isnothing(vs0) || length(vs0) != nd ? spacing[1:nd] : Union{Nothing, Float64}[vs0...]
     offset = isnothing(h.offset) ? nothing : collect(h.offset)
     orientation = isnothing(orientation0) ? nothing : copy(orientation0)
     dropped = falses(3)
@@ -194,7 +197,7 @@ function _slice_geometry(h0::Header, names, nd::Int, sel::NamedTuple)
         offset = _moved(offset, orientation, g, idx, spacing[g])
         if idx isa Integer
             dropped[g] = true
-            g <= nd && !isnothing(spacing[g]) && (h.slice_thickness = spacing[g])
+            g <= nd && !isnothing(voxel_size[g]) && (h.slice_thickness = voxel_size[g])
         else
             isnothing(spacing[g]) || (spacing[g] *= abs(step(idx)))
             fov[g] = isnothing(spacing[g]) ? nothing : length(idx) * spacing[g]
@@ -216,6 +219,9 @@ function _slice_geometry(h0::Header, names, nd::Int, sel::NamedTuple)
     h.spacing = keep_geometry && all(!isnothing, kept_spacing) ? Tuple(kept_spacing) : nothing
     kept_fov = [fov[g] for g in image_axes]
     h.fov = keep_geometry && !isnothing(fov0) && all(!isnothing, kept_fov) ? Tuple(kept_fov) : nothing
+    kept_size = [voxel_size[g] for g in image_axes]
+    differs = kept_size != kept_spacing[1:length(kept_size)]
+    h.voxel_size = keep_geometry && all(!isnothing, kept_size) && (!isnothing(vs0) || differs) ? Tuple(kept_size) : nothing
     h.offset = offset
     return h, length(image_axes)
 end

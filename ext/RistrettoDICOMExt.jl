@@ -25,7 +25,7 @@ _is(x::Integer) = [string(x)]
 _even(s::AbstractString) = isodd(ncodeunits(s)) ? s * " " : s
 
 function fileio_save(f::File{format"DCM"}, img::ReconImage; series_description::AbstractString = "Ristretto", series_number::Integer = 1)
-    (; vol, extra_names, orientation, spacing, affine) = _export_geometry(img)
+    (; vol, extra_names, orientation, spacing, thickness, affine) = _export_geometry(img)
     A = affine
     h = header(img)
     nx, ny, nz = size(vol, 1), size(vol, 2), size(vol, 3)
@@ -57,7 +57,7 @@ function fileio_save(f::File{format"DCM"}, img::ReconImage; series_description::
             (0x0008, 0x103E) => _even(series_description),
             (0x0010, 0x0010) => "",
             (0x0010, 0x0020) => "",
-            (0x0018, 0x0050) => _ds(something(h.slice_thickness, spacing[3])),
+            (0x0018, 0x0050) => _ds(thickness),
             (0x0018, 0x0088) => _ds(spacing[3]),
             (0x0020, 0x000D) => study,
             (0x0020, 0x000E) => series,

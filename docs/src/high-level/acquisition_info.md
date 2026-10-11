@@ -325,8 +325,8 @@ settag!(acq, :subject, "s01")
 header(acq)
 ```
 
-The keys Ristretto knows (`fov`, `spacing`, `slice_thickness`, `orientation`, `offset`, `TE`,
-`TR`, `TI`, `flip_angle`, `field_strength`) are checked and converted when set, and read as
+The keys Ristretto knows (`fov`, `spacing`, `voxel_size`, `slice_thickness`, `orientation`,
+`offset`, `TE`, `TR`, `TI`, `flip_angle`, `field_strength`) are checked and converted when set, and read as
 properties that are `nothing` when unset (`header(acq).TR`). Any other key is kept as given. A
 `fov` without a `spacing` gives the spacing, `fov ./ image_size`. When `fov`, `spacing` and the
 image size disagree you get a warning, not an error, since a scanner's field of view may describe
@@ -343,7 +343,9 @@ matrix whose columns are the directions of the image axes x, y and z, `offset` t
 first voxel, and voxel `i` lies at `offset + orientation * ((i .- 1) .* spacing)`. The geometry
 always has three axes: `spacing` is positive along x, y and z, and for a multi-slice 2D
 acquisition its third entry is the distance between neighbouring slices, so slice `k` lies
-`(k - 1) * spacing[3]` along `orientation[:, 3]`; `fov` covers only the encoded axes. The slice
+`(k - 1) * spacing[3]` along `orientation[:, 3]`; `fov` covers only the encoded axes. A voxel is
+as big as the spacing unless `voxel_size` says otherwise, as it does after a strided selection
+(`img[z = 1:2:end]`), and a slice of a 2D acquisition is `slice_thickness` thick. The slice
 axis of such an acquisition is the one named `:z`. [`AcquisitionInfo(raw::RawAcquisitionData)`](#Building-from-raw-ISMRMRD-data-(MRIBase.RawAcquisitionData))
 fills all of these from the MRD header and profiles.
 

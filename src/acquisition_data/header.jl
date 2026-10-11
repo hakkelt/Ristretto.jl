@@ -15,7 +15,8 @@ superior), as MRD and DICOM store them.
 |---|---|
 | `fov` | per encoded image axis, 2 or 3 entries |
 | `spacing` | centre-to-centre voxel distance along x, y and z, positive; a 2D image's third entry, when given, is the distance between neighbouring slices |
-| `slice_thickness` | excited slice thickness |
+| `voxel_size` | extent of a voxel along each encoded axis, when it is not `spacing` (a strided selection keeps it); unset means equal to `spacing` |
+| `slice_thickness` | excited slice thickness of a 2D image |
 | `orientation` | 3×3, columns the unit directions of the axes x, y and z (read, phase, slice) |
 | `offset` | centre of the first voxel, index `(1, 1, 1)`; voxel `i` is at `offset + orientation * ((i .- 1) .* spacing)` |
 | `TE`, `TR`, `TI`, `flip_angle`, `field_strength` | sequence parameters |
@@ -35,6 +36,7 @@ h.offset         # nothing
 mutable struct Header <: AbstractDict{Symbol, Any}
     fov::Union{Nothing, NTuple{2, Float64}, NTuple{3, Float64}}
     spacing::Union{Nothing, NTuple{2, Float64}, NTuple{3, Float64}}
+    voxel_size::Union{Nothing, NTuple{2, Float64}, NTuple{3, Float64}}
     slice_thickness::Union{Nothing, Float64}
     orientation::Union{Nothing, Matrix{Float64}}
     offset::Union{Nothing, NTuple{3, Float64}}
@@ -48,7 +50,7 @@ mutable struct Header <: AbstractDict{Symbol, Any}
 
     function Header(pairs)
         h = new(
-            nothing, nothing, nothing, nothing, nothing,
+            nothing, nothing, nothing, nothing, nothing, nothing,
             nothing, nothing, nothing, nothing, nothing,
             Dict{String, Any}(), Dict{Symbol, Any}(),
         )
@@ -62,7 +64,7 @@ Header(; kwargs...) = Header(kwargs)
 Header(nt::NamedTuple) = Header(pairs(nt))
 
 const _HEADER_KNOWN_KEYS = (
-    :fov, :spacing, :slice_thickness, :orientation, :offset,
+    :fov, :spacing, :voxel_size, :slice_thickness, :orientation, :offset,
     :TE, :TR, :TI, :flip_angle, :field_strength,
 )
 
@@ -82,6 +84,11 @@ function _normalize(::Val{:spacing}, v)
     sp = _axis_tuple(:spacing, v)
     @argcheck isnothing(sp) || all(>(0), sp) "spacing must be positive; a reversed axis is a reversed orientation column"
     return sp
+end
+function _normalize(::Val{:voxel_size}, v)
+    vs = _axis_tuple(:voxel_size, v)
+    @argcheck isnothing(vs) || all(>(0), vs) "voxel_size must be positive"
+    return vs
 end
 _normalize(::Val{:slice_thickness}, v) = _float(v)
 _normalize(::Val{:TR}, v) = _float(v)
@@ -190,10 +197,12 @@ _offset_from_centre(centre, M, n) = collect(Float64, centre) .- M * collect(Floa
 function _complete_geometry!(h::Header, img_size)
     isnothing(img_size) && return h
     nd = length(img_size)
-    fov, sp = h.fov, h.spacing
-    if !isnothing(fov) && length(fov) != nd
-        @warn "the header's fov has $(length(fov)) entries but the image has $nd axes" maxlog = 1
-        return h
+    fov, sp, vs = h.fov, h.spacing, h.voxel_size
+    for (k, v) in ((:fov, fov), (:voxel_size, vs))
+        if !isnothing(v) && length(v) != nd
+            @warn "the header's $k has $(length(v)) entries but the image has $nd axes" maxlog = 1
+            return h
+        end
     end
     if !isnothing(sp) && !(length(sp) == nd || (nd == 2 && length(sp) == 3))
         @warn "the header's spacing has $(length(sp)) entries but the image has $nd axes" maxlog = 1

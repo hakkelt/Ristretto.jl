@@ -9,7 +9,7 @@ _mrd_eltype(::Type) = Float32
 
 function FileIO.save(f::ISMRMRDFile, img::ReconImage; group::AbstractString = "image_0")
     path = f.filename
-    (; vol, extra_names, nd, orientation, spacing, affine) = _export_geometry(img)
+    (; vol, extra_names, nd, orientation, spacing, thickness, affine) = _export_geometry(img)
     A = affine
     h = header(img)
     nx, ny, nz = size(vol, 1), size(vol, 2), size(vol, 3)
@@ -28,7 +28,7 @@ function FileIO.save(f::ISMRMRDFile, img::ReconImage; group::AbstractString = "i
     time_axis = findfirst(==(:time), extra_names)
     meta = _meta_xml(h.tags)
     # The field of view of one image: a slice of a 2D image is as thick as its excitation.
-    fov = Float32.((spacing[1] * nx, spacing[2] * ny, nd == 3 ? spacing[3] * nz : something(h.slice_thickness, spacing[3])))
+    fov = Float32.((spacing[1] * nx, spacing[2] * ny, nd == 3 ? spacing[3] * nz : thickness))
     n = 0
     for e in 1:nextra, s in 1:nslices
         n += 1

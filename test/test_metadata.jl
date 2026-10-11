@@ -138,6 +138,16 @@ end
     @test _spatial_ndims(slice) == 2
     @test header(slice).spacing == (2.0, 2.0)
     @test header(slice).slice_thickness == 2.0
+    @test isnothing(header(crop).voxel_size) && isnothing(header(slice).voxel_size)
+
+    # A stride spreads the voxels apart without making them bigger: a slice of every other one
+    # is still 2 mm thick.
+    strided = img[z = 1:2:4]
+    @test header(strided).spacing == (2.0, 2.0, 4.0) && header(strided).voxel_size == (2.0, 2.0, 2.0)
+    @test Ristretto._export_geometry(strided).thickness == 2.0
+    @test header(strided[z = 2]).slice_thickness == 2.0
+    @test header(strided[z = 2]).voxel_size == (2.0, 2.0)
+    @test_throws ArgumentError Header(; voxel_size = (1, -1))
     @test collect(header(slice).offset) ≈ [10, 20, 30] .+ R[:, 3] .* (2 * 2.0)
 
     # Dropping x keeps the remaining in-plane axes first in the orientation.

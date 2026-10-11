@@ -65,7 +65,8 @@ has all of it.
 | Header | NIfTI | DICOM | MRD |
 |---|---|---|---|
 | `spacing`, `orientation`, `offset` | `sform` affine, `pixdim` | `PixelSpacing`, `ImageOrientationPatient`, `ImagePositionPatient` | `field_of_view`, `read_dir`/`phase_dir`/`slice_dir`, `position` |
-| `spacing[3]` of a 2D image, `slice_thickness` | third axis of the affine | `SpacingBetweenSlices`, `SliceThickness` | slice `position` |
+| `spacing[3]` of a 2D image | third axis of the affine | `SpacingBetweenSlices` | slice `position` |
+| `slice_thickness`, `voxel_size[3]` of a 3D image | sidecar `SliceThickness` (`slice_thickness` only) | `SliceThickness` | `field_of_view` of a 2D image |
 | `TE`, `TR`, `TI`, `flip_angle`, `field_strength` | sidecar, BIDS names, in seconds | `EchoTime`, `RepetitionTime`, ... | `ismrmrdHeader` XML |
 | other keys | sidecar | — | — |
 | tags | sidecar, `Tags` | `ImageComments` as JSON | meta attributes of each image |
