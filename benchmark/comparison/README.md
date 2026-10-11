@@ -162,7 +162,9 @@ query, done fresh each time:
   snapshot of a full cluster run, one per (backend, threads) pair found, from the latest
   `source = "slurm"` row per case. A toolkit's rows measured with an older release than its
   latest run's are left out, also where the new release recorded no row (a solver that no longer
-  reaches the accuracy target), so a table never mixes releases. Run this after any cluster rerun
+  reaches the accuracy target), so a table never mixes releases. A run limited to some competitors
+  (`--frameworks=`) still times Ristretto as their reference; those Ristretto rows are left out too,
+  so rerunning one competitor never replaces Ristretto's numbers. Run this after any cluster rerun
   that should update the committed numbers:
   ```sh
   julia --project=benchmark/comparison benchmark/comparison/scripts/export_snapshot.jl

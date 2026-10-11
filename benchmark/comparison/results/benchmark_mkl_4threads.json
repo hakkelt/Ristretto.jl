@@ -2,457 +2,6 @@
     "backend": "mkl",
     "benchmarks": [
         {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (NRMSE≤0.1993, 3 it)",
-            "nrmse_gt": 0.12744182348251343,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 74.740817
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.1198054701089859,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1039.36396
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.12054752558469772,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1893.065226
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.13045158982276917,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 370.314062
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "Ristretto (MKL)",
-            "method": "TGV (20 it)",
-            "nrmse_gt": 0.11883077770471573,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 2091.089417
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.11823144555091858,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 943.98812
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.1202678456902504,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1780.2183140000002
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Accuracy race",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (NRMSE≤0.2653, 3 it)",
-            "nrmse_gt": 0.23615744709968567,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 84.23054400000001
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.4523903727531433,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1091.749268
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.3705398738384247,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1257.7388549999998
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.22517645359039307,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 573.7506060000001
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "TGV (20 it)",
-            "nrmse_gt": 0.5289651155471802,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1596.012232
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.5196385979652405,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1088.86689
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.2590066194534302,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1123.046002
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.1830616146326065,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 4237.9968149999995
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.1795029491186142,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 9343.618609
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.28966280817985535,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 3691.9728219999997
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.1925695538520813,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 4251.382474999999
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.17724114656448364,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 8917.223214
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.7796945571899414,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 24159.269153
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.703209638595581,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 64172.32327000001
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.5848428010940552,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 8196.775793
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.8518505096435547,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 24971.391800999998
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.6053034067153931,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 62207.844657
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Accuracy race",
-            "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
-            "nrmse_gt": 0.17739348113536835,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 2184.573049
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Dynamic",
-            "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (MKL)",
-            "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.09475387632846832,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 7065.05289
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Dynamic",
-            "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.17739348113536835,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 2224.432553
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Dynamic",
-            "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (MKL)",
-            "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.13020434975624084,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 7107.666383
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Dynamic",
-            "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (MKL)",
-            "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.04719282314181328,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 7132.121763
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Dynamic",
-            "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (MKL)",
-            "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.04766799882054329,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 22086.06957
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Dynamic",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (MKL)",
-            "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.5876966714859009,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 4392.930319
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Dynamic",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.3517517149448395,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 1289.965842
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Dynamic",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (MKL)",
-            "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.582108199596405,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 4260.016684
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Dynamic",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (MKL)",
-            "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.5361340641975403,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 5953.6452899999995
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Dynamic",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (MKL)",
-            "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.537697434425354,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 12500.075809
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.4575503468513489,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 3054.159179
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.36788156628608704,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 6653.323487
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.2310286909341812,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 2397.427071
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "TGV (20 it)",
-            "nrmse_gt": 0.5330846309661865,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 8014.076169999999
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.5232791304588318,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 2977.1051279999997
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.26631951332092285,
-            "nrmse_ristretto": 0.0,
-            "threads": 4,
-            "time_ms": 6038.960206
-        },
-        {
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
@@ -505,7 +54,7 @@
             "nrmse_gt": 0.05495793744921684,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 29.883928
+            "time_ms": 30.06566
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -516,7 +65,7 @@
             "nrmse_gt": 0.021928222849965096,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 101.89469600000001
+            "time_ms": 101.824136
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -593,7 +142,7 @@
             "nrmse_gt": 0.18595869839191437,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 41.244444
+            "time_ms": 44.05858
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -637,7 +186,7 @@
             "nrmse_gt": 0.02280597575008869,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 342.348473
+            "time_ms": 346.022865
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -648,7 +197,7 @@
             "nrmse_gt": 0.05607771500945091,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 26.717779
+            "time_ms": 26.698867
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -714,7 +263,7 @@
             "nrmse_gt": 0.055277928709983826,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 131.441424
+            "time_ms": 151.644207
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -802,7 +351,7 @@
             "nrmse_gt": 0.36340391635894775,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 0.285128
+            "time_ms": 0.282219
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -857,7 +406,7 @@
             "nrmse_gt": 0.010876143351197243,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 91.933791
+            "time_ms": 65.348793
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -912,7 +461,7 @@
             "nrmse_gt": 0.008680906146764755,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 133.332167
+            "time_ms": 133.562141
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -978,7 +527,7 @@
             "nrmse_gt": 0.18595869839191437,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 46.163479
+            "time_ms": 44.200742
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -1022,7 +571,7 @@
             "nrmse_gt": 0.032276540994644165,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 233.803065
+            "time_ms": 212.653986
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -1055,7 +604,7 @@
             "nrmse_gt": 0.015659013763070107,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 63.744395999999995
+            "time_ms": 58.785934999999995
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -1110,7 +659,7 @@
             "nrmse_gt": 0.027725165709853172,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 197.06499
+            "time_ms": 171.726768
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -1176,7 +725,7 @@
             "nrmse_gt": 0.04089227318763733,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 238.987998
+            "time_ms": 233.406659
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1209,7 +758,7 @@
             "nrmse_gt": 0.021906541660428047,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 763.4184290000001
+            "time_ms": 704.414108
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1286,7 +835,7 @@
             "nrmse_gt": 0.23029902577400208,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 93.70012899999999
+            "time_ms": 85.674974
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1308,7 +857,7 @@
             "nrmse_gt": 0.015272245742380619,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 466.787147
+            "time_ms": 474.849922
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1352,7 +901,7 @@
             "nrmse_gt": 0.07178764045238495,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 63.818563999999995
+            "time_ms": 67.21104899999999
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1363,7 +912,7 @@
             "nrmse_gt": 0.03573501482605934,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 400.119779
+            "time_ms": 328.607337
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1473,7 +1022,7 @@
             "nrmse_gt": 0.4806307256221771,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1.489986
+            "time_ms": 1.64436
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1550,7 +1099,7 @@
             "nrmse_gt": 0.37730395793914795,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 10.783496
+            "time_ms": 10.567831
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1605,7 +1154,7 @@
             "nrmse_gt": 0.00882843416184187,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 553.955952
+            "time_ms": 541.947568
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1660,7 +1209,7 @@
             "nrmse_gt": 0.09662657231092453,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 521.409558
+            "time_ms": 451.386181
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1726,7 +1275,7 @@
             "nrmse_gt": 0.27718162536621094,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 65.89181500000001
+            "time_ms": 63.196418
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1770,7 +1319,7 @@
             "nrmse_gt": 0.02390207163989544,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 313.028698
+            "time_ms": 299.117851
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1803,7 +1352,7 @@
             "nrmse_gt": 0.014622530899941921,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 165.541192
+            "time_ms": 165.88350599999998
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1858,7 +1407,7 @@
             "nrmse_gt": 0.020880399271845818,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 428.43116799999996
+            "time_ms": 423.843634
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1880,7 +1429,7 @@
             "nrmse_gt": 0.041984956711530685,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 12.050745
+            "time_ms": 10.621402
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian__regular",
@@ -1891,7 +1440,7 @@
             "nrmse_gt": 0.03865910694003105,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 11.880455999999999
+            "time_ms": 13.999627
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1924,7 +1473,7 @@
             "nrmse_gt": 0.09567074477672577,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 441.725908
+            "time_ms": 405.360846
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2001,7 +1550,7 @@
             "nrmse_gt": 0.26948705315589905,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 103.128588
+            "time_ms": 104.852599
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2078,7 +1627,7 @@
             "nrmse_gt": 0.39290767908096313,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 10.592549
+            "time_ms": 9.289633
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2089,7 +1638,7 @@
             "nrmse_gt": 0.3928973972797394,
             "nrmse_ristretto": 0.0001375413703499362,
             "threads": 4,
-            "time_ms": 1.668479
+            "time_ms": 1.715007
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2141,10 +1690,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.020108617842197418,
+            "nrmse_gt": 0.020108560100197792,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1554.575893
+            "time_ms": 1472.477728
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2196,10 +1745,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.01626768708229065,
+            "nrmse_gt": 0.01626768335700035,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 2571.570326
+            "time_ms": 2313.4126890000002
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2262,10 +1811,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.27757149934768677,
+            "nrmse_gt": 0.27757152915000916,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 295.346429
+            "time_ms": 301.361555
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2306,10 +1855,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.02739592082798481,
+            "nrmse_gt": 0.027395805343985558,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1119.254605
+            "time_ms": 1122.16082
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2361,10 +1910,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.031100677326321602,
+            "nrmse_gt": 0.031100675463676453,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 2455.688889
+            "time_ms": 2266.61661
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -2416,10 +1965,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Total Variation (NRMSE≤0.1516, 5 it)",
-            "nrmse_gt": 0.11895795166492462,
+            "nrmse_gt": 0.1189579963684082,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 8924.576613
+            "time_ms": 7322.233001
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2485,7 +2034,7 @@
             "nrmse_gt": 0.43823298811912537,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 296.908372
+            "time_ms": 282.24939900000004
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2562,7 +2111,7 @@
             "nrmse_gt": 0.29357966780662537,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1667.250908
+            "time_ms": 1700.7009699999999
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2614,10 +2163,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.0074468133971095085,
+            "nrmse_gt": 0.0074468208476901054,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 27511.996806
+            "time_ms": 24625.608107
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2672,7 +2221,7 @@
             "nrmse_gt": 0.08036792278289795,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 60800.18133
+            "time_ms": 54288.518737
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2738,7 +2287,7 @@
             "nrmse_gt": 0.2167533040046692,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 8384.491493000001
+            "time_ms": 7897.11135
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2782,7 +2331,7 @@
             "nrmse_gt": 0.020856598392128944,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 26748.562945
+            "time_ms": 24410.380266
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2837,7 +2386,7 @@
             "nrmse_gt": 0.03472904488444328,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 54077.535595999994
+            "time_ms": 50480.452001000005
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2892,7 +2441,7 @@
             "nrmse_gt": 0.07764110714197159,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 375.101121
+            "time_ms": 374.815559
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2958,7 +2507,7 @@
             "nrmse_gt": 0.48553046584129333,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 7.124851
+            "time_ms": 7.506264000000001
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -3035,7 +2584,7 @@
             "nrmse_gt": 0.4009600579738617,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 54.866874
+            "time_ms": 78.51681
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -3090,7 +2639,7 @@
             "nrmse_gt": 0.013413989916443825,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 912.431596
+            "time_ms": 903.732237
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -3145,7 +2694,7 @@
             "nrmse_gt": 0.1440376192331314,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1755.5202960000001
+            "time_ms": 1766.281795
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -3211,7 +2760,7 @@
             "nrmse_gt": 0.28323304653167725,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 251.248857
+            "time_ms": 244.04094700000002
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -3255,7 +2804,7 @@
             "nrmse_gt": 0.03544666990637779,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1636.624441
+            "time_ms": 1630.4905139999998
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -3288,7 +2837,7 @@
             "nrmse_gt": 0.01646333374083042,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 932.109662
+            "time_ms": 914.73351
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -3343,7 +2892,7 @@
             "nrmse_gt": 0.018138207495212555,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1565.1411699999999
+            "time_ms": 1529.649413
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -3365,7 +2914,7 @@
             "nrmse_gt": 0.054835110902786255,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 41.293969
+            "time_ms": 104.449168
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian__regular",
@@ -3376,7 +2925,7 @@
             "nrmse_gt": 0.07895445078611374,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 35.415965
+            "time_ms": 108.335691
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3442,7 +2991,7 @@
             "nrmse_gt": 0.07346493005752563,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1015.4436280000001
+            "time_ms": 1122.374782
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3508,7 +3057,7 @@
             "nrmse_gt": 0.17354606091976166,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 741.3099
+            "time_ms": 661.278358
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3538,10 +3087,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Locally Low-Rank (NRMSE≤0.0603, 20 it)",
-            "nrmse_gt": 0.057357124984264374,
+            "nrmse_gt": 0.057357028126716614,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 3337.3733030000003
+            "time_ms": 3399.717393
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3574,7 +3123,7 @@
             "nrmse_gt": 0.011158314533531666,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1879.521624
+            "time_ms": 1809.03772
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3629,7 +3178,7 @@
             "nrmse_gt": 0.007833946496248245,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 10118.247895
+            "time_ms": 9953.558341
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3728,7 +3277,7 @@
             "nrmse_gt": 0.26091453433036804,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 15.240757
+            "time_ms": 18.772963999999998
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3805,7 +3354,7 @@
             "nrmse_gt": 0.18579238653182983,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 190.451012
+            "time_ms": 289.714964
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3882,7 +3431,7 @@
             "nrmse_gt": 0.06502605229616165,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 3326.959328
+            "time_ms": 3353.571129
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3948,7 +3497,7 @@
             "nrmse_gt": 0.17354606091976166,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 847.0329479999999
+            "time_ms": 823.207326
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4003,7 +3552,7 @@
             "nrmse_gt": 0.057357124984264374,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 3379.366837
+            "time_ms": 3390.337943
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4033,10 +3582,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.006111415568739176,
+            "nrmse_gt": 0.006111416965723038,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 3475.722597
+            "time_ms": 3288.657684
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4091,7 +3640,7 @@
             "nrmse_gt": 0.007833946496248245,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 9882.670301999999
+            "time_ms": 9154.068324
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4168,7 +3717,7 @@
             "nrmse_gt": 0.11688879877328873,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 2895.1932939999997
+            "time_ms": 3056.193841
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4245,7 +3794,7 @@
             "nrmse_gt": 0.13932569324970245,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 1282.146673
+            "time_ms": 1282.154966
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4319,10 +3868,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.10840452462434769,
+            "nrmse_gt": 0.10840912163257599,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 9139.84484
+            "time_ms": 8958.883302
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4388,7 +3937,7 @@
             "nrmse_gt": 0.14061468839645386,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 2319.895824
+            "time_ms": 2139.9592350000003
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4440,10 +3989,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.08771801739931107,
+            "nrmse_gt": 0.08771713823080063,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 9063.606643
+            "time_ms": 9066.025835999999
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4473,10 +4022,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.0644441694021225,
+            "nrmse_gt": 0.06444410234689713,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 16333.096952999998
+            "time_ms": 11977.054157999999
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4531,7 +4080,7 @@
             "nrmse_gt": 0.06988777220249176,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 37874.232553
+            "time_ms": 30927.090156
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4608,7 +4157,7 @@
             "nrmse_gt": 0.22418668866157532,
             "nrmse_ristretto": 0.0,
             "threads": 4,
-            "time_ms": 66.48234000000001
+            "time_ms": 93.580679
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4619,7 +4168,7 @@
             "nrmse_gt": 0.22418105602264404,
             "nrmse_ristretto": 0.00010106522677233443,
             "threads": 4,
-            "time_ms": 31.497267
+            "time_ms": 31.853323000000003
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4644,17 +4193,15 @@
             "256"
         ],
         "dates": [
-            "2026-10-03",
+            "2026-10-10",
             "2026-10-11"
         ],
         "gpu": [],
         "hostnames": [
             "x1000c4s0b0n0",
-            "x1000c4s1b1n1",
             "x1000c7s2b0n0"
         ],
         "julia_version": [
-            "1.13.0",
             "1.13.1"
         ],
         "toolkit_versions": {
@@ -4671,8 +4218,7 @@
                 "0.260420"
             ],
             "Ristretto": [
-                "0.1.0",
-                "0.1.0 (b2688464)"
+                "0.1.0"
             ],
             "SigPy": [
                 "0.1.27"

@@ -69,7 +69,15 @@ function current_release_rows(rows)
     end
 end
 
-latest = latest_per_case(current_release_rows(rows); prefer_source = "slurm")
+# A run restricted to some competitors (`--frameworks=`) still times Ristretto, as the reference
+# its rows are compared against; those Ristretto rows are a by-product of the competitors' rerun,
+# not a measurement of Ristretto, and are left out.
+function measured(r)
+    patterns = get(get(RUNS, r.run_id, Dict{String, Any}()), "frameworks_filter", nothing)
+    return patterns === nothing || any(p -> occursin(p, lowercase(r.framework)), patterns)
+end
+
+latest = latest_per_case(current_release_rows(filter(measured, rows)); prefer_source = "slurm")
 isempty(latest) && (@info "no source=\"slurm\" rows match; nothing exported (rerun on the cluster first)"; exit(0))
 
 # Per toolkit, the versions of the runs behind its rows.
