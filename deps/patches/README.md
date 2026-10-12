@@ -1,15 +1,15 @@
 # Vendoring patches
 
 One patch per vendored package, holding everything the copy under `deps/<package>` has that the
-package's `integration` branch does not. `tools/vendor.jl sync` re-applies the patch after every
+package's `integration` branch does not. `deps/vendor.jl sync` re-applies the patch after every
 `git subtree pull`, so the pair (`integration` branch, patch) reproduces the vendored tree
 exactly -- which is what makes a re-vendor a mechanical operation instead of a three-way merge.
 
 Regenerate with:
 
 ```
-julia tools/vendor.jl rebuild    # assemble each fork's `integration` branch from deps/vendor.toml
-julia tools/vendor.jl patch      # diff each integration branch against deps/<package>
+julia deps/vendor.jl rebuild    # assemble each fork's `integration` branch from deps/vendor.toml
+julia deps/vendor.jl patch      # diff each integration branch against deps/<package>
 ```
 
 `patch` writes the diff of a clean `git archive` of `integration` against the working `deps/`

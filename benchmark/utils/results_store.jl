@@ -47,7 +47,7 @@ source_tag(hostname::AbstractString = gethostname()) = occursin(r"^x\d+c", hostn
 
 Write one immutable JSON file recording this process's rows for `section` at (`backend`,
 `threads`). `rows` is a `Vector{BenchResult}` (see `_setup.jl`). `kwargs` are extra metadata
-(hostname, julia_version, blas_vendor, bart_binary, pinned_cpus, bart_spawn_ms, cases_filter, ...)
+(hostname, julia_version, blas_vendor, bart_binary, pinned_cpus, cases_filter, ...)
 stored alongside, exactly as the old per-section JSON did.
 
 The filename encodes everything a query needs to filter without opening the file: timestamp,
@@ -142,7 +142,7 @@ end
 """
     Row
 
-One benchmark row, flattened with its run's metadata (backend, threads, source, ts). Shared by
+One benchmark row, flattened with its run's metadata (backend, threads, source, ts, run_id). Shared by
 `query_results.jl` and `export_snapshot.jl` so both read `results/runs/` the same way.
 """
 struct Row
@@ -159,31 +159,36 @@ struct Row
     case_id::String
     data_source::String
     schema_version::Int
+    run_id::String
 end
 
 """
     load_rows(root = RESULTS_DIR; schema_version = SCHEMA_VERSION) -> Vector{Row}
+    load_rows(run_files; schema_version = SCHEMA_VERSION) -> Vector{Row}
 
-Every comparison row from every run file of the store at `root`, flattened. Rows from an older
-schema (measured on other inputs than the catalog's cases) are left out unless `schema_version`
-is lowered.
+Every comparison row from every run file of the store at `root` (or of the parsed `run_files`,
+as `load_run_files` returns them), flattened. Rows from an older schema (measured on other inputs
+than the catalog's cases) are left out unless `schema_version` is lowered.
 """
-function load_rows(root::AbstractString = RESULTS_DIR; schema_version::Integer = SCHEMA_VERSION)
+load_rows(root::AbstractString = RESULTS_DIR; schema_version::Integer = SCHEMA_VERSION) =
+    load_rows(load_run_files(root); schema_version)
+function load_rows(run_files::AbstractVector; schema_version::Integer = SCHEMA_VERSION)
     rows = Row[]
-    for d in load_run_files(root)
+    for d in run_files
         v = get(d, "schema_version", 1)
         v < schema_version && continue
         backend = get(d, "backend", "")
         threads = get(d, "threads", 0)
         source = get(d, "source", "unknown")
         ts = get(d, "ts", "")
+        run_id = get(d, "run_id", "")
         for b in get(d, "benchmarks", [])
             haskey(b, "category") || continue
             push!(
                 rows, Row(
                     backend, threads, b["category"], b["method"], b["framework"],
                     Float64(b["time_ms"]), Float64(b["nrmse_gt"]), Float64(b["nrmse_ristretto"]), source, ts,
-                    get(b, "case_id", ""), get(b, "data_source", ""), v,
+                    get(b, "case_id", ""), get(b, "data_source", ""), v, run_id,
                 )
             )
         end
@@ -197,8 +202,9 @@ end
 One row per (backend, threads, case, category, method, framework): the most recent (`ts`), among
 rows matching `prefer_source` if given, else preferring `"slurm"` over anything else and falling
 back to whatever exists when no `"slurm"` row is present for that case. An accuracy-race method
-(`"… (NRMSE≤0.05, 150 it)"`) is keyed without its iteration count, which is the race's outcome, so
-a rerun that reaches the target sooner replaces the earlier row.
+(`"… (NRMSE≤0.05, 150 it)"`) is keyed without its target and iteration count: the iteration count
+is the race's outcome, and a target moved by a recalibration makes the earlier row stale, so either
+way the rerun replaces it.
 """
 function latest_per_case(rows::Vector{Row}; prefer_source::Union{Nothing, AbstractString} = nothing)
     best = Dict{NTuple{6, Any}, Row}()
@@ -217,6 +223,6 @@ function latest_per_case(rows::Vector{Row}; prefer_source::Union{Nothing, Abstra
     return collect(values(best))
 end
 
-_method_key(method::AbstractString) = replace(method, r"(\(NRMSE≤[^,]*), \d+ it\)$" => s"\1)")
+_method_key(method::AbstractString) = replace(method, r" \(NRMSE≤[^,]*, \d+ it\)$" => "")
 
 end

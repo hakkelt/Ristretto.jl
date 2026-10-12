@@ -1,5 +1,7 @@
 # Task Splitting
 
+*Tutorial: [Algorithms and configuration](../tutorials/06_algorithms_and_configuration.md).*
+
 Task splitting is an advanced feature that automatically parallelizes reconstruction across independent data dimensions, significantly speeding up processing when you have multiple CPU cores.
 
 !!! note "Not to be confused with image decomposition"

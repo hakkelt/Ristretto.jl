@@ -7,10 +7,10 @@
             "data_source": "FASTMRI:singlecoil_val/file1000107",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.1993, 3 it)",
-            "nrmse_gt": 0.16853906214237213,
+            "nrmse_gt": 0.16402728855609894,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 337.13703825000005
+            "time_ms": 47.595
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -21,7 +21,7 @@
             "nrmse_gt": 0.1594139928259388,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 11.689841
+            "time_ms": 14.240443
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -32,7 +32,7 @@
             "nrmse_gt": 0.12744182348251343,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 5.917992000000001
+            "time_ms": 5.251888
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -43,7 +43,7 @@
             "nrmse_gt": 0.12956948453222467,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 62.280026
+            "time_ms": 60.919306999999996
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -60,23 +60,23 @@
             "case_id": "real_2d_1ch_cartesian",
             "category": "Base",
             "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.12149694561958313,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 1.245283
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Base",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.12149694645201455,
             "nrmse_ristretto": 2.0134524878642282e-7,
             "threads": 1,
             "time_ms": 2.121685
+        },
+        {
+            "case_id": "real_2d_1ch_cartesian",
+            "category": "Base",
+            "data_source": "FASTMRI:singlecoil_val/file1000107",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.12149694561958313,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 1.245283
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -95,10 +95,10 @@
             "data_source": "FASTMRI:singlecoil_val/file1000107",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.1734740138053894,
-            "nrmse_ristretto": 0.13299866020679474,
+            "nrmse_gt": 0.12224658578634262,
+            "nrmse_ristretto": 0.02123609557747841,
             "threads": 1,
-            "time_ms": 124.99278674999992
+            "time_ms": 107.02399999999999
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -120,7 +120,7 @@
             "nrmse_gt": 0.11980543285608292,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 88.680176
+            "time_ms": 89.96404299999999
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -137,12 +137,12 @@
             "case_id": "real_2d_1ch_cartesian",
             "category": "Sparsity",
             "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.17166754603385925,
-            "nrmse_ristretto": 0.13095442950725555,
+            "nrmse_gt": 0.12080312282955331,
+            "nrmse_ristretto": 0.015416670511315577,
             "threads": 1,
-            "time_ms": 124.8359885
+            "time_ms": 520.276854
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -150,21 +150,10 @@
             "data_source": "FASTMRI:singlecoil_val/file1000107",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.12054752558469772,
+            "nrmse_gt": 0.12029273808002472,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 126.68388999999999
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.12080312282955331,
-            "nrmse_ristretto": 0.015416670511315577,
-            "threads": 1,
-            "time_ms": 520.276854
+            "time_ms": 184.014845
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -183,10 +172,10 @@
             "data_source": "FASTMRI:singlecoil_val/file1000107",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.16893664002418518,
-            "nrmse_ristretto": 0.13281463086605072,
+            "nrmse_gt": 0.1630842089653015,
+            "nrmse_ristretto": 0.11041729152202606,
             "threads": 1,
-            "time_ms": 291.0741539999999
+            "time_ms": 48.24299999999995
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -208,7 +197,7 @@
             "nrmse_gt": 0.13045160472393036,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 16.749666
+            "time_ms": 16.963789
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -227,10 +216,10 @@
             "data_source": "FASTMRI:singlecoil_val/file1000107",
             "framework": "BART (CUDA)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.1713036298751831,
-            "nrmse_ristretto": 0.12162221223115921,
+            "nrmse_gt": 0.11937010288238525,
+            "nrmse_ristretto": 0.025349002331495285,
             "threads": 1,
-            "time_ms": 206.2850137499999
+            "time_ms": 275.42100000000005
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -241,7 +230,7 @@
             "nrmse_gt": 0.11883077770471573,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 203.864523
+            "time_ms": 213.24131
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -249,10 +238,10 @@
             "data_source": "FASTMRI:singlecoil_val/file1000107",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.17103122174739838,
-            "nrmse_ristretto": 0.1284910887479782,
+            "nrmse_gt": 0.11916349828243256,
+            "nrmse_ristretto": 0.02480996586382389,
             "threads": 1,
-            "time_ms": 126.57931425000002
+            "time_ms": 105.72199999999995
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -263,7 +252,7 @@
             "nrmse_gt": 0.11823152750730515,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 95.566967
+            "time_ms": 94.276126
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -280,12 +269,12 @@
             "case_id": "real_2d_1ch_cartesian",
             "category": "Sparsity",
             "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.17084690928459167,
-            "nrmse_ristretto": 0.12508252263069153,
+            "nrmse_gt": 0.13335561952974248,
+            "nrmse_ristretto": 0.06677362023248758,
             "threads": 1,
-            "time_ms": 93.66475275000002
+            "time_ms": 502.11007399999994
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -293,21 +282,10 @@
             "data_source": "FASTMRI:singlecoil_val/file1000107",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.1202678456902504,
+            "nrmse_gt": 0.11997344344854355,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 142.944832
-        },
-        {
-            "case_id": "real_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:singlecoil_val/file1000107",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.13335561952974248,
-            "nrmse_ristretto": 0.06677362023248758,
-            "threads": 1,
-            "time_ms": 502.11007399999994
+            "time_ms": 205.014612
         },
         {
             "case_id": "real_2d_1ch_cartesian",
@@ -326,21 +304,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.2653, 3 it)",
-            "nrmse_gt": 0.2344924509525299,
+            "nrmse_gt": 0.2363862842321396,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 831.26131725
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Accuracy race",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (NRMSE≤0.2653, 3 it)",
-            "nrmse_gt": 0.23615744709968567,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 7.1530949999999995
+            "time_ms": 45.29
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -351,7 +318,18 @@
             "nrmse_gt": 0.25915953372539735,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 28.416200999999997
+            "time_ms": 27.153173
+        },
+        {
+            "case_id": "real_2d_multichannel_cartesian",
+            "category": "Accuracy race",
+            "data_source": "M4RAW:multicoil_train/2022062402_T203",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (NRMSE≤0.2653, 3 it)",
+            "nrmse_gt": 0.23615744709968567,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 6.548798
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -359,10 +337,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "SigPy (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.2653, 3 it)",
-            "nrmse_gt": 0.2489922430422483,
+            "nrmse_gt": 0.24899326598359164,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 56.512505
+            "time_ms": 55.936719000000004
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -370,10 +348,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "MRIReco (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.2653, 8 it)",
-            "nrmse_gt": 0.2609584785648484,
+            "nrmse_gt": 0.26095893279697835,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 97.69887200000001
+            "time_ms": 93.185699
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -390,23 +368,23 @@
             "case_id": "real_2d_multichannel_cartesian",
             "category": "Base",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.25945132970809937,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 1.302163
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Base",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.25945133877176246,
             "nrmse_ristretto": 3.1898290557031754e-8,
             "threads": 1,
             "time_ms": 3.182672
+        },
+        {
+            "case_id": "real_2d_multichannel_cartesian",
+            "category": "Base",
+            "data_source": "M4RAW:multicoil_train/2022062402_T203",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.25945132970809937,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 1.302163
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -425,10 +403,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.4420866072177887,
-            "nrmse_ristretto": 0.008746996521949768,
+            "nrmse_gt": 0.44208651781082153,
+            "nrmse_ristretto": 0.008746880106627941,
             "threads": 1,
-            "time_ms": 71.22755825000004
+            "time_ms": 21.660999999999987
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -445,23 +423,23 @@
             "case_id": "real_2d_multichannel_cartesian",
             "category": "CG-SENSE",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.4377967417240143,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 5.076838
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "CG-SENSE",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.4420868884378058,
             "nrmse_ristretto": 0.008747197404330845,
             "threads": 1,
             "time_ms": 8.696573
+        },
+        {
+            "case_id": "real_2d_multichannel_cartesian",
+            "category": "CG-SENSE",
+            "data_source": "M4RAW:multicoil_train/2022062402_T203",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.4377967417240143,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 5.076838
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -480,10 +458,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.23107165098190308,
-            "nrmse_ristretto": 0.3555010259151459,
+            "nrmse_gt": 0.20729738473892212,
+            "nrmse_ristretto": 0.4073352515697479,
             "threads": 1,
-            "time_ms": 179.21932874999996
+            "time_ms": 103.87599999999999
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -505,7 +483,7 @@
             "nrmse_gt": 0.452390193939209,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 82.88292799999999
+            "time_ms": 85.745533
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -522,12 +500,12 @@
             "case_id": "real_2d_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.21803122758865356,
-            "nrmse_ristretto": 0.42238205671310425,
+            "nrmse_gt": 0.2020773474659981,
+            "nrmse_ristretto": 0.3932134943832349,
             "threads": 1,
-            "time_ms": 116.56152024999994
+            "time_ms": 536.05216
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -535,21 +513,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.3705398142337799,
+            "nrmse_gt": 0.385067343711853,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 169.47208899999998
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.2020773474659981,
-            "nrmse_ristretto": 0.3932134943832349,
-            "threads": 1,
-            "time_ms": 536.05216
+            "time_ms": 213.590744
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -568,10 +535,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.21459849178791046,
-            "nrmse_ristretto": 0.16126258671283722,
+            "nrmse_gt": 0.22331781685352325,
+            "nrmse_ristretto": 0.14813166856765747,
             "threads": 1,
-            "time_ms": 803.86944575
+            "time_ms": 38.37599999999999
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -588,23 +555,23 @@
             "case_id": "real_2d_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.22517648339271545,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 19.473282
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.23700913810319013,
             "nrmse_ristretto": 0.1882174963244702,
             "threads": 1,
             "time_ms": 94.126457
+        },
+        {
+            "case_id": "real_2d_multichannel_cartesian",
+            "category": "Sparsity",
+            "data_source": "M4RAW:multicoil_train/2022062402_T203",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.22517648339271545,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 19.991582
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -623,10 +590,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.19732514023780823,
-            "nrmse_ristretto": 0.5359245538711548,
+            "nrmse_gt": 0.21729230880737305,
+            "nrmse_ristretto": 0.4688546657562256,
             "threads": 1,
-            "time_ms": 168.61850924999993
+            "time_ms": 217.41299999999998
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -637,7 +604,7 @@
             "nrmse_gt": 0.5289639234542847,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 226.51172
+            "time_ms": 227.59958999999998
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -645,10 +612,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.25204601883888245,
-            "nrmse_ristretto": 0.3954653739929199,
+            "nrmse_gt": 0.21418102085590363,
+            "nrmse_ristretto": 0.4630472958087921,
             "threads": 1,
-            "time_ms": 172.90120599999997
+            "time_ms": 91.579
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -659,7 +626,7 @@
             "nrmse_gt": 0.5196384191513062,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 83.69794
+            "time_ms": 229.647041
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -676,12 +643,12 @@
             "case_id": "real_2d_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.2037520408630371,
-            "nrmse_ristretto": 0.17997464537620544,
+            "nrmse_gt": 0.19780981055491703,
+            "nrmse_ristretto": 0.21340018618815737,
             "threads": 1,
-            "time_ms": 3255.0480165
+            "time_ms": 511.8039130000001
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -689,21 +656,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.2590065896511078,
+            "nrmse_gt": 0.26163798570632935,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 183.848182
-        },
-        {
-            "case_id": "real_2d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.19780981055491703,
-            "nrmse_ristretto": 0.21340018618815737,
-            "threads": 1,
-            "time_ms": 511.8039130000001
+            "time_ms": 247.20240199999998
         },
         {
             "case_id": "real_2d_multichannel_cartesian",
@@ -722,10 +678,10 @@
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.2402997463941574,
-            "nrmse_ristretto": 0.008344108238816261,
+            "nrmse_gt": 0.240273579955101,
+            "nrmse_ristretto": 0.008335981518030167,
             "threads": 1,
-            "time_ms": 928.0887696666667
+            "time_ms": 659.7219999999999
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -742,23 +698,23 @@
             "case_id": "real_2d_multichannel_radial",
             "category": "CG-SENSE",
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.24244441092014313,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 15.25967
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "CG-SENSE",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.24028163337026107,
             "nrmse_ristretto": 0.008141928938394214,
             "threads": 1,
             "time_ms": 94.90557
+        },
+        {
+            "case_id": "real_2d_multichannel_radial",
+            "category": "CG-SENSE",
+            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.24244441092014313,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 15.25967
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -786,23 +742,23 @@
             "case_id": "real_2d_multichannel_radial",
             "category": "Non-Cartesian",
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "Ristretto (CUDA)",
-            "method": "DCF Adjoint (Gridding)",
-            "nrmse_gt": 0.2756320536136627,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 7.475878
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Non-Cartesian",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "MRpro (CUDA)",
             "method": "DCF Adjoint (Gridding)",
             "nrmse_gt": 0.27563200948333644,
             "nrmse_ristretto": 3.4725429289860557e-6,
             "threads": 1,
             "time_ms": 69.809096
+        },
+        {
+            "case_id": "real_2d_multichannel_radial",
+            "category": "Non-Cartesian",
+            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
+            "framework": "Ristretto (CUDA)",
+            "method": "DCF Adjoint (Gridding)",
+            "nrmse_gt": 0.2756320536136627,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 7.475878
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -821,10 +777,10 @@
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.17460474371910095,
-            "nrmse_ristretto": 0.09078600257635117,
+            "nrmse_gt": 0.162916362285614,
+            "nrmse_ristretto": 0.08427483588457108,
             "threads": 1,
-            "time_ms": 1094.065476
+            "time_ms": 836.407
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -843,10 +799,10 @@
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.1830614060163498,
+            "nrmse_gt": 0.18306191265583038,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 161.688456
+            "time_ms": 155.04235
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -863,12 +819,12 @@
             "case_id": "real_2d_multichannel_radial",
             "category": "Sparsity",
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.19259345531463623,
-            "nrmse_ristretto": 0.09671325981616974,
+            "nrmse_gt": 0.1795125811280428,
+            "nrmse_ristretto": 0.0871808657773316,
             "threads": 1,
-            "time_ms": 650.9288263333333
+            "time_ms": 3988.793607
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -876,21 +832,10 @@
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.1795029640197754,
+            "nrmse_gt": 0.16786019504070282,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 704.247294
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.1795125811280428,
-            "nrmse_ristretto": 0.0871808657773316,
-            "threads": 1,
-            "time_ms": 3988.793607
+            "time_ms": 281.711432
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -909,10 +854,10 @@
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.283429890871048,
-            "nrmse_ristretto": 0.03049449995160103,
+            "nrmse_gt": 0.28358426690101624,
+            "nrmse_ristretto": 0.03074691817164421,
             "threads": 1,
-            "time_ms": 13025.052439333334
+            "time_ms": 710.223
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -929,23 +874,23 @@
             "case_id": "real_2d_multichannel_radial",
             "category": "Sparsity",
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.2896619737148285,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 41.738202
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.2971839211815848,
             "nrmse_ristretto": 0.02746543814907305,
             "threads": 1,
             "time_ms": 451.005726
+        },
+        {
+            "case_id": "real_2d_multichannel_radial",
+            "category": "Sparsity",
+            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.2896619439125061,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 40.411862
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -964,10 +909,10 @@
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.16195201873779297,
-            "nrmse_ristretto": 0.10380031913518906,
+            "nrmse_gt": 0.1687420904636383,
+            "nrmse_ristretto": 0.08139164745807648,
             "threads": 1,
-            "time_ms": 1034.0163416666667
+            "time_ms": 846.1789999999999
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -975,10 +920,10 @@
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.19256901741027832,
+            "nrmse_gt": 0.19256919622421265,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 162.719596
+            "time_ms": 154.520252
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -995,12 +940,12 @@
             "case_id": "real_2d_multichannel_radial",
             "category": "Sparsity",
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.19450151920318604,
-            "nrmse_ristretto": 0.15522320568561554,
+            "nrmse_gt": 0.17514996172208977,
+            "nrmse_ristretto": 0.09072394419640255,
             "threads": 1,
-            "time_ms": 658.5808099999999
+            "time_ms": 3858.064519
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -1008,21 +953,10 @@
             "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.17724114656448364,
+            "nrmse_gt": 0.16580717265605927,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 721.568362
-        },
-        {
-            "case_id": "real_2d_multichannel_radial",
-            "category": "Sparsity",
-            "data_source": "FASTMRI:fastMRI_breast_IDS_001_010/fastMRI_breast_006_2 (central partition, 128 of 288 spokes)",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.17514996172208977,
-            "nrmse_ristretto": 0.09072394419640255,
-            "threads": 1,
-            "time_ms": 3858.064519
+            "time_ms": 296.12600100000003
         },
         {
             "case_id": "real_2d_multichannel_radial",
@@ -1050,23 +984,23 @@
             "case_id": "real_3d_multichannel_cartesian",
             "category": "Base",
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.5098671317100525,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 23.439888
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Base",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.5098671470493209,
             "nrmse_ristretto": 6.500481150846053e-8,
             "threads": 1,
             "time_ms": 532.71004
+        },
+        {
+            "case_id": "real_3d_multichannel_cartesian",
+            "category": "Base",
+            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.5098671317100525,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 23.439888
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1086,9 +1020,9 @@
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.6508821249008179,
-            "nrmse_ristretto": 0.003250997979193926,
+            "nrmse_ristretto": 0.0032509618904441595,
             "threads": 1,
-            "time_ms": 914.7043184999999
+            "time_ms": 393.861
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1105,23 +1039,23 @@
             "case_id": "real_3d_multichannel_cartesian",
             "category": "CG-SENSE",
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.6500561237335205,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 77.436867
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "CG-SENSE",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.6508821833738816,
             "nrmse_ristretto": 0.0032509619354940344,
             "threads": 1,
             "time_ms": 572.347036
+        },
+        {
+            "case_id": "real_3d_multichannel_cartesian",
+            "category": "CG-SENSE",
+            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.6500561237335205,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 77.436867
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1140,10 +1074,10 @@
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.7177631258964539,
-            "nrmse_ristretto": 0.14510653913021088,
+            "nrmse_gt": 0.654177725315094,
+            "nrmse_ristretto": 0.2518083155155182,
             "threads": 1,
-            "time_ms": 1786.7098924999998
+            "time_ms": 1608.4230000000002
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1165,7 +1099,7 @@
             "nrmse_gt": 0.7796931862831116,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1043.4215140000001
+            "time_ms": 1052.3660969999999
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1182,12 +1116,12 @@
             "case_id": "real_3d_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.2903655469417572,
-            "nrmse_ristretto": 0.6790775060653687,
+            "nrmse_gt": 0.3403832437482392,
+            "nrmse_ristretto": 0.5713419044522003,
             "threads": 1,
-            "time_ms": 1864.364129
+            "time_ms": 2557.7614729999996
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1195,21 +1129,10 @@
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.7032095193862915,
+            "nrmse_gt": 0.7157278060913086,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1802.619057
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.3403832437482392,
-            "nrmse_ristretto": 0.5713419044522003,
-            "threads": 1,
-            "time_ms": 2557.7614729999996
+            "time_ms": 1683.914777
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1228,10 +1151,10 @@
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.5490726828575134,
-            "nrmse_ristretto": 0.08117274940013885,
+            "nrmse_gt": 0.3040400743484497,
+            "nrmse_ristretto": 0.4864197075366974,
             "threads": 1,
-            "time_ms": 27607.21460875
+            "time_ms": 509.053
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1248,23 +1171,23 @@
             "case_id": "real_3d_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.5848428010940552,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 245.61172200000001
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.47737014862281546,
             "nrmse_ristretto": 0.2070182676603572,
             "threads": 1,
             "time_ms": 868.573049
+        },
+        {
+            "case_id": "real_3d_multichannel_cartesian",
+            "category": "Sparsity",
+            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.5848428010940552,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 237.774938
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1283,10 +1206,10 @@
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.5115181803703308,
-            "nrmse_ristretto": 0.5714506506919861,
+            "nrmse_gt": 0.6838536858558655,
+            "nrmse_ristretto": 0.3428473174571991,
             "threads": 1,
-            "time_ms": 1871.60829925
+            "time_ms": 1533.2130000000002
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1297,7 +1220,7 @@
             "nrmse_gt": 0.8518539667129517,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1045.013426
+            "time_ms": 1047.175689
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1314,12 +1237,12 @@
             "case_id": "real_3d_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.3075549602508545,
-            "nrmse_ristretto": 0.5248264670372009,
+            "nrmse_gt": 0.3671796199969069,
+            "nrmse_ristretto": 0.39858517422363915,
             "threads": 1,
-            "time_ms": 1814.892401
+            "time_ms": 2534.450124
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1327,21 +1250,10 @@
             "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.6053034067153931,
+            "nrmse_gt": 0.6110081672668457,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1771.2538140000001
-        },
-        {
-            "case_id": "real_3d_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "MRIDATA:52c2fd53-d233-4444-8bfd-7c454240d314",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.3671796199969069,
-            "nrmse_ristretto": 0.39858517422363915,
-            "threads": 1,
-            "time_ms": 2534.450124
+            "time_ms": 1665.8285509999998
         },
         {
             "case_id": "real_3d_multichannel_cartesian",
@@ -1359,11 +1271,22 @@
             "category": "Accuracy race",
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "BART (CUDA)",
-            "method": "Global Low-Rank (NRMSE≤0.07693, 50 it)",
-            "nrmse_gt": 0.05529047176241875,
+            "method": "Global Low-Rank (NRMSE≤0.07498, 50 it)",
+            "nrmse_gt": 0.06009040027856827,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 709.6134192500001
+            "time_ms": 403.22999999999996
+        },
+        {
+            "case_id": "real_cine_multichannel_cartesian",
+            "category": "Accuracy race",
+            "data_source": "OCMR:fs_0001_1_5T",
+            "framework": "MRpro (CUDA)",
+            "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
+            "nrmse_gt": 0.17665013427664328,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 189.04853999999997
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1374,18 +1297,7 @@
             "nrmse_gt": 0.17737406492233276,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 111.758054
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Accuracy race",
-            "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "MRpro (CUDA)",
-            "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
-            "nrmse_gt": 0.1766501350907958,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 186.16288
+            "time_ms": 109.16838700000001
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1393,10 +1305,10 @@
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "MRIReco (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.1824, 40 it)",
-            "nrmse_gt": 0.15434108815929432,
+            "nrmse_gt": 0.154338980661684,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 14957.330594000001
+            "time_ms": 15087.274510000001
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1404,10 +1316,21 @@
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "SigPy (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.1824, 40 it)",
-            "nrmse_gt": 0.15492541597122697,
+            "nrmse_gt": 0.15492591280801984,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1511.607146
+            "time_ms": 1499.717561
+        },
+        {
+            "case_id": "real_cine_multichannel_cartesian",
+            "category": "Accuracy race",
+            "data_source": "OCMR:fs_0001_1_5T",
+            "framework": "BART (CUDA)",
+            "method": "Locally Low-Rank (NRMSE≤0.06021, 50 it)",
+            "nrmse_gt": 0.05318969115614891,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 723.488
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1424,23 +1347,23 @@
             "case_id": "real_cine_multichannel_cartesian",
             "category": "Base",
             "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.3450060188770294,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 19.723055
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Base",
-            "data_source": "OCMR:fs_0001_1_5T",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.3450060397962233,
             "nrmse_ristretto": 1.1851822533406667e-7,
             "threads": 1,
             "time_ms": 54.679147
+        },
+        {
+            "case_id": "real_cine_multichannel_cartesian",
+            "category": "Base",
+            "data_source": "OCMR:fs_0001_1_5T",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.3450060188770294,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 19.723055
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1459,10 +1382,10 @@
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.20374740660190582,
-            "nrmse_ristretto": 0.0006827733013778925,
+            "nrmse_gt": 0.20374742150306702,
+            "nrmse_ristretto": 0.0006827863398939371,
             "threads": 1,
-            "time_ms": 518.2728174999999
+            "time_ms": 189.01100000000002
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1479,23 +1402,23 @@
             "case_id": "real_cine_multichannel_cartesian",
             "category": "CG-SENSE",
             "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.20379413664340973,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 28.19279
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "CG-SENSE",
-            "data_source": "OCMR:fs_0001_1_5T",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.2037474277163397,
             "nrmse_ristretto": 0.0006827752901645242,
             "threads": 1,
             "time_ms": 75.27337200000001
+        },
+        {
+            "case_id": "real_cine_multichannel_cartesian",
+            "category": "CG-SENSE",
+            "data_source": "OCMR:fs_0001_1_5T",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.20379413664340973,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 28.19279
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1514,10 +1437,10 @@
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "BART (CUDA)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.04963531717658043,
-            "nrmse_ristretto": 0.06620944291353226,
+            "nrmse_gt": 0.05582110956311226,
+            "nrmse_ristretto": 0.0552244670689106,
             "threads": 1,
-            "time_ms": 4085.3965985
+            "time_ms": 3172.817
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1534,23 +1457,23 @@
             "case_id": "real_cine_multichannel_cartesian",
             "category": "Dynamic",
             "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (CUDA)",
-            "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.09475423395633698,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 318.72243
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Dynamic",
-            "data_source": "OCMR:fs_0001_1_5T",
             "framework": "MRpro (CUDA)",
             "method": "Global Low-Rank (20 it)",
             "nrmse_gt": 0.24915412951772903,
             "nrmse_ristretto": 0.18485696042955257,
             "threads": 1,
             "time_ms": 1229.069089
+        },
+        {
+            "case_id": "real_cine_multichannel_cartesian",
+            "category": "Dynamic",
+            "data_source": "OCMR:fs_0001_1_5T",
+            "framework": "Ristretto (CUDA)",
+            "method": "Global Low-Rank (20 it)",
+            "nrmse_gt": 0.09475423395633698,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 319.273533
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1569,10 +1492,10 @@
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.19698132574558258,
-            "nrmse_ristretto": 0.06925198435783386,
+            "nrmse_gt": 0.19687706232070923,
+            "nrmse_ristretto": 0.06874776631593704,
             "threads": 1,
-            "time_ms": 14514.46479925
+            "time_ms": 207.90399999999997
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1589,23 +1512,23 @@
             "case_id": "real_cine_multichannel_cartesian",
             "category": "Dynamic",
             "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.17737406492233276,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 131.764535
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Dynamic",
-            "data_source": "OCMR:fs_0001_1_5T",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.1766501350907958,
             "nrmse_ristretto": 0.051288930630453596,
             "threads": 1,
             "time_ms": 182.44812199999998
+        },
+        {
+            "case_id": "real_cine_multichannel_cartesian",
+            "category": "Dynamic",
+            "data_source": "OCMR:fs_0001_1_5T",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.17737406492233276,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 136.075065
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1624,10 +1547,10 @@
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "BART (CUDA)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.10176819562911987,
-            "nrmse_ristretto": 0.07301931083202362,
+            "nrmse_gt": 0.0453847199678421,
+            "nrmse_ristretto": 0.11240920424461365,
             "threads": 1,
-            "time_ms": 13829.479469999998
+            "time_ms": 10714.835
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1649,7 +1572,7 @@
             "nrmse_gt": 0.13020460307598114,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 414.531133
+            "time_ms": 359.606633
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1657,10 +1580,10 @@
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "BART (CUDA)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.0497739315032959,
-            "nrmse_ristretto": 0.0219405684620142,
+            "nrmse_gt": 0.038799088448286057,
+            "nrmse_ristretto": 0.0264041218906641,
             "threads": 1,
-            "time_ms": 1255.4094502500002
+            "time_ms": 656.6919999999999
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1671,7 +1594,7 @@
             "nrmse_gt": 0.047192759811878204,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 351.925089
+            "time_ms": 283.663749
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1688,12 +1611,12 @@
             "case_id": "real_cine_multichannel_cartesian",
             "category": "Dynamic",
             "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.11390247941017151,
-            "nrmse_ristretto": 0.10637684911489487,
+            "nrmse_gt": 0.03950087528695003,
+            "nrmse_ristretto": 0.04143167582841026,
             "threads": 1,
-            "time_ms": 903.49102575
+            "time_ms": 918.0723200000001
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1701,21 +1624,10 @@
             "data_source": "OCMR:fs_0001_1_5T",
             "framework": "Ristretto (CUDA)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.04766799509525299,
+            "nrmse_gt": 0.0483061745762825,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 797.65829
-        },
-        {
-            "case_id": "real_cine_multichannel_cartesian",
-            "category": "Dynamic",
-            "data_source": "OCMR:fs_0001_1_5T",
-            "framework": "MRpro (CUDA)",
-            "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.03950087528695003,
-            "nrmse_ristretto": 0.04143167582841026,
-            "threads": 1,
-            "time_ms": 918.0723200000001
+            "time_ms": 473.783646
         },
         {
             "case_id": "real_cine_multichannel_cartesian",
@@ -1734,10 +1646,10 @@
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.37859731912612915,
-            "nrmse_ristretto": 0.011252202093601227,
+            "nrmse_gt": 0.37978240847587585,
+            "nrmse_ristretto": 0.018105557188391685,
             "threads": 1,
-            "time_ms": 635.5612096666667
+            "time_ms": 375.421
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1754,23 +1666,23 @@
             "case_id": "real_cine_multichannel_radial",
             "category": "CG-SENSE",
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.37686437368392944,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 19.944301
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "CG-SENSE",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.3793100938632362,
             "nrmse_ristretto": 0.014940120036751773,
             "threads": 1,
             "time_ms": 84.540026
+        },
+        {
+            "case_id": "real_cine_multichannel_radial",
+            "category": "CG-SENSE",
+            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.37686437368392944,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 19.944301
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1789,10 +1701,10 @@
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "BART (CUDA)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.478850781917572,
-            "nrmse_ristretto": 0.2553849220275879,
+            "nrmse_gt": 0.4927780032157898,
+            "nrmse_ristretto": 0.2306627333164215,
             "threads": 1,
-            "time_ms": 2384.115932333333
+            "time_ms": 1920.266
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1809,23 +1721,23 @@
             "case_id": "real_cine_multichannel_radial",
             "category": "Dynamic",
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (CUDA)",
-            "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.5876810550689697,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 247.205668
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Dynamic",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "MRpro (CUDA)",
             "method": "Global Low-Rank (20 it)",
             "nrmse_gt": 0.4587669499771427,
             "nrmse_ristretto": 0.3051572232561328,
             "threads": 1,
             "time_ms": 13732.234511
+        },
+        {
+            "case_id": "real_cine_multichannel_radial",
+            "category": "Dynamic",
+            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
+            "framework": "Ristretto (CUDA)",
+            "method": "Global Low-Rank (20 it)",
+            "nrmse_gt": 0.5876824259757996,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 244.59161300000002
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1844,10 +1756,10 @@
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.3474979102611542,
-            "nrmse_ristretto": 0.03083273023366928,
+            "nrmse_gt": 0.33222970366477966,
+            "nrmse_ristretto": 0.14077086746692657,
             "threads": 1,
-            "time_ms": 11467.094787666667
+            "time_ms": 425.407
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1864,23 +1776,23 @@
             "case_id": "real_cine_multichannel_radial",
             "category": "Dynamic",
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.35175174474716187,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 163.43728099999998
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Dynamic",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.33822190437690225,
             "nrmse_ristretto": 0.09604122353447338,
             "threads": 1,
             "time_ms": 1329.7550449999999
+        },
+        {
+            "case_id": "real_cine_multichannel_radial",
+            "category": "Dynamic",
+            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.35175174474716187,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 148.12424900000002
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1899,10 +1811,10 @@
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "BART (CUDA)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.3753018379211426,
-            "nrmse_ristretto": 0.4239227771759033,
+            "nrmse_gt": 0.3867015242576599,
+            "nrmse_ristretto": 0.4039953351020813,
             "threads": 1,
-            "time_ms": 7346.044456333333
+            "time_ms": 6574.535
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1921,10 +1833,10 @@
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "Ristretto (CUDA)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.5819766521453857,
+            "nrmse_gt": 0.5819765329360962,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 270.456931
+            "time_ms": 271.96464100000003
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1932,10 +1844,10 @@
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "BART (CUDA)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.456422358751297,
-            "nrmse_ristretto": 0.26584041118621826,
+            "nrmse_gt": 0.4872603416442871,
+            "nrmse_ristretto": 0.23130951821804047,
             "threads": 1,
-            "time_ms": 1030.515001
+            "time_ms": 742.5079999999999
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1943,10 +1855,10 @@
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "Ristretto (CUDA)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.5361337065696716,
+            "nrmse_gt": 0.5361337661743164,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 225.052865
+            "time_ms": 218.051743
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1963,12 +1875,12 @@
             "case_id": "real_cine_multichannel_radial",
             "category": "Dynamic",
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.4505048990249634,
-            "nrmse_ristretto": 0.1883772611618042,
+            "nrmse_gt": 0.5167286268223266,
+            "nrmse_ristretto": 0.3006158342873931,
             "threads": 1,
-            "time_ms": 1392.687888
+            "time_ms": 12249.979722999999
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -1976,21 +1888,10 @@
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "Ristretto (CUDA)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.5376972556114197,
+            "nrmse_gt": 0.391366183757782,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 486.32495
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Dynamic",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "MRpro (CUDA)",
-            "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.5167286268223266,
-            "nrmse_ristretto": 0.3006158342873931,
-            "threads": 1,
-            "time_ms": 12249.979722999999
+            "time_ms": 349.216401
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -2018,23 +1919,23 @@
             "case_id": "real_cine_multichannel_radial",
             "category": "Non-Cartesian",
             "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
-            "framework": "Ristretto (CUDA)",
-            "method": "DCF Adjoint (Gridding)",
-            "nrmse_gt": 0.47001132369041443,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 6.982737
-        },
-        {
-            "case_id": "real_cine_multichannel_radial",
-            "category": "Non-Cartesian",
-            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
             "framework": "MRpro (CUDA)",
             "method": "DCF Adjoint (Gridding)",
             "nrmse_gt": 0.4700112503432751,
             "nrmse_ristretto": 2.0344645707473518e-6,
             "threads": 1,
             "time_ms": 50.333330000000004
+        },
+        {
+            "case_id": "real_cine_multichannel_radial",
+            "category": "Non-Cartesian",
+            "data_source": "USC_SPEECH:sub001/2drt/09_northwind1_r1 (3 of 13 arms, 30 frames)",
+            "framework": "Ristretto (CUDA)",
+            "method": "DCF Adjoint (Gridding)",
+            "nrmse_gt": 0.47001132369041443,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 6.982737
         },
         {
             "case_id": "real_cine_multichannel_radial",
@@ -2062,23 +1963,23 @@
             "case_id": "real_multislice_multichannel_cartesian",
             "category": "Base",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.24362489581108093,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 5.828008
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Base",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.2436248833809831,
             "nrmse_ristretto": 3.5595930323826943e-8,
             "threads": 1,
             "time_ms": 37.491331
+        },
+        {
+            "case_id": "real_multislice_multichannel_cartesian",
+            "category": "Base",
+            "data_source": "M4RAW:multicoil_train/2022062402_T203",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.24362489581108093,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 5.828008
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2097,10 +1998,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.4212267369939302,
-            "nrmse_ristretto": 0.08504035288725859,
+            "nrmse_gt": 0.42122673662281795,
+            "nrmse_ristretto": 0.08504034209130008,
             "threads": 1,
-            "time_ms": 659.2306497500002
+            "time_ms": 246.51399999999995
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2117,23 +2018,23 @@
             "case_id": "real_multislice_multichannel_cartesian",
             "category": "CG-SENSE",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.38221949338912964,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 19.690271
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "CG-SENSE",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.4212267450501137,
             "nrmse_ristretto": 0.08504035424083575,
             "threads": 1,
             "time_ms": 109.45146300000002
+        },
+        {
+            "case_id": "real_multislice_multichannel_cartesian",
+            "category": "CG-SENSE",
+            "data_source": "M4RAW:multicoil_train/2022062402_T203",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.38221949338912964,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 19.690271
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2152,10 +2053,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.23842319194501477,
-            "nrmse_ristretto": 0.35349856659689266,
+            "nrmse_gt": 0.2155087155938651,
+            "nrmse_ristretto": 0.4066220228586395,
             "threads": 1,
-            "time_ms": 1335.161903
+            "time_ms": 1272.6989999999996
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2177,7 +2078,7 @@
             "nrmse_gt": 0.45402711629867554,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 372.454018
+            "time_ms": 383.828119
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2194,12 +2095,12 @@
             "case_id": "real_multislice_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.22567524801040514,
-            "nrmse_ristretto": 0.41729332685701054,
+            "nrmse_gt": 0.24119087506515843,
+            "nrmse_ristretto": 0.4337516163564781,
             "threads": 1,
-            "time_ms": 1024.5600947499997
+            "time_ms": 6387.8390389999995
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2207,21 +2108,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.36695608496665955,
+            "nrmse_gt": 0.38223010301589966,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 575.9493180000001
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.24119087506515843,
-            "nrmse_ristretto": 0.4337516163564781,
-            "threads": 1,
-            "time_ms": 6387.8390389999995
+            "time_ms": 731.2488040000001
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2240,10 +2130,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.21728767032907875,
-            "nrmse_ristretto": 0.1582355371234397,
+            "nrmse_gt": 0.22639986879212176,
+            "nrmse_ristretto": 0.14325193654483223,
             "threads": 1,
-            "time_ms": 9139.974530500001
+            "time_ms": 350.69699999999983
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2260,23 +2150,23 @@
             "case_id": "real_multislice_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.230839341878891,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 86.946901
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.2471218670310066,
             "nrmse_ristretto": 0.19670722476991243,
             "threads": 1,
             "time_ms": 1105.852602
+        },
+        {
+            "case_id": "real_multislice_multichannel_cartesian",
+            "category": "Sparsity",
+            "data_source": "M4RAW:multicoil_train/2022062402_T203",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.230839341878891,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 90.111718
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2295,10 +2185,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.22219346311337881,
-            "nrmse_ristretto": 0.5792781975479044,
+            "nrmse_gt": 0.2046830219821015,
+            "nrmse_ristretto": 0.5442851022955846,
             "threads": 1,
-            "time_ms": 1547.6446819999999
+            "time_ms": 2402.963
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2309,7 +2199,7 @@
             "nrmse_gt": 0.5282804369926453,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1288.489106
+            "time_ms": 1284.303788
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2317,10 +2207,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.25506592246153353,
-            "nrmse_ristretto": 0.3985654290420404,
+            "nrmse_gt": 0.22171470611211783,
+            "nrmse_ristretto": 0.46139128766697546,
             "threads": 1,
-            "time_ms": 1047.5160414999993
+            "time_ms": 1134.0439999999996
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2331,7 +2221,7 @@
             "nrmse_gt": 0.5203242897987366,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 374.872565
+            "time_ms": 376.98889
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2348,12 +2238,12 @@
             "case_id": "real_multislice_multichannel_cartesian",
             "category": "Sparsity",
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.217502038886418,
-            "nrmse_ristretto": 0.2554681060570366,
+            "nrmse_gt": 0.22478292805033537,
+            "nrmse_ristretto": 0.1231548157218974,
             "threads": 1,
-            "time_ms": 1032.8592157499997
+            "time_ms": 6116.224667
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2361,21 +2251,10 @@
             "data_source": "M4RAW:multicoil_train/2022062402_T203",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.2653653919696808,
+            "nrmse_gt": 0.26851361989974976,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 567.838916
-        },
-        {
-            "case_id": "real_multislice_multichannel_cartesian",
-            "category": "Sparsity",
-            "data_source": "M4RAW:multicoil_train/2022062402_T203",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.22478292805033537,
-            "nrmse_ristretto": 0.1231548157218974,
-            "threads": 1,
-            "time_ms": 6116.224667
+            "time_ms": 725.625552
         },
         {
             "case_id": "real_multislice_multichannel_cartesian",
@@ -2397,18 +2276,7 @@
             "nrmse_gt": 0.05347818925035774,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 378.881673
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Anisotropic TV (NRMSE≤0.05859, 150 it)",
-            "nrmse_gt": 0.04546913877129555,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 70.90985225000001
+            "time_ms": 389.149101
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2419,7 +2287,7 @@
             "nrmse_gt": 0.05101528164772977,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 66.433892
+            "time_ms": 58.09334
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2430,7 +2298,18 @@
             "nrmse_gt": 0.05495794117450714,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 38.051316
+            "time_ms": 28.241646
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (CUDA)",
+            "method": "Anisotropic TV (NRMSE≤0.05859, 80 it)",
+            "nrmse_gt": 0.01181071624159813,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 28.531000000000002
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2438,21 +2317,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 150 it)",
-            "nrmse_gt": 0.021852655336260796,
+            "nrmse_gt": 0.021928217262029648,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 143.474154
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 300 it)",
-            "nrmse_gt": 0.052926380187273026,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 175.91984425
+            "time_ms": 96.471516
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2460,10 +2328,10 @@
             "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 300 it)",
-            "nrmse_gt": 0.052048104125508025,
+            "nrmse_gt": 0.05205795407253897,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 745.395977
+            "time_ms": 703.868367
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2471,10 +2339,10 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 300 it)",
-            "nrmse_gt": 0.049476164396213496,
+            "nrmse_gt": 0.05023903284280611,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1025.809704
+            "time_ms": 977.563593
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2482,10 +2350,21 @@
             "data_source": "synthetic",
             "framework": "MRIReco (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.1993, 20 it)",
-            "nrmse_gt": 0.18793406959641049,
+            "nrmse_gt": 0.1879341380959034,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 50.418845
+            "time_ms": 45.384899
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "MRpro (CUDA)",
+            "method": "L1-Wavelet (NRMSE≤0.1993, 20 it)",
+            "nrmse_gt": 0.18530722536162497,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 70.801131
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2496,18 +2375,7 @@
             "nrmse_gt": 0.18595871329307556,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 13.790004
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "L1-Wavelet (NRMSE≤0.1993, 20 it)",
-            "nrmse_gt": 0.18530721790500354,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 78.12670800000001
+            "time_ms": 12.039748
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2518,7 +2386,7 @@
             "nrmse_gt": 0.19133852414835825,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 105.145122
+            "time_ms": 92.09065199999999
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2526,21 +2394,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.1993, 8 it)",
-            "nrmse_gt": 0.18870238959789276,
+            "nrmse_gt": 0.19249923527240753,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 63.74498125
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "TGV (NRMSE≤0.02509, 150 it)",
-            "nrmse_gt": 0.02495315484702587,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 119.02821250000001
+            "time_ms": 18.39500000000002
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2551,7 +2408,29 @@
             "nrmse_gt": 0.02280583046376705,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 314.407502
+            "time_ms": 299.15925500000003
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (CUDA)",
+            "method": "TGV (NRMSE≤0.02509, 300 it)",
+            "nrmse_gt": 0.017792150378227234,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 259.169
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (CUDA)",
+            "method": "Total Variation (NRMSE≤0.09241, 150 it)",
+            "nrmse_gt": 0.0339108444750309,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 47.58400000000002
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2562,7 +2441,7 @@
             "nrmse_gt": 0.05607756972312927,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 35.911877000000004
+            "time_ms": 30.524914
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2573,29 +2452,7 @@
             "nrmse_gt": 0.05488694769000188,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 254.16353600000002
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Total Variation (NRMSE≤0.09241, 80 it)",
-            "nrmse_gt": 0.044784218072891235,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 69.36735100000007
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Total Variation (PDHG) (NRMSE≤0.09241, 150 it)",
-            "nrmse_gt": 0.05344449356198311,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 75.53483225000002
+            "time_ms": 234.062636
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2603,10 +2460,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (NRMSE≤0.09241, 150 it)",
-            "nrmse_gt": 0.055264923721551895,
+            "nrmse_gt": 0.05527792498469353,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 151.404139
+            "time_ms": 95.45014
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2614,10 +2471,10 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "Total Variation (PDHG) (NRMSE≤0.09241, 300 it)",
-            "nrmse_gt": 0.08402162797411811,
+            "nrmse_gt": 0.08400935776096388,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1033.798051
+            "time_ms": 963.582359
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2625,10 +2482,10 @@
             "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (NRMSE≤0.09241, 40 it)",
-            "nrmse_gt": 0.08325004256651941,
+            "nrmse_gt": 0.08324817555134961,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 126.91082800000001
+            "time_ms": 127.59420699999998
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2645,23 +2502,23 @@
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Base",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.36340388655662537,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 0.483984
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Base",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.36340390843579445,
             "nrmse_ristretto": 3.477840686293345e-8,
             "threads": 1,
             "time_ms": 0.9836280000000001
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Base",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.36340388655662537,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 0.483984
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2680,10 +2537,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.025888172909617424,
-            "nrmse_ristretto": 0.022853372618556023,
+            "nrmse_gt": 0.009911499917507172,
+            "nrmse_ristretto": 0.005772422533482313,
             "threads": 1,
-            "time_ms": 108.51740650000002
+            "time_ms": 77.63899999999998
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2705,7 +2562,7 @@
             "nrmse_gt": 0.010876151733100414,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 84.676799
+            "time_ms": 83.183678
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2722,12 +2579,12 @@
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.1013445034623146,
-            "nrmse_ristretto": 0.1094788983464241,
+            "nrmse_gt": 0.09985129208092641,
+            "nrmse_ristretto": 0.10773970293679633,
             "threads": 1,
-            "time_ms": 83.93616325000004
+            "time_ms": 510.95130700000004
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2735,21 +2592,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.008609650656580925,
+            "nrmse_gt": 0.0639028400182724,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 149.628061
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.09985129208092641,
-            "nrmse_ristretto": 0.10773970293679633,
-            "threads": 1,
-            "time_ms": 510.95130700000004
+            "time_ms": 192.80059999999997
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2768,10 +2614,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.16153009235858917,
-            "nrmse_ristretto": 0.125627338886261,
+            "nrmse_gt": 0.2182774394750595,
+            "nrmse_ristretto": 0.16768309473991394,
             "threads": 1,
-            "time_ms": 62.519395249999995
+            "time_ms": 31.014999999999986
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2788,23 +2634,23 @@
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.18595871329307556,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 14.741560000000002
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.18530722515245102,
             "nrmse_ristretto": 0.08526110806345462,
             "threads": 1,
             "time_ms": 78.05458999999999
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Sparsity",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.18595871329307556,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 14.947087
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2823,10 +2669,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.029592588543891907,
-            "nrmse_ristretto": 0.030419431626796722,
+            "nrmse_gt": 0.031789958477020264,
+            "nrmse_ristretto": 0.022437039762735367,
             "threads": 1,
-            "time_ms": 127.70793950000004
+            "time_ms": 153.811
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2837,7 +2683,7 @@
             "nrmse_gt": 0.03227660804986954,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 226.436165
+            "time_ms": 228.254594
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2845,10 +2691,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.01636148802936077,
-            "nrmse_ristretto": 0.01200266182422638,
+            "nrmse_gt": 0.02143740840256214,
+            "nrmse_ristretto": 0.013990231789648533,
             "threads": 1,
-            "time_ms": 106.95689325000002
+            "time_ms": 84.06299999999997
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2859,7 +2705,7 @@
             "nrmse_gt": 0.01565798744559288,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 84.902505
+            "time_ms": 100.135965
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2876,12 +2722,12 @@
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.038047872483730316,
-            "nrmse_ristretto": 0.05379980802536011,
+            "nrmse_gt": 0.0490700310496998,
+            "nrmse_ristretto": 0.05832869915570501,
             "threads": 1,
-            "time_ms": 90.3028775
+            "time_ms": 490.3461
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2889,21 +2735,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.02773015946149826,
+            "nrmse_gt": 0.053836628794670105,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 159.893382
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.0490700310496998,
-            "nrmse_ristretto": 0.05832869915570501,
-            "threads": 1,
-            "time_ms": 490.3461
+            "time_ms": 199.372554
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -2925,7 +2760,7 @@
             "nrmse_gt": 0.03516031316003367,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 376.649044
+            "time_ms": 368.057466
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -2933,10 +2768,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (NRMSE≤0.04141, 150 it)",
-            "nrmse_gt": 0.007596821524202824,
+            "nrmse_gt": 0.0058379340916872025,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 130.1671350000001
+            "time_ms": 75.625
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -2947,7 +2782,7 @@
             "nrmse_gt": 0.008455113086674468,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 743.99856
+            "time_ms": 655.762417
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -2958,18 +2793,7 @@
             "nrmse_gt": 0.04089245945215225,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 33.095020000000005
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Anisotropic TV (PDHG) (NRMSE≤0.04141, 150 it)",
-            "nrmse_gt": 0.02785778045654297,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 123.9415992500001
+            "time_ms": 31.298841
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -2977,10 +2801,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (NRMSE≤0.04141, 300 it)",
-            "nrmse_gt": 0.021116584539413452,
+            "nrmse_gt": 0.021906554698944092,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 196.32764699999998
+            "time_ms": 207.456615
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -2988,10 +2812,10 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "Anisotropic TV (PDHG) (NRMSE≤0.04141, 300 it)",
-            "nrmse_gt": 0.037607494892635665,
+            "nrmse_gt": 0.0375840851487052,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1009.1405739999999
+            "time_ms": 941.351394
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3002,18 +2826,7 @@
             "nrmse_gt": 0.026132985885901485,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 237.09054600000002
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "L1-Wavelet (NRMSE≤0.2653, 12 it)",
-            "nrmse_gt": 0.23495830595493317,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 258.37809675
+            "time_ms": 238.678628
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3021,10 +2834,21 @@
             "data_source": "synthetic",
             "framework": "MRIReco (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.2653, 30 it)",
-            "nrmse_gt": 0.23118393899067127,
+            "nrmse_gt": 0.23115637425216579,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 294.00211199999995
+            "time_ms": 185.749097
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "MRpro (CUDA)",
+            "method": "L1-Wavelet (NRMSE≤0.2653, 30 it)",
+            "nrmse_gt": 0.2412060962070451,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 129.112593
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3035,18 +2859,7 @@
             "nrmse_gt": 0.23029904067516327,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 25.302362
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "L1-Wavelet (NRMSE≤0.2653, 30 it)",
-            "nrmse_gt": 0.24120607720074194,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 133.41797699999998
+            "time_ms": 22.347566999999998
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3054,21 +2867,21 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.2653, 30 it)",
-            "nrmse_gt": 0.23278971303780702,
+            "nrmse_gt": 0.23280218202639774,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 129.852886
+            "time_ms": 129.194782
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
-            "method": "TGV (NRMSE≤0.0168, 150 it)",
-            "nrmse_gt": 0.010535120032727718,
+            "method": "L1-Wavelet (NRMSE≤0.2653, 50 it)",
+            "nrmse_gt": 0.15606246888637543,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 143.88136749999998
+            "time_ms": 33.15499999999999
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3079,7 +2892,18 @@
             "nrmse_gt": 0.015271787531673908,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 322.711839
+            "time_ms": 292.013524
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (CUDA)",
+            "method": "TGV (NRMSE≤0.0168, 300 it)",
+            "nrmse_gt": 0.0144210085272789,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 273.97299999999996
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3090,18 +2914,7 @@
             "nrmse_gt": 0.04131669241211553,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 384.122567
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Total Variation (NRMSE≤0.08046, 40 it)",
-            "nrmse_gt": 0.07582451403141022,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 63.705631749999995
+            "time_ms": 344.877819
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3112,7 +2925,18 @@
             "nrmse_gt": 0.07178758829832077,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 29.499662
+            "time_ms": 35.14949
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (CUDA)",
+            "method": "Total Variation (NRMSE≤0.08046, 80 it)",
+            "nrmse_gt": 0.0693172886967659,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 30.699000000000005
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3120,21 +2944,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (NRMSE≤0.08046, 150 it)",
-            "nrmse_gt": 0.034956108778715134,
+            "nrmse_gt": 0.03573501110076904,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 111.45875600000001
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Total Variation (PDHG) (NRMSE≤0.08046, 300 it)",
-            "nrmse_gt": 0.03256149962544441,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 147.0133250000001
+            "time_ms": 116.973653
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3142,10 +2955,10 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "Total Variation (PDHG) (NRMSE≤0.08046, 300 it)",
-            "nrmse_gt": 0.07248649273416843,
+            "nrmse_gt": 0.07211089781069305,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1039.739608
+            "time_ms": 969.987476
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3156,7 +2969,7 @@
             "nrmse_gt": 0.06780491927035667,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 229.00336900000002
+            "time_ms": 230.86156699999998
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3173,23 +2986,23 @@
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Base",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.48063069581985474,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 0.802879
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Base",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.4806306918227702,
             "nrmse_ristretto": 7.201245598446271e-8,
             "threads": 1,
             "time_ms": 1.943871
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Base",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.48063069581985474,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 0.802879
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3208,10 +3021,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.37730154395103455,
-            "nrmse_ristretto": 4.487398109631613e-5,
+            "nrmse_gt": 0.3773016631603241,
+            "nrmse_ristretto": 4.47054990218021e-5,
             "threads": 1,
-            "time_ms": 64.08786350000001
+            "time_ms": 25.736000000000008
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3228,23 +3041,23 @@
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "CG-SENSE",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.3773038387298584,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 4.531966
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "CG-SENSE",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.3773015088850799,
             "nrmse_ristretto": 4.479197956614732e-5,
             "threads": 1,
             "time_ms": 7.538719
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "CG-SENSE",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.3773038387298584,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 4.531966
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3263,10 +3076,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.004316434264183044,
-            "nrmse_ristretto": 0.007340777665376663,
+            "nrmse_gt": 0.005542020313441753,
+            "nrmse_ristretto": 0.007639950141310692,
             "threads": 1,
-            "time_ms": 111.52308075
+            "time_ms": 85.84800000000001
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3288,7 +3101,7 @@
             "nrmse_gt": 0.008828321471810341,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 83.07345600000001
+            "time_ms": 83.916763
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3305,12 +3118,12 @@
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.027694184333086014,
-            "nrmse_ristretto": 0.05544625595211983,
+            "nrmse_gt": 0.015465263973115624,
+            "nrmse_ristretto": 0.05943151427454818,
             "threads": 1,
-            "time_ms": 117.15711124999994
+            "time_ms": 523.049095
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3318,21 +3131,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.09496088325977325,
+            "nrmse_gt": 0.06699864566326141,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 178.107453
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.015465263973115624,
-            "nrmse_ristretto": 0.05943151427454818,
-            "threads": 1,
-            "time_ms": 523.049095
+            "time_ms": 333.300073
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3351,10 +3153,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.19567598402500153,
-            "nrmse_ristretto": 0.16490085422992706,
+            "nrmse_gt": 0.3281134366989136,
+            "nrmse_ristretto": 0.14474785327911377,
             "threads": 1,
-            "time_ms": 250.38803150000004
+            "time_ms": 30.873999999999985
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3371,23 +3173,23 @@
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.27718162536621094,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 22.859587
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.2702313887620446,
             "nrmse_ristretto": 0.15527586315430975,
             "threads": 1,
             "time_ms": 95.016896
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Sparsity",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.27718162536621094,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 20.323432999999998
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3406,10 +3208,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.00958824623376131,
-            "nrmse_ristretto": 0.022186987102031708,
+            "nrmse_gt": 0.020568836480379105,
+            "nrmse_ristretto": 0.023131640627980232,
             "threads": 1,
-            "time_ms": 146.356542
+            "time_ms": 160.90699999999998
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3420,7 +3222,7 @@
             "nrmse_gt": 0.023901667445898056,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 252.07664899999997
+            "time_ms": 200.537522
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3428,10 +3230,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.015333807095885277,
-            "nrmse_ristretto": 0.01182856597006321,
+            "nrmse_gt": 0.015322317369282246,
+            "nrmse_ristretto": 0.013800865039229393,
             "threads": 1,
-            "time_ms": 94.7602675
+            "time_ms": 72.94299999999996
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3442,7 +3244,7 @@
             "nrmse_gt": 0.01462401170283556,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 85.01731699999999
+            "time_ms": 84.77537000000001
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3459,12 +3261,12 @@
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.09367688745260239,
-            "nrmse_ristretto": 0.09170302003622055,
+            "nrmse_gt": 0.026485551780776124,
+            "nrmse_ristretto": 0.03924801332090445,
             "threads": 1,
-            "time_ms": 104.14501724999997
+            "time_ms": 503.651017
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3472,21 +3274,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.020703885704278946,
+            "nrmse_gt": 0.04143580421805382,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 183.510692
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.026485551780776124,
-            "nrmse_ristretto": 0.03924801332090445,
-            "threads": 1,
-            "time_ms": 503.651017
+            "time_ms": 227.793163
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -3505,10 +3296,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Total Variation (NRMSE≤0.1138, 40 it)",
-            "nrmse_gt": 0.10591405630111694,
+            "nrmse_gt": 0.08491535484790802,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 177.93912500000008
+            "time_ms": 159.862
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3516,10 +3307,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (NRMSE≤0.1138, 5 it)",
-            "nrmse_gt": 0.09567160904407501,
+            "nrmse_gt": 0.095672108232975,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 20.726451
+            "time_ms": 20.0176
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3527,10 +3318,10 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "Total Variation (NRMSE≤0.1138, 5 it)",
-            "nrmse_gt": 0.10143092726890664,
+            "nrmse_gt": 0.10218756233445277,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 219.039019
+            "time_ms": 222.494736
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3538,10 +3329,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.26384732127189636,
-            "nrmse_ristretto": 0.020212281495332718,
+            "nrmse_gt": 0.2672962546348572,
+            "nrmse_ristretto": 0.007943643257021904,
             "threads": 1,
-            "time_ms": 217.5638686666667
+            "time_ms": 165.49099999999999
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3558,23 +3349,23 @@
             "case_id": "shepp_logan_2d_8ch_radial",
             "category": "CG-SENSE",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.26948821544647217,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 7.422966
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_radial",
-            "category": "CG-SENSE",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.26221302137770497,
             "nrmse_ristretto": 0.02690609235972084,
             "threads": 1,
             "time_ms": 38.941454
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_radial",
+            "category": "CG-SENSE",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.26948821544647217,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 7.422966
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3602,23 +3393,23 @@
             "case_id": "shepp_logan_2d_8ch_radial",
             "category": "Non-Cartesian",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "DCF Adjoint (Gridding)",
-            "nrmse_gt": 0.39290863275527954,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 2.903464
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_radial",
-            "category": "Non-Cartesian",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "DCF Adjoint (Gridding)",
             "nrmse_gt": 0.3929085743139074,
             "nrmse_ristretto": 2.008314769861995e-6,
             "threads": 1,
             "time_ms": 15.24441
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_radial",
+            "category": "Non-Cartesian",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "DCF Adjoint (Gridding)",
+            "nrmse_gt": 0.39290863275527954,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 2.903464
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3637,10 +3428,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.01918320171535015,
-            "nrmse_ristretto": 0.020403625443577766,
+            "nrmse_gt": 0.04034058004617691,
+            "nrmse_ristretto": 0.024203600361943245,
             "threads": 1,
-            "time_ms": 287.16539500000005
+            "time_ms": 257.281
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3659,10 +3450,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.020105065777897835,
+            "nrmse_gt": 0.020104940980672836,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 62.410387
+            "time_ms": 62.915220999999995
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3679,12 +3470,12 @@
             "case_id": "shepp_logan_2d_8ch_radial",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.027715016156435013,
-            "nrmse_ristretto": 0.0552612841129303,
+            "nrmse_gt": 0.06545825539478684,
+            "nrmse_ristretto": 0.08342369586429879,
             "threads": 1,
-            "time_ms": 210.18802699999995
+            "time_ms": 2978.418961
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3692,21 +3483,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.01627052016556263,
+            "nrmse_gt": 0.07041818648576736,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 344.056553
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_radial",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.06545825539478684,
-            "nrmse_ristretto": 0.08342369586429879,
-            "threads": 1,
-            "time_ms": 2978.418961
+            "time_ms": 174.852352
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3725,10 +3505,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.27914535999298096,
-            "nrmse_ristretto": 0.05831834673881531,
+            "nrmse_gt": 0.27897176146507263,
+            "nrmse_ristretto": 0.05548824742436409,
             "threads": 1,
-            "time_ms": 977.9227856666668
+            "time_ms": 161.84699999999998
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3745,23 +3525,23 @@
             "case_id": "shepp_logan_2d_8ch_radial",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.2788861393928528,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 18.917609
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_radial",
-            "category": "Sparsity",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.2860785127892455,
             "nrmse_ristretto": 0.04014365242240536,
             "threads": 1,
             "time_ms": 380.339696
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_radial",
+            "category": "Sparsity",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.2788861393928528,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 18.735708
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3780,10 +3560,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.029631877318024635,
-            "nrmse_ristretto": 0.023332839831709862,
+            "nrmse_gt": 0.0319802463054657,
+            "nrmse_ristretto": 0.023332413285970688,
             "threads": 1,
-            "time_ms": 278.77921833333335
+            "time_ms": 236.68599999999998
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3791,10 +3571,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.027394473552703857,
+            "nrmse_gt": 0.027395373210310936,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 68.79048
+            "time_ms": 72.4538
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3811,12 +3591,12 @@
             "case_id": "shepp_logan_2d_8ch_radial",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.11101063340902328,
-            "nrmse_ristretto": 0.05728638172149658,
+            "nrmse_gt": 0.0668098734008823,
+            "nrmse_ristretto": 0.08974227634150055,
             "threads": 1,
-            "time_ms": 213.86542099999994
+            "time_ms": 2927.6534070000002
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3824,21 +3604,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.031104275956749916,
+            "nrmse_gt": 0.09429073333740234,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 354.150634
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_radial",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.0668098734008823,
-            "nrmse_ristretto": 0.08974227634150055,
-            "threads": 1,
-            "time_ms": 2927.6534070000002
+            "time_ms": 180.109738
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -3860,18 +3629,7 @@
             "nrmse_gt": 0.10046621341909409,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 935.1255600000001
-        },
-        {
-            "case_id": "shepp_logan_3d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Total Variation (NRMSE≤0.1516, 20 it)",
-            "nrmse_gt": 0.1412457972764969,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 959.30588125
+            "time_ms": 933.4975089999999
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -3882,7 +3640,18 @@
             "nrmse_gt": 0.11894851922988892,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 276.918161
+            "time_ms": 278.958904
+        },
+        {
+            "case_id": "shepp_logan_3d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (CUDA)",
+            "method": "Total Variation (NRMSE≤0.1516, 50 it)",
+            "nrmse_gt": 0.10522755980491638,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 575.247
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -3899,23 +3668,23 @@
             "case_id": "shepp_logan_3d_8ch_cartesian",
             "category": "Base",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.43823301792144775,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 70.626964
-        },
-        {
-            "case_id": "shepp_logan_3d_8ch_cartesian",
-            "category": "Base",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.43823302268960074,
             "nrmse_ristretto": 9.121311100853892e-8,
             "threads": 1,
             "time_ms": 487.562768
+        },
+        {
+            "case_id": "shepp_logan_3d_8ch_cartesian",
+            "category": "Base",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.43823301792144775,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 70.626964
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -3934,10 +3703,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.2935772240161896,
-            "nrmse_ristretto": 4.223548239679076e-5,
+            "nrmse_gt": 0.29357725381851196,
+            "nrmse_ristretto": 4.2195446440018713e-5,
             "threads": 1,
-            "time_ms": 884.3603477500002
+            "time_ms": 389.82699999999994
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -3954,23 +3723,23 @@
             "case_id": "shepp_logan_3d_8ch_cartesian",
             "category": "CG-SENSE",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.2935761511325836,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 77.975266
-        },
-        {
-            "case_id": "shepp_logan_3d_8ch_cartesian",
-            "category": "CG-SENSE",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.2935772325980975,
             "nrmse_ristretto": 4.219627808303749e-5,
             "threads": 1,
             "time_ms": 669.3623279999999
+        },
+        {
+            "case_id": "shepp_logan_3d_8ch_cartesian",
+            "category": "CG-SENSE",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.2935761511325836,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 77.975266
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -3989,10 +3758,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.01072157733142376,
-            "nrmse_ristretto": 0.008082637563347816,
+            "nrmse_gt": 0.003566470928490162,
+            "nrmse_ristretto": 0.006098426878452301,
             "threads": 1,
-            "time_ms": 2054.385581
+            "time_ms": 1741.725
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4014,7 +3783,7 @@
             "nrmse_gt": 0.00744756730273366,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1042.12444
+            "time_ms": 1022.492191
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4031,12 +3800,12 @@
             "case_id": "shepp_logan_3d_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.04827607423067093,
-            "nrmse_ristretto": 0.0416661761701107,
+            "nrmse_gt": 0.02242243533962017,
+            "nrmse_ristretto": 0.04864267089248535,
             "threads": 1,
-            "time_ms": 1956.37070075
+            "time_ms": 2606.604588
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4044,21 +3813,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.0778002142906189,
+            "nrmse_gt": 0.062132254242897034,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1797.683211
-        },
-        {
-            "case_id": "shepp_logan_3d_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.02242243533962017,
-            "nrmse_ristretto": 0.04864267089248535,
-            "threads": 1,
-            "time_ms": 2606.604588
+            "time_ms": 1738.404338
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4077,10 +3835,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.20877541601657867,
-            "nrmse_ristretto": 0.05551905557513237,
+            "nrmse_gt": 0.17433594167232513,
+            "nrmse_ristretto": 0.10994919389486313,
             "threads": 1,
-            "time_ms": 29172.5945425
+            "time_ms": 505.539
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4097,23 +3855,23 @@
             "case_id": "shepp_logan_3d_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.21675331890583038,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 316.40656099999995
-        },
-        {
-            "case_id": "shepp_logan_3d_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.19586510794828613,
             "nrmse_ristretto": 0.06475176441134697,
             "threads": 1,
             "time_ms": 997.541298
+        },
+        {
+            "case_id": "shepp_logan_3d_8ch_cartesian",
+            "category": "Sparsity",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.21675331890583038,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 312.090059
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4132,10 +3890,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.021396225318312645,
-            "nrmse_ristretto": 0.025152292102575302,
+            "nrmse_gt": 0.04149334505200386,
+            "nrmse_ristretto": 0.04179511219263077,
             "threads": 1,
-            "time_ms": 1915.0956472499997
+            "time_ms": 1775.531
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4146,7 +3904,7 @@
             "nrmse_gt": 0.02085484378039837,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1051.290209
+            "time_ms": 1100.566279
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4163,12 +3921,12 @@
             "case_id": "shepp_logan_3d_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.08417388051748276,
-            "nrmse_ristretto": 0.06115446984767914,
+            "nrmse_gt": 0.052538214991737255,
+            "nrmse_ristretto": 0.032366897772958335,
             "threads": 1,
-            "time_ms": 1876.7278840000001
+            "time_ms": 2678.611535
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4176,21 +3934,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.03397978097200394,
+            "nrmse_gt": 0.03599083796143532,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1762.139925
-        },
-        {
-            "case_id": "shepp_logan_3d_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.052538214991737255,
-            "nrmse_ristretto": 0.032366897772958335,
-            "threads": 1,
-            "time_ms": 2678.611535
+            "time_ms": 1728.011911
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -4209,10 +3956,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Total Variation (NRMSE≤0.1033, 150 it)",
-            "nrmse_gt": 0.06715582909607486,
+            "nrmse_gt": 0.0252836822650772,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1049.1080967500006
+            "time_ms": 742.1289999999999
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4223,7 +3970,7 @@
             "nrmse_gt": 0.0733760862016507,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1922.4057369999998
+            "time_ms": 1821.404524
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4234,7 +3981,7 @@
             "nrmse_gt": 0.08009427785873413,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 112.481441
+            "time_ms": 112.93401
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4251,23 +3998,23 @@
             "case_id": "shepp_logan_multislice_8ch_cartesian",
             "category": "Base",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.48553046584129333,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 3.693207
-        },
-        {
-            "case_id": "shepp_logan_multislice_8ch_cartesian",
-            "category": "Base",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.4855304720241331,
             "nrmse_ristretto": 7.448067075562328e-8,
             "threads": 1,
             "time_ms": 21.200243999999998
+        },
+        {
+            "case_id": "shepp_logan_multislice_8ch_cartesian",
+            "category": "Base",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.48553046584129333,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 3.693207
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4286,10 +4033,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.4009012338234753,
-            "nrmse_ristretto": 0.01255291974819183,
+            "nrmse_gt": 0.4009011946476865,
+            "nrmse_ristretto": 0.012552953071530532,
             "threads": 1,
-            "time_ms": 522.5934460000002
+            "time_ms": 129.72699999999998
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4306,23 +4053,23 @@
             "case_id": "shepp_logan_multislice_8ch_cartesian",
             "category": "CG-SENSE",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.40222281217575073,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 12.246906000000001
-        },
-        {
-            "case_id": "shepp_logan_multislice_8ch_cartesian",
-            "category": "CG-SENSE",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.40090120030058995,
             "nrmse_ristretto": 0.012552909189619092,
             "threads": 1,
             "time_ms": 88.98355300000001
+        },
+        {
+            "case_id": "shepp_logan_multislice_8ch_cartesian",
+            "category": "CG-SENSE",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.40222281217575073,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 12.246906000000001
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4341,10 +4088,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.003980725687089849,
-            "nrmse_ristretto": 0.013170229834514015,
+            "nrmse_gt": 0.0050454149332977575,
+            "nrmse_ristretto": 0.01327323909197108,
             "threads": 1,
-            "time_ms": 1421.24953875
+            "time_ms": 980.8259999999997
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4366,7 +4113,7 @@
             "nrmse_gt": 0.01433057151734829,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 281.724897
+            "time_ms": 278.422815
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4383,12 +4130,12 @@
             "case_id": "shepp_logan_multislice_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.027341637887625034,
-            "nrmse_ristretto": 0.11207681728336504,
+            "nrmse_gt": 0.047836025535332165,
+            "nrmse_ristretto": 0.10633982061376257,
             "threads": 1,
-            "time_ms": 1492.561027
+            "time_ms": 6287.416894000001
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4396,21 +4143,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.15036596357822418,
+            "nrmse_gt": 0.12431322038173676,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 362.963773
-        },
-        {
-            "case_id": "shepp_logan_multislice_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.047836025535332165,
-            "nrmse_ristretto": 0.10633982061376257,
-            "threads": 1,
-            "time_ms": 6287.416894000001
+            "time_ms": 569.6545600000001
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4429,10 +4165,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.2104805111581857,
-            "nrmse_ristretto": 0.17447106325574321,
+            "nrmse_gt": 0.33815325896447596,
+            "nrmse_ristretto": 0.14209839466877947,
             "threads": 1,
-            "time_ms": 3030.539144
+            "time_ms": 273.9669999999997
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4449,23 +4185,23 @@
             "case_id": "shepp_logan_multislice_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.28671208024024963,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 86.732968
-        },
-        {
-            "case_id": "shepp_logan_multislice_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.25917365563639,
             "nrmse_ristretto": 0.1613315416486058,
             "threads": 1,
             "time_ms": 1150.055889
+        },
+        {
+            "case_id": "shepp_logan_multislice_8ch_cartesian",
+            "category": "Sparsity",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.28671208024024963,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 77.990846
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4484,10 +4220,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.026909002568786047,
-            "nrmse_ristretto": 0.042645125982529855,
+            "nrmse_gt": 0.02534702633000164,
+            "nrmse_ristretto": 0.038850632981679185,
             "threads": 1,
-            "time_ms": 1946.964121
+            "time_ms": 1610.043
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4498,7 +4234,7 @@
             "nrmse_gt": 0.03697797656059265,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1013.046983
+            "time_ms": 974.1442940000001
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4506,10 +4242,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.03452106726220139,
-            "nrmse_ristretto": 0.029067477604894032,
+            "nrmse_gt": 0.017429355832769694,
+            "nrmse_ristretto": 0.01710889414815564,
             "threads": 1,
-            "time_ms": 1351.82959275
+            "time_ms": 942.8189999999996
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4520,7 +4256,7 @@
             "nrmse_gt": 0.016954924911260605,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 285.082568
+            "time_ms": 280.465698
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4537,12 +4273,12 @@
             "case_id": "shepp_logan_multislice_8ch_cartesian",
             "category": "Sparsity",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.04204416977344795,
-            "nrmse_ristretto": 0.0537147911632015,
+            "nrmse_gt": 0.13979145127344023,
+            "nrmse_ristretto": 0.14289309482052262,
             "threads": 1,
-            "time_ms": 1322.6558602499997
+            "time_ms": 6059.236291
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4550,21 +4286,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.019224543124437332,
+            "nrmse_gt": 0.04532209783792496,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 368.331482
-        },
-        {
-            "case_id": "shepp_logan_multislice_8ch_cartesian",
-            "category": "Sparsity",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.13979145127344023,
-            "nrmse_ristretto": 0.14289309482052262,
-            "threads": 1,
-            "time_ms": 6059.236291
+            "time_ms": 586.832983
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -4582,55 +4307,55 @@
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "MRIReco (CUDA)",
-            "method": "Global Low-Rank (NRMSE≤0.07693, 10 it)",
+            "method": "Global Low-Rank (NRMSE≤0.07498, 10 it)",
             "nrmse_gt": 0.07299579682939798,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 11094.726012000001
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Global Low-Rank (NRMSE≤0.07693, 10 it)",
-            "nrmse_gt": 0.07544472011345349,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 476.824415
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Global Low-Rank (NRMSE≤0.07693, 100 it)",
-            "nrmse_gt": 0.07499240338802338,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 1203.7299787499999
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Global Low-Rank (NRMSE≤0.07693, 5 it)",
-            "nrmse_gt": 0.07346503436565399,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 54.309423
+            "time_ms": 11002.239053000001
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
-            "method": "Global Low-Rank (NRMSE≤0.07693, 5 it)",
-            "nrmse_gt": 0.07599160174173168,
+            "method": "Global Low-Rank (NRMSE≤0.07498, 10 it)",
+            "nrmse_gt": 0.06428945148788627,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 123.780667
+            "time_ms": 231.446581
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "MRpro (CUDA)",
+            "method": "Global Low-Rank (NRMSE≤0.07498, 20 it)",
+            "nrmse_gt": 0.06448113618587596,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 885.343941
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (CUDA)",
+            "method": "Global Low-Rank (NRMSE≤0.07498, 200 it)",
+            "nrmse_gt": 0.06836415827274323,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 3232.223
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Global Low-Rank (NRMSE≤0.07498, 5 it)",
+            "nrmse_gt": 0.07346503436565399,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 55.751384
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4638,10 +4363,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
-            "nrmse_gt": 0.18098141252994537,
+            "nrmse_gt": 0.18101030588150024,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 6263.58972875
+            "time_ms": 144.256
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4649,21 +4374,10 @@
             "data_source": "synthetic",
             "framework": "MRIReco (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
-            "nrmse_gt": 0.17655998250373983,
+            "nrmse_gt": 0.17656105765626343,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 5691.801762
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
-            "nrmse_gt": 0.1735510379076004,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 122.61314399999999
+            "time_ms": 5258.187124
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4674,7 +4388,18 @@
             "nrmse_gt": 0.17465025728602426,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 151.038814
+            "time_ms": 141.448916
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
+            "nrmse_gt": 0.1735510379076004,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 185.948852
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4682,43 +4407,43 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
-            "nrmse_gt": 0.1760658731826252,
+            "nrmse_gt": 0.17606710606381593,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 741.929326
+            "time_ms": 711.797228
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "MRIReco (CUDA)",
-            "method": "Locally Low-Rank (NRMSE≤0.0603, 20 it)",
+            "method": "Locally Low-Rank (NRMSE≤0.06021, 20 it)",
             "nrmse_gt": 0.051574895933338555,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 22471.050398
+            "time_ms": 22023.177125
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
-            "method": "Locally Low-Rank (NRMSE≤0.0603, 20 it)",
+            "method": "Locally Low-Rank (NRMSE≤0.06021, 20 it)",
             "nrmse_gt": 0.0573565848171711,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 206.880413
+            "time_ms": 198.054314
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
-            "method": "Locally Low-Rank (NRMSE≤0.0603, 200 it)",
-            "nrmse_gt": 0.057939447462558746,
+            "method": "Locally Low-Rank (NRMSE≤0.06021, 200 it)",
+            "nrmse_gt": 0.055555667728185654,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 15873.076788499999
+            "time_ms": 9859.306
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4729,7 +4454,7 @@
             "nrmse_gt": 0.011158335022628307,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 102.430202
+            "time_ms": 75.046173
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4740,29 +4465,18 @@
             "nrmse_gt": 0.01036436566660494,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 273.362498
+            "time_ms": 247.661644
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
-            "method": "Temporal TV (NRMSE≤0.01589, 50 it)",
-            "nrmse_gt": 0.014181738719344139,
+            "method": "Temporal TV (NRMSE≤0.01589, 100 it)",
+            "nrmse_gt": 0.0065539563074707985,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 321.12346599999995
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Temporal TV (PDHG) (NRMSE≤0.01589, 200 it)",
-            "nrmse_gt": 0.007572225295007229,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 440.71806200000003
+            "time_ms": 191.697
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4773,18 +4487,18 @@
             "nrmse_gt": 0.015080303482038426,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 603.007077
+            "time_ms": 596.300992
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
-            "method": "Temporal TV (PDHG) (NRMSE≤0.01589, 400 it)",
-            "nrmse_gt": 0.00910461600869894,
+            "framework": "Ristretto (CUDA)",
+            "method": "Temporal TV (PDHG) (NRMSE≤0.01589, 200 it)",
+            "nrmse_gt": 0.007833948358893394,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 957.6923487500001
+            "time_ms": 374.147699
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4792,10 +4506,10 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "Temporal TV (PDHG) (NRMSE≤0.01589, 400 it)",
-            "nrmse_gt": 0.006676200322717214,
+            "nrmse_gt": 0.006676099856500607,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1130.566838
+            "time_ms": 1116.735725
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4812,23 +4526,23 @@
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Base",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Adjoint",
-            "nrmse_gt": 0.26091456413269043,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 6.156371
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Base",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Adjoint",
             "nrmse_gt": 0.2609145586526291,
             "nrmse_ristretto": 7.486771855392792e-8,
             "threads": 1,
             "time_ms": 26.36898
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Base",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Adjoint",
+            "nrmse_gt": 0.26091456413269043,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 6.156371
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4848,9 +4562,9 @@
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.18591302633285522,
-            "nrmse_ristretto": 0.00042047418537549675,
+            "nrmse_ristretto": 0.0004204714496154338,
             "threads": 1,
-            "time_ms": 307.6717505000001
+            "time_ms": 103.73299999999999
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4867,23 +4581,23 @@
             "case_id": "torso_cine_8ch_cartesian",
             "category": "CG-SENSE",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.18597036600112915,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 14.062178
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "CG-SENSE",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.18591299854100352,
             "nrmse_ristretto": 0.00042047662147215513,
             "threads": 1,
             "time_ms": 40.289685999999996
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "CG-SENSE",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.18597036600112915,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 14.062178
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4902,10 +4616,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.07063768059015274,
-            "nrmse_ristretto": 0.013803576119244099,
+            "nrmse_gt": 0.06836415827274323,
+            "nrmse_ristretto": 0.00975592527538538,
             "threads": 1,
-            "time_ms": 3809.30621675
+            "time_ms": 3185.6220000000003
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4922,23 +4636,23 @@
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Dynamic",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.06502591073513031,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 396.069253
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Dynamic",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Global Low-Rank (20 it)",
             "nrmse_gt": 0.06448113618587596,
             "nrmse_ristretto": 0.014148406526591247,
             "threads": 1,
             "time_ms": 892.178035
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Dynamic",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Global Low-Rank (20 it)",
+            "nrmse_gt": 0.06502591073513031,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 244.565883
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4957,10 +4671,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.18098141252994537,
-            "nrmse_ristretto": 0.04797113686800003,
+            "nrmse_gt": 0.18101030588150024,
+            "nrmse_ristretto": 0.04754115641117096,
             "threads": 1,
-            "time_ms": 6270.21329875
+            "time_ms": 122.523
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -4977,23 +4691,23 @@
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Dynamic",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.1735510379076004,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 134.652359
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Dynamic",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.17465025728602426,
             "nrmse_ristretto": 0.04700219582257564,
             "threads": 1,
             "time_ms": 146.365644
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Dynamic",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.1735510379076004,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 137.975131
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -5012,10 +4726,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.057939447462558746,
-            "nrmse_ristretto": 0.011161142960190773,
+            "nrmse_gt": 0.055555667728185654,
+            "nrmse_ristretto": 0.033050287514925,
             "threads": 1,
-            "time_ms": 15883.38758575
+            "time_ms": 9857.770999999999
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -5037,7 +4751,7 @@
             "nrmse_gt": 0.0573565848171711,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 204.871827
+            "time_ms": 212.874842
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -5045,10 +4759,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.005731122102588415,
-            "nrmse_ristretto": 0.0031842924654483795,
+            "nrmse_gt": 0.005337078589946032,
+            "nrmse_ristretto": 0.004629718605428934,
             "threads": 1,
-            "time_ms": 554.0448452500001
+            "time_ms": 395.76900000000006
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -5059,7 +4773,7 @@
             "nrmse_gt": 0.006111409980803728,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 156.39479
+            "time_ms": 154.671534
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -5076,12 +4790,12 @@
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Dynamic",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.045836858451366425,
-            "nrmse_ristretto": 0.05275664106011391,
+            "nrmse_gt": 0.015080414649136625,
+            "nrmse_ristretto": 0.023556654088930977,
             "threads": 1,
-            "time_ms": 582.5398875000001
+            "time_ms": 604.629248
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -5089,21 +4803,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.007572225295007229,
+            "nrmse_gt": 0.020548241212964058,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 450.994165
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Dynamic",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.015080414649136625,
-            "nrmse_ristretto": 0.023556654088930977,
-            "threads": 1,
-            "time_ms": 604.629248
+            "time_ms": 311.968224
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -5122,10 +4825,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Global Low-Rank (NRMSE≤0.1248, 20 it)",
-            "nrmse_gt": 0.12349063158035278,
+            "nrmse_gt": 0.12360566854476929,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 3453.572813666666
+            "time_ms": 2691.1369999999997
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5133,21 +4836,10 @@
             "data_source": "synthetic",
             "framework": "MRIReco (CUDA)",
             "method": "Global Low-Rank (NRMSE≤0.1248, 5 it)",
-            "nrmse_gt": 0.11378864274317113,
+            "nrmse_gt": 0.11374636694458332,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 3906.391537
-        },
-        {
-            "case_id": "torso_cine_8ch_radial",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Global Low-Rank (NRMSE≤0.1248, 5 it)",
-            "nrmse_gt": 0.11689037829637527,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 174.87690899999998
+            "time_ms": 3635.3904199999997
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5155,10 +4847,21 @@
             "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Global Low-Rank (NRMSE≤0.1248, 5 it)",
-            "nrmse_gt": 0.11783514091971214,
+            "nrmse_gt": 0.11783299006088852,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 5957.193768
+            "time_ms": 5551.527523
+        },
+        {
+            "case_id": "torso_cine_8ch_radial",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Global Low-Rank (NRMSE≤0.1248, 5 it)",
+            "nrmse_gt": 0.11689382791519165,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 125.37272999999999
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5166,10 +4869,10 @@
             "data_source": "synthetic",
             "framework": "SigPy (CUDA)",
             "method": "Global Low-Rank (NRMSE≤0.1248, 5 it)",
-            "nrmse_gt": 0.11414928465986979,
+            "nrmse_gt": 0.11416417791592373,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 506.63526699999994
+            "time_ms": 507.248166
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5177,10 +4880,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.13664180040359497,
-            "nrmse_ristretto": 0.008313721977174282,
+            "nrmse_gt": 0.13682590425014496,
+            "nrmse_ristretto": 0.007780447602272034,
             "threads": 1,
-            "time_ms": 3224.6895873333333
+            "time_ms": 2467.757
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5197,23 +4900,23 @@
             "case_id": "torso_cine_8ch_radial",
             "category": "CG-SENSE",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.13910524547100067,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 37.191728
-        },
-        {
-            "case_id": "torso_cine_8ch_radial",
-            "category": "CG-SENSE",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.1375812755172722,
             "nrmse_ristretto": 0.004993147133015803,
             "threads": 1,
             "time_ms": 151.847914
+        },
+        {
+            "case_id": "torso_cine_8ch_radial",
+            "category": "CG-SENSE",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "CG-SENSE (10 it)",
+            "nrmse_gt": 0.13910524547100067,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 37.191728
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5232,10 +4935,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.11498916894197464,
-            "nrmse_ristretto": 0.033681344240903854,
+            "nrmse_gt": 0.11539271473884583,
+            "nrmse_ristretto": 0.03483713045716286,
             "threads": 1,
-            "time_ms": 8880.434215333333
+            "time_ms": 7471.588
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5252,23 +4955,23 @@
             "case_id": "torso_cine_8ch_radial",
             "category": "Dynamic",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.1083931028842926,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 542.660653
-        },
-        {
-            "case_id": "torso_cine_8ch_radial",
-            "category": "Dynamic",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "Global Low-Rank (20 it)",
             "nrmse_gt": 0.10949266501025491,
             "nrmse_ristretto": 0.021646064302968084,
             "threads": 1,
             "time_ms": 24740.940492
+        },
+        {
+            "case_id": "torso_cine_8ch_radial",
+            "category": "Dynamic",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "Global Low-Rank (20 it)",
+            "nrmse_gt": 0.10839282721281052,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 445.03803899999997
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5287,10 +4990,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.13909263908863068,
-            "nrmse_ristretto": 0.021775852888822556,
+            "nrmse_gt": 0.14210814237594604,
+            "nrmse_ristretto": 0.034641653299331665,
             "threads": 1,
-            "time_ms": 26015.905224000002
+            "time_ms": 2569.916
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5307,23 +5010,23 @@
             "case_id": "torso_cine_8ch_radial",
             "category": "Dynamic",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.14116984605789185,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 174.74052500000002
-        },
-        {
-            "case_id": "torso_cine_8ch_radial",
-            "category": "Dynamic",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "L1-Wavelet (20 it)",
             "nrmse_gt": 0.14392509697839115,
             "nrmse_ristretto": 0.025391602626680814,
             "threads": 1,
             "time_ms": 2329.328055
+        },
+        {
+            "case_id": "torso_cine_8ch_radial",
+            "category": "Dynamic",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "L1-Wavelet (20 it)",
+            "nrmse_gt": 0.14116984605789185,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 180.635443
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5342,10 +5045,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.10212581604719162,
-            "nrmse_ristretto": 0.04163379222154617,
+            "nrmse_gt": 0.10058193653821945,
+            "nrmse_ristretto": 0.03976751118898392,
             "threads": 1,
-            "time_ms": 21975.143353333333
+            "time_ms": 20645.113999999998
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5364,10 +5067,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.0877138152718544,
+            "nrmse_gt": 0.08771385252475739,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 475.679054
+            "time_ms": 468.580595
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5375,10 +5078,10 @@
             "data_source": "synthetic",
             "framework": "BART (CUDA)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.07328199595212936,
-            "nrmse_ristretto": 0.03076956793665886,
+            "nrmse_gt": 0.07018762081861496,
+            "nrmse_ristretto": 0.027899064123630524,
             "threads": 1,
-            "time_ms": 5384.848099666667
+            "time_ms": 3279.154
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5386,10 +5089,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.06443373113870621,
+            "nrmse_gt": 0.06443390250205994,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 415.28276400000004
+            "time_ms": 411.655664
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5406,12 +5109,12 @@
             "case_id": "torso_cine_8ch_radial",
             "category": "Dynamic",
             "data_source": "synthetic",
-            "framework": "BART (CUDA)",
+            "framework": "MRpro (CUDA)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.08679993450641632,
-            "nrmse_ristretto": 0.056066494435071945,
+            "nrmse_gt": 0.09250334995945102,
+            "nrmse_ristretto": 0.07042677011499456,
             "threads": 1,
-            "time_ms": 3083.3164263333333
+            "time_ms": 21238.586416000002
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5419,21 +5122,10 @@
             "data_source": "synthetic",
             "framework": "Ristretto (CUDA)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.070052370429039,
+            "nrmse_gt": 0.08843909949064255,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1470.231664
-        },
-        {
-            "case_id": "torso_cine_8ch_radial",
-            "category": "Dynamic",
-            "data_source": "synthetic",
-            "framework": "MRpro (CUDA)",
-            "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.09250334995945102,
-            "nrmse_ristretto": 0.07042677011499456,
-            "threads": 1,
-            "time_ms": 21238.586416000002
+            "time_ms": 573.956001
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5461,23 +5153,23 @@
             "case_id": "torso_cine_8ch_radial",
             "category": "Non-Cartesian",
             "data_source": "synthetic",
-            "framework": "Ristretto (CUDA)",
-            "method": "DCF Adjoint (Gridding)",
-            "nrmse_gt": 0.22418689727783203,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 14.040918
-        },
-        {
-            "case_id": "torso_cine_8ch_radial",
-            "category": "Non-Cartesian",
-            "data_source": "synthetic",
             "framework": "MRpro (CUDA)",
             "method": "DCF Adjoint (Gridding)",
             "nrmse_gt": 0.22418689713418377,
             "nrmse_ristretto": 1.624510739703158e-6,
             "threads": 1,
             "time_ms": 104.154129
+        },
+        {
+            "case_id": "torso_cine_8ch_radial",
+            "category": "Non-Cartesian",
+            "data_source": "synthetic",
+            "framework": "Ristretto (CUDA)",
+            "method": "DCF Adjoint (Gridding)",
+            "nrmse_gt": 0.22418689727783203,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 14.040918
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -5491,6 +5183,50 @@
             "time_ms": 14.379902
         }
     ],
-    "schema_version": 2,
+    "run": {
+        "blas_vendor": [
+            "libopenblas64_.so"
+        ],
+        "cpu_model": [
+            "AMD EPYC 7763 64-Core Processor"
+        ],
+        "cpu_threads": [
+            "64"
+        ],
+        "dates": [
+            "2026-10-02",
+            "2026-10-12"
+        ],
+        "gpu": [
+            "NVIDIA A100-SXM4-40GB"
+        ],
+        "hostnames": [
+            "x1001c4s3b0n0",
+            "x1001c4s3b0n1"
+        ],
+        "julia_version": [
+            "1.13.0",
+            "1.13.1"
+        ],
+        "toolkit_versions": {
+            "BART": [
+                "v1.0.00"
+            ],
+            "MRIReco": [
+                "0.9.2"
+            ],
+            "MRpro": [
+                "0.260420"
+            ],
+            "Ristretto": [
+                "0.1.0",
+                "0.1.0 (e240e882)"
+            ],
+            "SigPy": [
+                "0.1.27"
+            ]
+        }
+    },
+    "schema_version": 3,
     "threads": 1
 }

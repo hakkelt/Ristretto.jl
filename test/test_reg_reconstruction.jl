@@ -48,7 +48,7 @@ using TestItems
             Component(:sparse, TemporalTotalVariation(0.02f0; time_dim = 3)),
         )
         img_recon = reconstruct(acq, IterativeReconstruction(components...; maxit = 100); verbosity = Silent())
-        @test img_recon isa DecomposedImage
+        @test img_recon isa ReconImage
         @test relerr(img_recon) < 0.2
     end
 
@@ -58,7 +58,7 @@ using TestItems
             Component(:sparse, L1Image(0.02f0)),
         )
         img_recon = reconstruct(acq, IterativeReconstruction(components...; maxit = 100); verbosity = Silent())
-        @test img_recon isa DecomposedImage
+        @test img_recon isa ReconImage
         @test relerr(img_recon) < 0.2
     end
 
@@ -72,7 +72,7 @@ using TestItems
             Component(:sparse, TemporalTotalVariation(0.02f0; time_dim = 3)),
         )
         img_recon = reconstruct(acq, IterativeReconstruction(components...; maxit = 100); verbosity = Silent())
-        @test img_recon isa DecomposedImage
+        @test img_recon isa ReconImage
         @test relerr(img_recon) < 0.2
     end
 

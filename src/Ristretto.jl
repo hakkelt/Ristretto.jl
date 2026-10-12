@@ -100,7 +100,8 @@ export AcquisitionInfo, PartitionedKSpace
 export TemporalBasis, KSpaceToImage
 
 # Image decomposition
-export Component, DecomposedImage, components, total_image
+export Component, ReconImage, components, total_image, drop_components
+export Header, settag!, gettag, tags
 
 # Preprocessing
 export density_compensation, PipeMenonDCF, VoronoiDCF, correct_dcf_edges
@@ -127,6 +128,7 @@ export ContourletParams, parabolic_levels # L1Contourlet
 # Extension surface: dispatch on these, subtype them, or implement them for a new component.
 # Documented and stable, but not exported.
 public CartesianAcquisitionInfo, NonCartesianAcquisitionInfo
+public header
 public Regularization, ReconstructionMethod, IterativeMethod, DirectMethod
 public Scaling, CoilCombination, DataFidelity, Verbosity, ReconstructionExecutor
 public Subsampling, VariableDensityDistribution, PartialFourierFilter
@@ -142,6 +144,7 @@ public build_encoding_operator, signal_model_operator, NamedDimsOp, DFT, DEFAULT
 public DEVICE_DISABLES_TASK_SPLITTING
 
 include("acquisition_data/partitioned_kspace.jl")
+include("acquisition_data/header.jl")
 include("acquisition_data/acquisition_info.jl")
 include("acquisition_data/cartesian_acquisition_info.jl")
 include("acquisition_data/noncartesian_acquisition_info.jl")
@@ -190,6 +193,8 @@ include("regularization/constraint_reg.jl")
 include("regularization/reference_prior_reg.jl")
 include("regularization/plug_and_play_reg.jl")
 
+include("reconstruction/recon_image.jl")
+include("export/export.jl")
 include("reconstruction/components.jl")
 include("reconstruction/methods/coil_combination.jl")
 include("reconstruction/data_fidelity.jl")

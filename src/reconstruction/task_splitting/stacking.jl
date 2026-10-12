@@ -21,7 +21,7 @@ function stack_slices_like(::AbstractArray, results, plan, threaded::Val)
     return stack_plain_image_slices(results, plan, threaded)
 end
 
-function stack_slices_like(::DecomposedImage, results, plan, threaded::Val)
+function stack_slices_like(::ReconImage, results, plan, threaded::Val)
     return stack_split_image_slices(results, plan, threaded)
 end
 
@@ -47,14 +47,14 @@ end
 
 function stack_split_image_slices(results, plan, threaded::Val)
     summed = stack_plain_image_slices(map(total_image, results), plan, threaded)
-    names = keys(getfield(first(results), :components))
+    names = keys(components(first(results)))
     comps = NamedTuple{names}(
         Tuple(
-            stack_plain_image_slices(map(r -> getfield(r, :components)[name], results), plan, threaded)
+            stack_plain_image_slices(map(r -> components(r)[name], results), plan, threaded)
                 for name in names
         )
     )
-    return DecomposedImage(summed, comps)
+    return ReconImage(summed, Header(), comps, _spatial_ndims(first(results)))
 end
 
 function maybe_rescale_results!(results, scales, config)
@@ -69,4 +69,4 @@ function maybe_rescale_results!(results, scales, config)
 end
 
 _rescale_result!(x::AbstractArray, factor) = (x .*= factor)
-_rescale_result!(x::DecomposedImage, factor) = rescale!(x, factor)
+_rescale_result!(x::ReconImage, factor) = rescale!(x, factor)

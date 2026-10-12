@@ -47,16 +47,21 @@ ProgressMeter = {url = "https://github.com/timholy/ProgressMeter.jl", rev = "86a
 
 [weakdeps]
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+DICOM = "a26e6606-dd52-5f6a-a97f-4f611373d757"
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
 MKL = "33e6dc65-8f57-5167-99aa-e5a354878fb2"
-MRIBase = "f7771a9a-6e57-4e71-863b-6e4b6a2f17df"
+MRIFiles = "5a6f062f-bf45-497d-b654-ad17aae2a530"
+NIfTI = "a3a9e032-41b5-5fc4-967a-a6b7a19844d3"
 
 [extensions]
 RistrettoCUDAExt = ["CUDA", "GPUArrays"]
+RistrettoDICOMExt = ["DICOM", "FileIO"]
 RistrettoGPUExt = ["GPUArrays", "KernelAbstractions"]
 RistrettoMKLExt = "MKL"
-RistrettoMRIBaseExt = "MRIBase"
+RistrettoMRIFilesExt = "MRIFiles"
+RistrettoNIfTIExt = ["FileIO", "NIfTI"]
 
 [compat]
 ADTypes = "1.5"
@@ -78,8 +83,11 @@ KernelAbstractions = "0.9"
 LinearAlgebra = "1"
 LoopVectorization = "0.12"
 MKL = "0.6 - 0.9"
-MRIBase = "0.4"
+DICOM = "0.11"
+FileIO = "1"
+MRIFiles = "0.3"
 NFFTTools = "0.2"
+NIfTI = "0.6"
 NamedDims = "1.2"
 NestedThreading = "0.1.2"
 OhMyThreads = "0.8"

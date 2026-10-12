@@ -24,8 +24,10 @@
     @test haskey(res, :mean)
     @test haskey(res, :std)
     @test haskey(res, :g_factor)
-    @test res.mean isa NamedDimsArray
-    @test dimnames(res.mean) == (:x, :y)
+    for m in (res.mean, res.std, res.g_factor)
+        @test m isa NamedDimsArray
+        @test dimnames(m) == (:x, :y)
+    end
     @test size(res.g_factor) == (Nx, Ny)
 
     # Theoretical noise std in image space for 16x16 with 1/sqrt(256)=1/16 scaling is 0.0625
@@ -75,7 +77,7 @@ end
     )
     rec = reconstruct(acq_sim, method_subspace; verbosity = Silent())
 
-    @test rec isa NamedDimsArray
+    @test parent(rec) isa NamedDimsArray
     @test dimnames(rec) == (:x, :y, :time)
     @test size(rec) == (Nx, Ny, Nt)
 

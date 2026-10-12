@@ -74,8 +74,9 @@ one, under the same row labels with a `(CUDA)` suffix and recorded under backend
 Every row is timed from host data to a host image: the copies to the device and back are inside
 the timed region for every toolkit, since BART cannot be timed any other way. A BART process also
 creates its CUDA context and loads cuFFT and cuBLAS on every call, which an in-process toolkit
-does once, in its warm-up; that cost (`BART_GPU_INIT`, measured on an 8×8 problem) is subtracted
-along with the process spawn and file I/O. After each toolkit's row the memory pools of CUDA.jl,
+does once, in its warm-up; that cost (`BART_GPU_INIT`, measured on an 8×8 problem) is subtracted.
+The process start and the file I/O are not in BART's times at all: each is the `Total Time` that
+`pics` reports itself. After each toolkit's row the memory pools of CUDA.jl,
 CuPy and PyTorch are emptied, so each toolkit starts with the whole device. λ and ρ are the CPU
 calibration's: the problem is the same, and so is the precision (`ComplexF32`).
 
@@ -159,8 +160,12 @@ query, done fresh each time:
   ```
 - **`export_snapshot.jl`** — writes `results/benchmark_<backend>_<n>threads.json`, the committed
   snapshot of a full cluster run, one per (backend, threads) pair found, from the latest
-  `source = "slurm"` row per case. Run this after any cluster rerun that should update the
-  committed numbers:
+  `source = "slurm"` row per case. A toolkit's rows measured with an older release than its
+  latest run's are left out, also where the new release recorded no row (a solver that no longer
+  reaches the accuracy target), so a table never mixes releases. A run limited to some competitors
+  (`--frameworks=`) still times Ristretto as their reference; those Ristretto rows are left out too,
+  so rerunning one competitor never replaces Ristretto's numbers. Run this after any cluster rerun
+  that should update the committed numbers:
   ```sh
   julia --project=benchmark/comparison benchmark/comparison/scripts/export_snapshot.jl
   ```

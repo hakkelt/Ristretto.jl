@@ -1,5 +1,7 @@
 # Reconstruction Methods
 
+*Tutorial: [Reconstruction methods](../tutorials/04_reconstruction_methods.md).*
+
 `Ristretto` provides a unified method taxonomy rooted in `ReconstructionMethod`. Every reconstruction task is specified by passing a method object to `reconstruct`.
 
 ```julia
@@ -161,6 +163,12 @@ Signal models map low-dimensional subspace or parameter representations to dynam
 
 - `TemporalBasis(Φ; time_dim = :time)`: Subspace reconstruction with basis matrix $\Phi \in \mathbb{C}^{N_t \times K}$. The optimization variable is the coefficient array $c \in \mathbb{C}^{N_x \times N_y \times K}$, and the final reconstructed image is $x(r, t) = \sum_{k=1}^K \Phi(t, k) c(r, k)$.
 
+$\Phi$ is computed beforehand — from Bloch simulations of the expected signal evolutions or an SVD
+of a signal dictionary — so the problem stays linear and convex while the unknowns drop from $N_t$
+to $K \ll N_t$ images per voxel: the partially separable model of Liang (2007), and the
+"T2 shuffling" of Tamir et al. (2017) (BART's `pics -B`). `TemporalBasis` couples the time
+dimension, so [Task Splitting](task_splitting.md) never splits over it.
+
 ```@docs
 TemporalBasis
 build_encoding_operator
@@ -170,6 +178,20 @@ signal_model_operator
 ### Partial Fourier Reconstruction
 
 Partial Fourier techniques recover high-resolution images from asymmetrically sampled k-space data by exploiting conjugate phase symmetry.
+
+The k-space of a *real* image is Hermitian, $S(-k) = S^*(k)$, so slightly more than half of it
+along one phase-encoding direction determines the rest once the image phase is known. All three
+methods estimate a smooth phase $\phi_c$ per coil from the symmetric band around the centre
+([`partial_fourier_band`](@ref)) and differ in how they use it:
+
+- [`Homodyne`](@ref) (Noll et al. 1991) weights k-space with an asymmetric ramp, demodulates by
+  $e^{-i\phi_c}$ and keeps the real part. Non-iterative and fast, but it discards any phase beyond
+  $\phi_c$, so it is the most sensitive of the three to rapid phase variation.
+- [`PhaseConstrained`](@ref) (Margosian et al. 1986) solves the least-squares problem for a
+  real-valued image $m$, $\min_{m \in \mathbb{R}} \tfrac12\sum_c\|\mathcal{P}\mathcal{F}(s_c e^{i\phi_c} m) - y_c\|_2^2$,
+  by conjugate gradients on the normal equations.
+- [`POCS`](@ref) (Haacke et al. 1991) alternates projections onto the set with phase $\phi_c$ in
+  image space and onto consistency with the *acquired* samples in k-space.
 
 ```@docs
 partial_fourier_band
@@ -184,6 +206,18 @@ POCS
 ### Parallel Imaging Methods
 
 In addition to iterative SENSE models (`IterativeReconstruction`), `Ristretto` provides direct k-space autocalibrated parallel imaging:
+
+- [`GRAPPA`](@ref) (Griswold et al. 2002) synthesizes each missing k-space line as a linear
+  combination of acquired neighbours across all coils, with kernel weights fitted by least squares
+  on the fully sampled autocalibration (ACS) block. With the default `RootSumSquares()`
+  combination it needs no sensitivity maps.
+- [`SPIRiT`](@ref) (Lustig & Pauly 2010) instead requires every k-space sample — acquired or not —
+  to be consistent with its calibrated neighbourhood, $k = Gk$, and solves for the missing samples
+  under that constraint. `iterative = true` states it as an [`IterativeReconstruction`](@ref) over
+  the k-space ([`KSpaceToImage`](@ref)) with a [`SPIRiTConsistency`](@ref) term and
+  [`HardConsistency`](@ref).
+- Calibrationless k-space methods (SAKE, LORAKS) are a regularizer rather than a method here:
+  [`StructuredLowRank`](@ref).
 
 ```@docs
 GRAPPA
@@ -237,3 +271,18 @@ method's signal model:
 ```@docs
 Ristretto.model_encoding_operator
 ```
+
+## References
+
+Parallel imaging:
+- Griswold, M. A., et al. (2002). *Generalized autocalibrating partially parallel acquisitions (GRAPPA).* Magnetic Resonance in Medicine, 47(6), 1202-1210. <https://doi.org/10.1002/mrm.10171> — [`GRAPPA`](@ref).
+- Lustig, M., & Pauly, J. M. (2010). *SPIRiT: Iterative self-consistent parallel imaging reconstruction from arbitrary k-space.* Magnetic Resonance in Medicine, 64(2), 457-471. <https://doi.org/10.1002/mrm.22428> — [`SPIRiT`](@ref), [`SPIRiTConsistency`](@ref).
+
+Partial Fourier:
+- Margosian, P., Schmitt, F., & Purdy, D. (1986). *Faster MR imaging: Imaging with half the data.* Health Care Instrumentation, 1(6), 195-197. — [`PhaseConstrained`](@ref).
+- Noll, D. C., Nishimura, D. G., & Macovski, A. (1991). *Homodyne detection in magnetic resonance imaging.* IEEE Transactions on Medical Imaging, 10(2), 154-163. <https://doi.org/10.1109/42.79473> — [`Homodyne`](@ref).
+- Haacke, E. M., Lindskog, E. D., & Lin, W. (1991). *A fast, iterative, partial-Fourier technique capable of local phase recovery.* Journal of Magnetic Resonance, 92(1), 126-145. <https://doi.org/10.1016/0022-2364(91)90253-P> — [`POCS`](@ref).
+
+Subspace reconstruction:
+- Liang, Z.-P. (2007). *Spatiotemporal imaging with partially separable functions.* Proc. IEEE ISBI, 988-991. <https://doi.org/10.1109/ISBI.2007.357020> — [`TemporalBasis`](@ref).
+- Tamir, J. I., et al. (2017). *T2 shuffling: Sharp, multicontrast, volumetric fast spin-echo imaging.* Magnetic Resonance in Medicine, 77(1), 180-195. <https://doi.org/10.1002/mrm.26102>

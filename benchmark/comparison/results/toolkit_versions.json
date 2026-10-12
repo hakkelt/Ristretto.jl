@@ -1,0 +1,21 @@
+{
+  "comment": "Toolkit versions of the runs recorded before 2026-10-11, which stored none; export_snapshot.jl uses them for those runs. Read from the installed packages on 2026-10-11: each was installed before the earliest of those runs (2026-10-02), as the only version in its environment.",
+  "cpu": {
+    "Ristretto": "0.1.0",
+    "BART": "v0.9.00",
+    "SigPy": "0.1.27",
+    "MRpro": "0.260420",
+    "PyTorch": "2.14.0+cpu",
+    "MRIReco": "0.9.2",
+    "MIRT": "0.18.3"
+  },
+  "cuda": {
+    "Ristretto": "0.1.0",
+    "BART": "v0.9.00",
+    "SigPy": "0.1.27",
+    "CuPy": "14.2.0",
+    "MRpro": "0.260420",
+    "PyTorch": "2.11.0+cu128",
+    "MRIReco": "0.9.2"
+  }
+}

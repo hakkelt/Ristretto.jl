@@ -8,9 +8,9 @@
 #   julia --project=examples examples/run_all.jl m4raw ocmr       # two sources
 #   julia --project=examples examples/run_all.jl fastmri/brain    # by path fragment
 #
-# The large files are excluded unless their source or path is named explicitly: with the
-# fastMRI prostate and breast data, the two multi-gigabyte mridata.org files and the
-# CMRxRecon mapping sets, a full run downloads roughly 20 GB.
+# The large files (`BIG`) are excluded unless their source or path is named explicitly: with the
+# fastMRI prostate, breast and multicoil knee data and the large mridata.org files, a full run
+# downloads roughly 20 GB.
 #
 # Set `SYNAPSE_AUTH_TOKEN` for the CMRxRecon sources and register fastMRI URLs with
 # `MRITestData.set_fastmri_urls!` before including those.

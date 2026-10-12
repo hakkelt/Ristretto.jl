@@ -31,7 +31,7 @@ exports — read it rather than trusting a tree here.
 
 `examples/` is a workspace member holding one script per data type of every `MRITestData` source
 (35 of them), each reconstructing a real dataset. When changing the raw-data path
-(`ext/RistrettoMRIBaseExt.jl`) or preprocessing, run the affected ones —
+(`ext/RistrettoMRIFilesExt/`) or preprocessing, run the affected ones —
 `julia --project=examples examples/run_all.jl <source>` — since the header defects they cover
 (missing dwell time, unrecorded echo position, calibration block with a different readout length,
 calibration profiles overwriting the imaging k-space centre, single-partition 3D slab) have no
@@ -85,10 +85,10 @@ stops being pruned has to be restored from the fork's `integration` branch once 
 Ristretto is **ahead of** its upstreams in places (its own fixes are pushed there as branches), so a sync
 is a merge, not a copy: check whether the vendored side is the newer one before overwriting it.
 
-That merge is the thing `deps/vendor.toml` and `tools/vendor.jl` exist to remove. The manifest
+That merge is the thing `deps/vendor.toml` and `deps/vendor.jl` exist to remove. The manifest
 declares, per package, which fork branches make up the vendored copy and how they are stacked;
-`julia tools/vendor.jl rebuild` merges them into one `integration` branch per fork, and
-`julia tools/vendor.jl sync` projects that branch into `deps/` as a squashed subtree, so the
+`julia deps/vendor.jl rebuild` merges them into one `integration` branch per fork, and
+`julia deps/vendor.jl sync` projects that branch into `deps/` as a squashed subtree, so the
 vendored copy records where it came from. Two rules follow, and they are what keep the sync
 one-directional:
 
@@ -106,7 +106,7 @@ they need. Nothing tracked in this repository, and nothing pushed to a fork, may
 one machine; the `[sources]` block that points the vendored copy at its siblings under `deps/` is
 supplied by `deps/patches/<package>.patch` and belongs nowhere else.
 
-`julia tools/vendor.jl check` compares the manifest against GitHub and reports mis-based PRs,
+`julia deps/vendor.jl check` compares the manifest against GitHub and reports mis-based PRs,
 branches with no PR, branches whose PR has already merged (whose code should come from upstream
 instead), branches the fork does not have or whose local tip is ahead of it, branches that push a
 path of one machine, and branches on the fork that no manifest entry refers to. Branch existence
@@ -118,7 +118,7 @@ forces: the relative imports, the inlined extension, the OSQP removal, the vendo
 paths. Nothing else belongs there. Work that would make sense to the upstream package goes on the
 branch that owns the code; work that is about MRI rather than about the dependency belongs in
 Ristretto's own `src/`. A hunk that is neither is a sign the fix was made in the wrong place —
-`julia tools/vendor.jl patch` regenerates the file, so such a hunk shows up the moment it appears.
+`julia deps/vendor.jl patch` regenerates the file, so such a hunk shows up the moment it appears.
 
 ### API gotchas
 
@@ -178,7 +178,8 @@ Add a `test/test_reg_<name>.jl` (`@testitem`, `tags = [:regularization]`) and a 
   have several); keep begin/end nesting shallow.
 - Tags in use: `:encoding`, `:regularization`, `:reconstruction`, `:acquisition`, `:simulation`,
   `:minimizer`, `:components`, `:integration`, `:nfft`, `:quality` (+ `:aqua`, `:jet`),
-  `:operators`, `:gpu`. Combine as needed.
+  `:operators`, `:gpu`, `:export`, `:extension` (an item that exercises a package extension in
+  `ext/`). Combine as needed.
 - Device coverage lives in the existing items, not in separate ones: an item that builds a case
   adds `setup = [GpuEnvSetup, GpuHelpers]`, the `:gpu` tag, and a `test_on_devices(f, args...)`
   call after its host assertions (`test/test_snippets.jl`). `GpuEnvSetup` loads every backend
@@ -191,6 +192,19 @@ Add a `test/test_reg_<name>.jl` (`@testitem`, `tags = [:regularization]`) and a 
   ```
 - Quality: Aqua (`piracies=false`, `persistent_tasks=false`, `stale_deps=false`) and JET, in
   `test/test_quality.jl`.
+- CI counts coverage with `--code-coverage=@src`, then reruns the `:extension` items
+  (`RISTRETTO_TEST_TAGS=extension`) with `--code-coverage=@ext`. `--code-coverage=user` would
+  instrument the vendored `deps/` too and makes the suite several times slower.
+- The README's code blocks run in `test/test_readme.jl`; keep them runnable.
+
+## Documentation
+
+`docs/make.jl` builds one Documenter site. The tutorials are Literate.jl scripts in
+`docs/literate/` (`# ` lines are prose, `## ` lines are code comments, `#-` splits a code block),
+executed on every build into the gitignored `docs/src/tutorials/`, each also written as a
+notebook to download. `RISTRETTO_DOCS_TUTORIALS=01,09` builds only those tutorials, `none` none.
+The related-packages page reads the committed benchmark snapshots through
+`docs/benchmark_tables.jl`.
 
 ## Formatting
 

@@ -4,7 +4,7 @@
 # package cannot be registered with unregistered dependencies. Every vendored package is a
 # projection of a stack of branches in a personal fork, each of which is (or will become) a small
 # PR against the real upstream. This file is the single place that records which branches make up
-# that projection and how they are stacked, so that `tools/vendor.jl` can rebuild `deps/`
+# that projection and how they are stacked, so that `deps/vendor.jl` can rebuild `deps/`
 # mechanically and can check the stack against what GitHub actually says.
 #
 # Per package:
@@ -21,7 +21,7 @@
 #
 # Then one `[[<package>.stack]]` entry per branch, in merge order: a branch always appears after
 # the branch it is stacked on. `parent` is the branch this one is based on, empty for a branch
-# that sits directly on `base`; it is the PR base that the stack intends, which `tools/vendor.jl
+# that sits directly on `base`; it is the PR base that the stack intends, which `deps/vendor.jl
 # check` compares against the base GitHub reports. Branches may be stacked freely -- stacking is
 # how the stack avoids a permanent rebase treadmill, not a defect.
 #
@@ -427,6 +427,13 @@ branch = "test/jet-0.12"
 parent = "unified-threading"
 pr = "hakkelt/AbstractOperators.jl#44"
 
+# Docs only (pruned from the vendored copy): the fork deploys its `integration` docs to its own
+# GitHub Pages, which Ristretto's documentation links to.
+[[AbstractOperators.stack]]
+branch = "docs/fork-pages"
+parent = "unified-threading"
+pr = "hakkelt/AbstractOperators.jl#55"
+
 [ProximalOperators]
 fork = "https://github.com/hakkelt/ProximalOperators.jl.git"
 upstream = "https://github.com/JuliaFirstOrder/ProximalOperators.jl.git"
@@ -511,6 +518,13 @@ pr = "hakkelt/ProximalOperators.jl#18"
 branch = "feat/gpu-array-partition-linalg"
 parent = "threaded-kernels"
 pr = "hakkelt/ProximalOperators.jl#17"
+
+# Docs only (pruned from the vendored copy): the fork deploys its `integration` docs to its own
+# GitHub Pages, which Ristretto's documentation links to.
+[[ProximalOperators.stack]]
+branch = "docs/fork-pages"
+parent = "preallocate"
+pr = "hakkelt/ProximalOperators.jl#21"
 
 # `recursive-array-tools-ext` (#164) and `precomposed-sliced-separable-sum` (#157) have merged
 # upstream and are intentionally absent: that code now arrives through `base`.
@@ -646,6 +660,13 @@ branch = "fix/admm-mock-threaded"
 parent = "master"
 pr = "hakkelt/ProximalAlgorithms.jl#10"
 
+# Docs only (pruned from the vendored copy): the fork deploys its `integration` docs to its own
+# GitHub Pages, which Ristretto's documentation links to.
+[[ProximalAlgorithms.stack]]
+branch = "docs/fork-pages"
+parent = "master"
+pr = "hakkelt/ProximalAlgorithms.jl#18"
+
 # `pogm-algorithm` is deliberately absent: it added POGM as a `pogm::Bool` variant of
 # `FastForwardBackward`, and `master` (#100) supersedes it with a `src/algorithms/pogm.jl` of its
 # own. Merging it would only re-add the old path. The branch is still on the fork, unmerged.
@@ -706,3 +727,10 @@ pr = "hakkelt/StructuredOptimization.jl#7"
 branch = "feat/smooth-normal-op"
 parent = "master"
 pr = "hakkelt/StructuredOptimization.jl#3"
+
+# Docs only (pruned from the vendored copy): the fork deploys its `integration` docs to its own
+# GitHub Pages, which Ristretto's documentation links to.
+[[StructuredOptimization.stack]]
+branch = "docs/fork-pages"
+parent = "master"
+pr = "hakkelt/StructuredOptimization.jl#8"

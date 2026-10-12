@@ -7,7 +7,7 @@ config-version = 1
 # `@run_package_tests`'s package-root scan. Since the vendored copies are pruned to what Ristretto
 # compiles, deps/ no longer carries test files at all, but the exclusion stays as a guard.
 #
-# .vendor-work/ holds the scratch worktrees in which `tools/vendor.jl rebuild` assembles each
+# .vendor-work/ holds the scratch worktrees in which `deps/vendor.jl rebuild` assembles each
 # fork's `integration` branch. Those are full checkouts of the dependency repositories, test
 # suites included, and a package-root scan finds every one of them.
 #

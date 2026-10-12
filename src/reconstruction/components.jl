@@ -39,8 +39,8 @@ function check_components(components::Tuple{Vararg{Component}})
     @argcheck length(components) >= 2 "Image decomposition needs at least two components; use the plain regularization API for a single component."
     names = map(c -> c.name, components)
     @argcheck length(unique(names)) == length(names) "Component names must be unique, got $names."
-    collisions = filter(in(_DECOMPOSED_IMAGE_RESERVED_NAMES), names)
-    @argcheck isempty(collisions) "Component name(s) $collisions collide with DecomposedImage's own field(s) $_DECOMPOSED_IMAGE_RESERVED_NAMES; rename the component(s) (reserved names: $_DECOMPOSED_IMAGE_RESERVED_NAMES)."
+    collisions = filter(in(_RECON_IMAGE_RESERVED_NAMES), names)
+    @argcheck isempty(collisions) "Component name(s) $collisions collide with ReconImage's own field(s) $_RECON_IMAGE_RESERVED_NAMES; rename the component(s)."
     return nothing
 end
 
@@ -71,100 +71,10 @@ function materialize_with_auxiliaries(c::Component, x::Variable; threaded::Bool)
     return reduce(+, term_list), auxiliaries
 end
 
-# `total` and `components` are the struct's real fields; a component sharing either name would
-# otherwise be shadowed by `getproperty` below (or shadow the field itself), so both
-# `check_components` and the constructor below reject the collision up front.
-const _DECOMPOSED_IMAGE_RESERVED_NAMES = (:total, :components)
-
-"""
-    DecomposedImage(total, components::NamedTuple) <: AbstractArray
-
-Result of an image decomposition reconstruction. Behaves as an `AbstractArray`
-equal to the sum of its components (`total`); the individual components remain
-accessible either through `.components` (or the `components` function), or,
-more concisely, directly as a property: `img.lowrank` is shorthand for
-`img.components.lowrank`. The struct's own fields (`total`, `components`)
-always win over a component name, and `check_components`/the constructor
-reject a component named `total` or `components`, since such a name would
-otherwise be unreachable through dot access.
-
-# Example
-```julia
-img[10, 10, 3]          # sum of components at that index
-img.lowrank              # low-rank part (shorthand)
-img.components.lowrank  # low-rank part (equivalent long form)
-Array(img)               # plain Array of the sum
-```
-"""
-struct DecomposedImage{T, N, A <: AbstractArray{T, N}, C <: NamedTuple} <: AbstractArray{T, N}
-    total::A
-    components::C
-    function DecomposedImage(total::A, components::C) where {T, N, A <: AbstractArray{T, N}, C <: NamedTuple}
-        collisions = filter(in(_DECOMPOSED_IMAGE_RESERVED_NAMES), keys(components))
-        @argcheck isempty(collisions) "Component name(s) $collisions collide with DecomposedImage's own field(s) $_DECOMPOSED_IMAGE_RESERVED_NAMES; rename the component(s)."
-        return new{T, N, A, C}(total, components)
-    end
-end
-
-Base.size(img::DecomposedImage) = size(getfield(img, :total))
-Base.getindex(img::DecomposedImage, I...) = getindex(getfield(img, :total), I...)
-Base.IndexStyle(::Type{<:DecomposedImage{T, N, A}}) where {T, N, A} = IndexStyle(A)
-Base.similar(img::DecomposedImage, ::Type{S}, dims::Dims) where {S} = similar(getfield(img, :total), S, dims)
-
-function Base.setindex!(::DecomposedImage, args...)
-    throw(ErrorException("DecomposedImage is read-only; use `Array(img)` for a mutable copy."))
-end
-
-"""
-    Base.getproperty(img::DecomposedImage, name::Symbol)
-
-Real struct fields (`total`, `components`) resolve first; any other `name` is looked up in the
-components `NamedTuple`, so `img.lowrank` is shorthand for `img.components.lowrank`. A `name` that
-is neither a field nor a component name throws an `ArgumentError` listing both.
-"""
-function Base.getproperty(img::DecomposedImage, name::Symbol)
-    if name === :total || name === :components
-        return getfield(img, name)
-    end
-    comps = getfield(img, :components)
-    haskey(comps, name) && return getfield(comps, name)
-    throw(ArgumentError("DecomposedImage has no property `$name`; available properties: $(join(propertynames(img), ", "))."))
-end
-
-function Base.propertynames(img::DecomposedImage, ::Bool = false)
-    return (_DECOMPOSED_IMAGE_RESERVED_NAMES..., keys(getfield(img, :components))...)
-end
-
-Base.Array(img::DecomposedImage) = Array(unname(getfield(img, :total)))
-Base.convert(::Type{Array}, img::DecomposedImage) = Array(img)
-NamedDims.NamedDimsArray(img::DecomposedImage) = getfield(img, :total) isa NamedDimsArray ? getfield(img, :total) : throw(ArgumentError("DecomposedImage has no dimension names."))
-
-"""
-    total_image(img::DecomposedImage)
-
-Return the stored sum array (named or not) of an image-decomposition result.
-"""
-total_image(img::DecomposedImage) = getfield(img, :total)
-
-"""
-    components(img::DecomposedImage)
-
-Return the `NamedTuple` of the individual components of an image-decomposition result.
-"""
-components(img::DecomposedImage) = getfield(img, :components)
-
-unname(img::DecomposedImage) = unname(getfield(img, :total))
-dimnames(img::DecomposedImage) = dimnames(getfield(img, :total))
-
-function rescale!(img::DecomposedImage, factor)
-    unname(getfield(img, :total)) .*= factor
-    for c in getfield(img, :components)
+function rescale!(img::ReconImage, factor)
+    unname(parent(img)) .*= factor
+    for c in components(img)
         unname(c) .*= factor
     end
     return img
-end
-
-function Base.show(io::IO, ::MIME"text/plain", img::DecomposedImage)
-    print(io, "DecomposedImage{", eltype(img), "} of size ", size(img), " with components ")
-    return print(io, join(keys(getfield(img, :components)), ", "))
 end

@@ -456,12 +456,12 @@ end
             acq = AcquisitionInfo(ksp; sensitivity_maps = smaps)
 
             img_direct = reconstruct(acq; verbosity = Silent())
-            @test img_direct isa NamedDimsArray
+            @test parent(img_direct) isa NamedDimsArray
             @test dimnames(img_direct) == (:x, :y, :z)
             @test size(img_direct) == (nx, ny, nslices)
 
             img_reg = reconstruct(acq, IterativeReconstruction(L2Image(0.01); maxit = 5); verbosity = Silent())
-            @test img_reg isa NamedDimsArray
+            @test parent(img_reg) isa NamedDimsArray
             @test dimnames(img_reg) == (:x, :y, :z)
             @test size(img_reg) == (nx, ny, nslices)
         end

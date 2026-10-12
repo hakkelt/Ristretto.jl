@@ -10,7 +10,7 @@ shape dispatches on that (`_scale_x0`, `_inv_scale`, `_max_abs`, `_n_vars`, `_ex
 
 `present(x)` turns a raw solver iterate — already inverse-scaled here — into the value the caller
 would have got back from `reconstruct`: it applies the signal model and the `NamedDimsArray` /
-`DecomposedImage` wrapping that the two paths do differently. It is used only to build the
+`ReconImage` wrapping that the two paths do differently. It is used only to build the
 `on_iteration` callback's `x`, so it is never called at all when no callback was supplied.
 
 `prior` is what forming the default warm start computed ([`_warm_start_prior`](@ref)), reused

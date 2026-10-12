@@ -103,7 +103,8 @@ end
         # Measuring by hand over those masks reproduces `estimate_snr`.
         mag = abs.(noisy)
         by_hand = sqrt(2 - π / 2) * (sum(mag[sig]) / count(sig)) / std(mag[noise])
-        @test by_hand ≈ estimate_snr(noisy)
+        # Float32 magnitudes, summed in a different order.
+        @test by_hand ≈ estimate_snr(noisy) rtol = 1.0e-6
     end
 
     @testset "argument checking" begin
