@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Advanced reconstruction methods · Ristretto.jl</title><meta name="title" content="Advanced reconstruction methods · Ristretto.jl"/><meta property="og:title" content="Advanced reconstruction methods · Ristretto.jl"/><meta property="twitter:title" content="Advanced reconstruction methods · Ristretto.jl"/><meta name="description" content="Documentation for Ristretto.jl."/><meta property="og:description" content="Documentation for Ristretto.jl."/><meta property="twitter:description" content="Documentation for Ristretto.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.svg" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Ristretto.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Ristretto.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Ristretto.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../01_getting_started/">Getting started with Ristretto</a></li><li><a class="tocitem" href="../02_acquisition_info/"><code>AcquisitionInfo</code>: describing the acquisition</a></li><li><a class="tocitem" href="../03_simulation/">Simulation tools</a></li><li><a class="tocitem" href="../04_reconstruction_methods/">Reconstruction methods</a></li><li><a class="tocitem" href="../05_regularization/">Regularization</a></li><li><a class="tocitem" href="../06_algorithms_and_configuration/">Algorithms and configuration</a></li><li><a class="tocitem" href="../07_dynamic_and_decomposition/">Dynamic imaging and image decomposition</a></li><li><a class="tocitem" href="../08_non_cartesian/">Non-Cartesian acquisitions</a></li><li><a class="tocitem" href="../09_real_data_cartesian/">Real scanner data, end to end</a></li><li><a class="tocitem" href="../10_real_data_dynamic/">Real dynamic data: cardiac cine</a></li><li class="is-active"><a class="tocitem" href>Advanced reconstruction methods</a><ul class="internal"><li><a class="tocitem" href="#1.-Data-fidelity"><span>1. Data fidelity</span></a></li><li><a class="tocitem" href="#2.-Signal-models"><span>2. Signal models</span></a></li><li><a class="tocitem" href="#References"><span>References</span></a></li><li><a class="tocitem" href="#Further-reading"><span>Further reading</span></a></li><li><a class="tocitem" href="#Environment"><span>Environment</span></a></li></ul></li><li><a class="tocitem" href="../12_low_level_interface/">The low-level interface</a></li></ul></li><li><span class="tocitem">High-level Interface</span><ul><li><a class="tocitem" href="../../high-level/acquisition_info/">AcquisitionInfo</a></li><li><a class="tocitem" href="../../high-level/preprocessing/">Preprocessing</a></li><li><a class="tocitem" href="../../high-level/simulation/">Simulation Tools</a></li><li><a class="tocitem" href="../../high-level/methods/">Reconstruction Methods</a></li><li><a class="tocitem" href="../../high-level/reconstruction/">Reconstruction</a></li><li><a class="tocitem" href="../../high-level/export/">Export</a></li><li><a class="tocitem" href="../../high-level/regularization/">Regularization</a></li><li><a class="tocitem" href="../../high-level/algorithms/">Optimization Algorithms</a></li><li><a class="tocitem" href="../../high-level/nameddims/">Named Dimensions</a></li><li><a class="tocitem" href="../../high-level/task_splitting/">Task Splitting</a></li><li><a class="tocitem" href="../../high-level/image_decomposition/">Image Decomposition</a></li><li><a class="tocitem" href="../../high-level/analysis/">Noise &amp; Analysis</a></li><li><a class="tocitem" href="../../high-level/performance/">Performance &amp; Threading</a></li><li><a class="tocitem" href="../../high-level/gpu/">GPU Reconstruction</a></li></ul></li><li><span class="tocitem">Low-Level Interface</span><ul><li><a class="tocitem" href="../../low-level/operators/">MRI Operators</a></li><li><a class="tocitem" href="../../low-level/custom_reconstruction/">Custom Reconstruction</a></li><li><a class="tocitem" href="../../low-level/abstract_operators/">AbstractOperators.jl</a></li><li><a class="tocitem" href="../../low-level/proximal_operators/">ProximalOperators.jl</a></li></ul></li><li><a class="tocitem" href="../../theory/">Theoretical Background</a></li><li><a class="tocitem" href="../../related_packages/">Related packages</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Advanced reconstruction methods</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Advanced reconstruction methods</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/hakkelt/Ristretto.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/hakkelt/Ristretto.jl/blob/master/docs/literate/11_advanced_reconstruction.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="11-—-Advanced-reconstruction-methods"><a class="docs-heading-anchor" href="#11-—-Advanced-reconstruction-methods">11 — Advanced reconstruction methods</a><a id="11-—-Advanced-reconstruction-methods-1"></a><a class="docs-heading-anchor-permalink" href="#11-—-Advanced-reconstruction-methods" title="Permalink"></a></h1><p><em>Download this tutorial as a <a href="../11_advanced_reconstruction.ipynb">Jupyter notebook</a> (with <a href="../NotebookUtils.jl"><code>NotebookUtils.jl</code></a> next to it).</em></p><p>Two mechanisms go past the &quot;operator + regularizer&quot; pattern the rest of the tutorials use: <strong>data fidelity</strong> terms that change how the mismatch to the measured k-space is scored, and <strong>signal models</strong> that change what the optimization variable itself is. Structured low-rank k-space filling — including ALOHA&#39;s transform-domain weighting — is presented here too, as an application of the <code>KSpaceToImage</code> signal model.</p><p><strong>Contents</strong></p><ol><li>Data fidelity — <code>L2Loss</code>, <code>HardConsistency</code>, <code>NoFidelity</code></li><li>Signal models — <code>TemporalBasis</code>, <code>KSpaceToImage</code>, and calibrationless structured low-rank</li></ol><pre><code class="language-julia hljs">using .NotebookUtils
+
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, create_tubes_phantom, MRISheppLoganIntensities, TubesIntensities, TubesMask
+using MIRTjim: jim
+using Plots
+using Ristretto.AbstractOperators: Hankel
+using NamedDims
+using LinearAlgebra
+using Statistics
+using Random
+
+Random.seed!(0);</code></pre><p><code>img_pi</code>, <code>sens</code> and <code>acq_pi</code> below are the same R = 2, 8-channel, 24-line-ACS phantom setup used throughout tutorial 4 — reproduced here so this tutorial runs standalone.</p><pre><code class="language-julia hljs">Nx, Ny, Nc = 128, 128, 8
+img_pi = ComplexF32.(abs.(create_shepp_logan_phantom(Nx, Ny, :axial; ti = MRISheppLoganIntensities())))
+sens = coil_sensitivities(Nx, Ny, Nc)
+
+R = 2
+acs = (Ny ÷ 2 - 11):(Ny ÷ 2 + 12)
+mask_pi = falses(Ny)
+mask_pi[1:R:Ny] .= true
+mask_pi[acs] .= true
+
+acq_pi = add_noise(
+    simulate_acquisition(
+        img_pi,
+        AcquisitionInfo(;
+            is3D = false, image_size = (Nx, Ny), subsampling = (:, mask_pi), sensitivity_maps = sens
+        ); keep_sensitivity_maps = true
+    );
+    snr_db = 30
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">CartesianAcquisitionInfo:
+  - kspace data = Array{ComplexF32}&lt;128×76×8&gt;
+  - encoding = 2D
+  - image size = 128×128
+  - sensitivity maps = ComplexF32&lt;128×128×8&gt;
+  - subsampling = (:, Vector{Bool}&lt;128&gt;)</code></pre><h2 id="1.-Data-fidelity"><a class="docs-heading-anchor" href="#1.-Data-fidelity">1. Data fidelity</a><a id="1.-Data-fidelity-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Data-fidelity" title="Permalink"></a></h2><p><code>IterativeReconstruction(...; fidelity = ...)</code> chooses how the measurements enter the problem.</p><ul><li><code>L2Loss()</code> (default) — the penalty <span>$\tfrac12\|\mathcal{A}x-y\|^2$</span>.</li><li><code>HardConsistency()</code> — the constraint <span>$\{x : \mathcal{A}x = y\}$</span>, enforced by projection. Closed-form when <span>$\mathcal{A}\mathcal{A}^*$</span> is diagonal, otherwise an inner CG.</li><li><code>NoFidelity()</code> — no data term at all; the &quot;reconstruction&quot; is then pure denoising of the initial estimate, which is occasionally what you want (or a building block for a custom model).</li></ul><p>The choice is not a matter of taste: it is a statement about how much you trust <code>y</code>. An equality constraint says the measurements are <em>exact</em>. That is why the comparison below is run on noiseless data first — and why the second cell then shows what noise does to it.</p><p>The algorithms named below (<code>DouglasRachford</code>, <code>POGM</code>) are picked because they accept the corresponding term; tutorial 6 covers which solver goes with which problem. <code>POGM</code> is the default proximal-gradient solver, and is named explicitly here only so the comparison reads as a statement about the <em>fidelity term</em> with everything else held fixed.</p><pre><code class="language-julia hljs"># A 4x variable-density mask, first with exact (noiseless) measurements.
+acq_us = AcquisitionInfo(;
+    is3D = false, image_size = (Nx, Ny), sensitivity_maps = sens,
+    subsampling = create_sampling_pattern(
+        VariableDensitySampling(PolynomialDistribution(3), 4.0, 0.05), (Nx, Ny)
+    ),
+)
+data_clean = simulate_acquisition(img_pi, acq_us; keep_sensitivity_maps = true)
+data_us = add_noise(data_clean; snr_db = 30)
+
+x_l2 = reconstruct(data_clean, IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 40))
+x_hc = reconstruct(
+    data_clean,
+    IterativeReconstruction(
+        L1Wavelet2D(2.0f-3); fidelity = HardConsistency(maxit = 20),
+        algorithm = DouglasRachford(), maxit = 40
+    )
+)
+x_nf = reconstruct(
+    data_clean,
+    IterativeReconstruction(L1Wavelet2D(2.0f-3); fidelity = NoFidelity(), algorithm = POGM(), maxit = 20)
+)
+
+println(&quot;zero-filled     &quot;, round(nrmse(reconstruct(data_clean), img_pi), digits = 4))
+println(&quot;L2Loss          &quot;, round(nrmse(x_l2, img_pi), digits = 4))
+println(&quot;HardConsistency &quot;, round(nrmse(x_hc, img_pi), digits = 4))
+println(&quot;NoFidelity      &quot;, round(nrmse(x_nf, img_pi), digits = 4), &quot;   (denoising of the initial estimate)&quot;)
+
+side_by_side(
+    unname(x_l2), unname(x_hc), unname(x_nf);
+    titles = (&quot;L2Loss&quot;, &quot;HardConsistency&quot;, &quot;NoFidelity&quot;), size = (1200, 350)
+)</code></pre><img src="debade12.svg" alt="Example block output"/><p><code>NoFidelity</code> is the outlier, and it should be: with no data term the solver never looks at <code>y</code> at all, so it can only denoise the zero-filled adjoint it started from. The aliasing the other two <em>undo</em> is merely smoothed, which is why the result lands slightly behind the zero-filled image it began with. It is a building block, not a reconstruction.</p><h3 id="Why-HardConsistency-is-a-statement-about-the-noise"><a class="docs-heading-anchor" href="#Why-HardConsistency-is-a-statement-about-the-noise">Why <code>HardConsistency</code> is a statement about the noise</a><a id="Why-HardConsistency-is-a-statement-about-the-noise-1"></a><a class="docs-heading-anchor-permalink" href="#Why-HardConsistency-is-a-statement-about-the-noise" title="Permalink"></a></h3><p><span>$\{x : \mathcal{A}x = y\}$</span> asks the solution to reproduce every measured sample exactly — noise included. With a well-conditioned encoding that is harmless. With sensitivity maps and heavy undersampling, <span>$\mathcal{A}\mathcal{A}^*$</span> has very small eigenvalues, and satisfying the constraint along those directions means multiplying the noise by their inverse. The projection is doing exactly what was asked, so the failure mode is <em>silent</em>: the error grows the harder the solver works.</p><pre><code class="language-julia hljs">for label in (&quot;noiseless&quot;, &quot;SNR 30 dB&quot;)
+    data = label == &quot;noiseless&quot; ? data_clean : data_us
+    errs = map((10, 40, 100)) do maxit
+        x̂ = reconstruct(
+            data,
+            IterativeReconstruction(
+                L1Wavelet2D(2.0f-3); fidelity = HardConsistency(maxit = 20),
+                algorithm = DouglasRachford(), maxit = maxit
+            )
+        )
+        round(nrmse(x̂, img_pi), digits = 4)
+    end
+    println(rpad(label, 12), &quot; HardConsistency NRMSE at maxit = 10 / 40 / 100: &quot;, join(errs, &quot;  &quot;))
+end
+
+x_l2_noisy = reconstruct(data_us, IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 40))
+println(&quot;SNR 30 dB    L2Loss NRMSE at maxit = 40:                &quot;, round(nrmse(x_l2_noisy, img_pi), digits = 4))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">noiseless    HardConsistency NRMSE at maxit = 10 / 40 / 100: 0.2948  0.2427  0.1875
+SNR 30 dB    HardConsistency NRMSE at maxit = 10 / 40 / 100: 0.5957  0.7662  0.9839
+SNR 30 dB    L2Loss NRMSE at maxit = 40:                0.2167</code></pre><p>On exact data more iterations help, as they should. On noisy data the same run gets <em>worse</em> with every iteration, and ends far behind the <code>L2Loss</code> reconstruction of the same data. The rule that follows:</p><ul><li><strong><code>L2Loss</code> is the default for measured data</strong>, because <span>$\tfrac12\|\mathcal{A}x-y\|^2$</span> tolerates noise by construction and the regularizer sets how much.</li><li><strong><code>HardConsistency</code> belongs where the constraint is well posed</strong>: essentially noiseless data, or — much more usefully — a problem in which <span>$\mathcal{A}\mathcal{A}^*$</span> is <em>diagonal</em>, where the projection is closed-form and needs no inner CG at all. That is exactly the case for the <code>KSpaceToImage</code> signal model of §2.2, and it is why <code>SPIRiT(; iterative = true)</code> uses hard consistency: there <span>$\mathcal{A}$</span> is the subsampling operator, so &quot;keep the measured samples&quot; really is just &quot;keep the measured samples&quot;.</li><li><strong><code>NoFidelity</code></strong> is for denoising an estimate you already have, or as a component of a custom model.</li></ul><h2 id="2.-Signal-models"><a class="docs-heading-anchor" href="#2.-Signal-models">2. Signal models</a><a id="2.-Signal-models-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Signal-models" title="Permalink"></a></h2><p>A regularizer says what an image <em>should look like</em>. A signal model goes further: it changes what the optimization variable <strong>is</strong>, so that the unknown is smaller than the image series and the model is imposed exactly rather than penalized.</p><pre><code class="nohighlight hljs">variable  ──ℳ──▶  image series  ──𝒜──▶  k-space
+   c                  x(r, t)                y</code></pre><p>Ristretto ships two: <code>TemporalBasis</code>, whose variable is a set of subspace coefficient maps, and <code>KSpaceToImage</code>, whose variable is the multi-channel k-space itself.</p><h3 id="2.1-TemporalBasis-—-subspace-(low-rank)-modelling-of-the-time-dimension"><a class="docs-heading-anchor" href="#2.1-TemporalBasis-—-subspace-(low-rank)-modelling-of-the-time-dimension">2.1 <code>TemporalBasis</code> — subspace (low-rank) modelling of the time dimension</a><a id="2.1-TemporalBasis-—-subspace-(low-rank)-modelling-of-the-time-dimension-1"></a><a class="docs-heading-anchor-permalink" href="#2.1-TemporalBasis-—-subspace-(low-rank)-modelling-of-the-time-dimension" title="Permalink"></a></h3><h4 id="What-a-temporal-basis-is"><a class="docs-heading-anchor" href="#What-a-temporal-basis-is">What a temporal basis is</a><a id="What-a-temporal-basis-is-1"></a><a class="docs-heading-anchor-permalink" href="#What-a-temporal-basis-is" title="Permalink"></a></h4><p>Stack a dynamic or multi-contrast series as a <strong>Casorati matrix</strong> <span>$X \in \mathbb{C}^{N \times N_t}$</span>: one row per voxel, one column per frame/echo/contrast. Nothing forces <span>$X$</span> to have full rank. If the signal at every voxel is one of a small family of time courses — the same exponential decay at different rates, the same cardiac cycle at different amplitudes — then those <span>$N$</span> rows all live in a <span>$K$</span>-dimensional subspace of <span>$\mathbb{C}^{N_t}$</span> with <span>$K \ll N_t$</span>.</p><p>Write an orthonormal basis of that subspace as the columns of <span>$\Phi \in \mathbb{C}^{N_t \times K}$</span>. Then</p><p class="math-container">\[X \approx C\,\Phi^{\mathsf T}, \qquad\text{i.e.}\qquad x(r, t) \;=\; \sum_{k=1}^{K} \Phi(t, k)\, c(r, k),\]</p><p>and the unknown is the <strong>coefficient array</strong> <span>$c \in \mathbb{C}^{N_x \times N_y \times K}$</span> rather than the <span>$N_x \times N_y \times N_t$</span> series. <code>TemporalBasis(Φ; time_dim)</code> installs exactly this map, so the operator the solver sees is <span>$\mathcal{A}\,\mathcal{M}_\Phi$</span> and the reconstruction solves for <span>$c$</span>; <code>reconstruct</code> expands the result back to the full series before returning it.</p><p>Two things follow, and they are the whole reason to do it:</p><ul><li><strong>The problem shrinks.</strong> <span>$K/N_t$</span> as many unknowns, so a given number of measurements goes further — this is what makes high accelerations feasible.</li><li><strong>The model is a hard constraint, not a penalty.</strong> Anything outside the subspace — including most of the noise, and undersampling artifacts that do not resemble a plausible time course — cannot be represented at all. A subspace reconstruction denoises for free.</li></ul><p>This is the &quot;low-rank&quot;/&quot;partially separable&quot; idea of Liang&#39;s <em>k-t</em> PCA line of work (Liang 2007; Pedersen 2009; Petzschner 2011), and it is what T2-shuffling (Tamir et al., MRM 2017) and MR fingerprinting reconstructions are built on.</p><h4 id="A-phantom-that-really-is-low-dimensional"><a class="docs-heading-anchor" href="#A-phantom-that-really-is-low-dimensional">A phantom that really is low-dimensional</a><a id="A-phantom-that-really-is-low-dimensional-1"></a><a class="docs-heading-anchor-permalink" href="#A-phantom-that-really-is-low-dimensional" title="Permalink"></a></h4><p>The tubes phantom from <code>GeometricMedicalPhantoms</code> is the natural object here: it is a physical relaxometry phantom — six tubes of doped fluid in a water-filled cylinder — and each tube is one compartment with one <span>$T_2$</span> and one proton density. Passing a <em>vector</em> of <code>TubesIntensities</code> to <code>create_tubes_phantom</code> returns one frame per element, so the whole multi-echo series is the analytic spin-echo decay <span>$M_0 e^{-\mathrm{TE}/T_2}$</span> evaluated per tube at 24 echo times. Seven compartments, seven exponentials: a genuinely low-dimensional series, which is what this section is about.</p><pre><code class="language-julia hljs">n, nt, ncoils = 96, 24, 4
+
+tube_T2 = Float64[25, 45, 70, 110, 180, 300]      # ms, one per tube (short to long)
+tube_M0 = Float64[0.55, 0.7, 0.8, 0.9, 0.95, 1.0]
+cylinder_T2, cylinder_M0 = 500.0, 0.25            # the surrounding water bath
+
+TE = collect(range(10, 240; length = nt))     # ms
+
+echo_intensities = [
+    TubesIntensities(;
+        outer_cylinder = cylinder_M0 * exp(-te / cylinder_T2),
+        tube_wall = 0.0,
+        tube_fillings = tube_M0 .* exp.(-te ./ tube_T2),
+    ) for te in TE
+]
+series = NamedDimsArray{(:x, :y, :time)}(
+    create_tubes_phantom(n, n, :axial; ti = echo_intensities, eltype = ComplexF32)
+)
+
+side_by_side(
+    unname(series)[:, :, 1], unname(series)[:, :, 8], unname(series)[:, :, 24];
+    titles = (&quot;TE = $(round(Int, TE[1])) ms&quot;, &quot;TE = $(round(Int, TE[8])) ms&quot;, &quot;TE = $(round(Int, TE[end])) ms&quot;),
+    size = (1100, 340)
+)</code></pre><img src="5a0c1b32.svg" alt="Example block output"/><pre><code class="language-julia hljs">plot(
+    TE, [[tube_M0[i] * exp(-te / tube_T2[i]) for te in TE] for i in eachindex(tube_T2)];
+    label = reshape([&quot;tube $i (T2 = $(round(Int, tube_T2[i])) ms)&quot; for i in eachindex(tube_T2)], 1, :),
+    lw = 2, xlabel = &quot;TE (ms)&quot;, ylabel = &quot;signal&quot;, title = &quot;Tube signal evolutions&quot;,
+    legend = :outertopright, size = (800, 350)
+)</code></pre><img src="25f91171.svg" alt="Example block output"/><h4 id="How-low-dimensional?-The-Casorati-spectrum"><a class="docs-heading-anchor" href="#How-low-dimensional?-The-Casorati-spectrum">How low-dimensional? The Casorati spectrum</a><a id="How-low-dimensional?-The-Casorati-spectrum-1"></a><a class="docs-heading-anchor-permalink" href="#How-low-dimensional?-The-Casorati-spectrum" title="Permalink"></a></h4><p>The singular values of the Casorati matrix say how many basis functions the series actually needs. A handful of exponentials at different rates is a textbook low-rank family.</p><pre><code class="language-julia hljs">casorati = reshape(unname(series), n * n, nt)
+F = svd(casorati)
+σ = F.S ./ F.S[1]
+
+plot(
+    1:nt, max.(σ, 1.0e-8);
+    yscale = :log10, lw = 2, marker = :circle, label = &quot;&quot;,
+    xlabel = &quot;index&quot;, ylabel = &quot;singular value / largest&quot;,
+    title = &quot;Casorati spectrum of the echo series&quot;, size = (650, 330)
+)</code></pre><img src="52d2b31f.svg" alt="Example block output"/><h4 id="Where-the-basis-comes-from-in-practice"><a class="docs-heading-anchor" href="#Where-the-basis-comes-from-in-practice">Where the basis comes from in practice</a><a id="Where-the-basis-comes-from-in-practice-1"></a><a class="docs-heading-anchor-permalink" href="#Where-the-basis-comes-from-in-practice" title="Permalink"></a></h4><p>The SVD above uses the ground-truth series, which you do not have at reconstruction time. In practice <span>$\Phi$</span> comes from a <strong>dictionary of plausible signal evolutions</strong>, simulated from the sequence:</p><ol><li>Sweep the tissue parameters over the physiological range (<span>$T_2$</span> here; <span>$T_1$</span>/<span>$T_2$</span>/<span>$B_1$</span> for fingerprinting).</li><li>Simulate the signal each parameter combination would produce under the actual pulse sequence — an analytic expression for a simple decay, an extended phase graph or a full Bloch simulation for anything realistic.</li><li>Take the leading <span>$K$</span> left singular vectors of that dictionary. They span the signal manifold without ever having seen the patient.</li></ol><p>This is exactly the recipe in Tamir et al. 2017 and in the fingerprinting literature; the <em>k-t</em> PCA variants instead build the dictionary from low-resolution training data acquired in the same scan.</p><pre><code class="language-julia hljs"># Step 1-2: a &quot;Bloch-simulated&quot; dictionary — here the analytic spin-echo decay over a log-spaced
+# T2 range, which is what the extended-phase-graph simulation reduces to for this sequence.
+T2_dict = exp.(range(log(15), log(400); length = 256))
+dictionary = Float32[exp(-te / t2) for te in TE, t2 in T2_dict]
+
+# Step 3: the temporal basis.
+Φ_full = Matrix{ComplexF32}(svd(dictionary).U)
+println(&quot;dictionary: &quot;, size(dictionary), &quot;   basis: &quot;, size(Φ_full))
+
+plot(
+    TE, real.(Φ_full[:, 1:5]);
+    lw = 2, label = [&quot;Φ₁&quot; &quot;Φ₂&quot; &quot;Φ₃&quot; &quot;Φ₄&quot; &quot;Φ₅&quot;],
+    xlabel = &quot;TE (ms)&quot;, ylabel = &quot;amplitude&quot;, title = &quot;Leading dictionary basis functions&quot;,
+    size = (700, 350)
+)</code></pre><img src="b8d7f4f1.svg" alt="Example block output"/><h4 id="How-many-basis-functions?-The-projection-error"><a class="docs-heading-anchor" href="#How-many-basis-functions?-The-projection-error">How many basis functions? The projection error</a><a id="How-many-basis-functions?-The-projection-error-1"></a><a class="docs-heading-anchor-permalink" href="#How-many-basis-functions?-The-projection-error" title="Permalink"></a></h4><p>Before running any reconstruction, the basis can be scored directly: project the true series onto the first <span>$K$</span> dictionary components and measure what is lost. That is the <em>model error floor</em> — no reconstruction using this basis can do better.</p><pre><code class="language-julia hljs">proj_err = Float64[]
+for K in 1:12
+    Φ = Φ_full[:, 1:K]
+    projected = casorati * conj(Φ) * transpose(Φ)
+    push!(proj_err, norm(projected - casorati) / norm(casorati))
+end
+
+data_svd_err = [sqrt(sum(abs2, F.S[(K + 1):end]) / sum(abs2, F.S)) for K in 1:12]
+
+plot(
+    1:12, [proj_err data_svd_err];
+    yscale = :log10, lw = 2, marker = :circle,
+    label = [&quot;dictionary basis&quot; &quot;data SVD (unattainable)&quot;],
+    xlabel = &quot;number of basis functions K&quot;, ylabel = &quot;relative projection error&quot;,
+    title = &quot;Model error floor vs. K&quot;, size = (700, 350)
+)</code></pre><img src="b529bb6c.svg" alt="Example block output"/><p>The dictionary basis tracks the (unattainable) data SVD closely and the error falls off a cliff by <span>$K \approx 4$</span>–<span>$6$</span>: six exponentials at six rates need six components, and the dictionary found them without being told the tissue parameters.</p><h4 id="Reconstruction-at-K-2,-4,-8"><a class="docs-heading-anchor" href="#Reconstruction-at-K-2,-4,-8">Reconstruction at K = 2, 4, 8</a><a id="Reconstruction-at-K-2,-4,-8-1"></a><a class="docs-heading-anchor-permalink" href="#Reconstruction-at-K-2,-4,-8" title="Permalink"></a></h4><p>Now undersample. All echoes share one phase-encoding pattern here — a real subspace acquisition would vary it per echo, which helps considerably more — and the data is noisy, so both effects a subspace model is good at are in play.</p><pre><code class="language-julia hljs">smaps_dyn = NamedDimsArray{(:x, :y, :coil)}(coil_sensitivities(n, n, ncoils))
+
+mask_dyn = falses(n)
+mask_dyn[1:3:n] .= true
+mask_dyn[(n ÷ 2 - 5):(n ÷ 2 + 5)] .= true
+println(&quot;acceleration: &quot;, round(n / sum(mask_dyn), digits = 2), &quot;×&quot;)
+
+acq_dyn = AcquisitionInfo(;
+    is3D = false, image_size = (n, n), sensitivity_maps = smaps_dyn, subsampling = (:, mask_dyn)
+)
+data_dyn = add_noise(simulate_acquisition(series, acq_dyn; keep_sensitivity_maps = true); snr_db = 25)
+println(&quot;k-space: &quot;, size(data_dyn.kspace_data), &quot; &quot;, dimnames(data_dyn.kspace_data))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">acceleration: 2.46×
+<span class="sgr33"><span class="sgr1">┌ Warning: </span></span>simulate_acquisition: the phantom has the reconstruction&#39;s size 96×96, so the data are simulated with the operator that will reconstruct them (the inverse crime), and reconstructions look better than they would on measured data. Simulate from a finer, area-sampled phantom, e.g. 152×152; pass `inverse_crime_check = false` where the consistency is intended.
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ Ristretto ~/work/Ristretto.jl/Ristretto.jl/src/simulation/simulate_acquisition.jl:313</span>
+k-space: (96, 39, 4, 24) (:kx, :ky, :coil, :time)</code></pre><pre><code class="language-julia hljs">x_zf_dyn = reconstruct(data_dyn)
+x_cg_dyn = reconstruct(data_dyn, IterativeReconstruction(; algorithm = CGNR(), maxit = 40))
+
+println(&quot;zero-filled           &quot;, round(nrmse(x_zf_dyn, series), digits = 4))
+println(&quot;CG, no signal model   &quot;, round(nrmse(x_cg_dyn, series), digits = 4))
+
+subspace_recons = Dict{Int, Any}()
+for K in (1, 2, 4, 8)
+    x̂ = reconstruct(
+        data_dyn,
+        IterativeReconstruction(;
+            signal_model = TemporalBasis(Φ_full[:, 1:K]; time_dim = :time),
+            algorithm = CGNR(), maxit = 40
+        )
+    )
+    subspace_recons[K] = x̂
+    println(&quot;TemporalBasis, K = &quot;, rpad(K, 2), &quot;   &quot;, round(nrmse(x̂, series), digits = 4))
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">zero-filled           0.258
+CG, no signal model   0.1685
+TemporalBasis, K = 1    0.2219
+TemporalBasis, K = 2    0.0742
+TemporalBasis, K = 4    0.0687
+TemporalBasis, K = 8    0.0977</code></pre><p>The pattern is the one to remember: <span>$K = 1$</span> <strong>underfits</strong> — a single decay cannot describe six tissues — while <span>$K = 8$</span> starts spending its extra components on noise. The best <span>$K$</span> sits just past the knee of the projection-error curve, and the subspace reconstruction beats the unconstrained CG reconstruction by a wide margin even though it is solving for a third as many unknowns.</p><pre><code class="language-julia hljs">side_by_side(
+    unname(series)[:, :, 12], unname(x_cg_dyn)[:, :, 12],
+    unname(subspace_recons[2])[:, :, 12], unname(subspace_recons[4])[:, :, 12];
+    titles = (&quot;truth, echo 12&quot;, &quot;CG, no model&quot;, &quot;K = 2&quot;, &quot;K = 4&quot;)
+)</code></pre><img src="fa070765.svg" alt="Example block output"/><pre><code class="language-julia hljs">difference_image(
+    unname(subspace_recons[4])[:, :, 12], unname(series)[:, :, 12];
+    title = &quot;K = 4 error, echo 12&quot;, size = (450, 380)
+)</code></pre><img src="9ed6b4eb.svg" alt="Example block output"/><p>Because the coefficient maps are the variable, the <em>fitted decay curve</em> is available everywhere, not just the images — which is the point of the whole exercise for parameter mapping.</p><pre><code class="language-julia hljs"># The ROI is one tube, isolated with `TubesMask`: only the third tube&#39;s filling is selected.
+roi = create_tubes_phantom(
+    n, n, :axial;
+    ti = TubesMask(; outer_cylinder = false, tube_wall = false, tube_fillings = [i == 3 for i in 1:6])
+)[:, :, 1] .&gt; 0
+plot(
+    TE, [
+        [mean(abs.(unname(series))[roi, k]) for k in 1:nt],
+        [mean(abs.(unname(x_cg_dyn))[roi, k]) for k in 1:nt],
+        [mean(abs.(unname(subspace_recons[4]))[roi, k]) for k in 1:nt],
+    ];
+    lw = 2, label = [&quot;truth&quot; &quot;CG, no model&quot; &quot;K = 4 subspace&quot;],
+    xlabel = &quot;TE (ms)&quot;, ylabel = &quot;mean |x| in tube 3 (T2 = $(round(Int, tube_T2[3])) ms)&quot;,
+    title = &quot;Recovered signal evolution&quot;, size = (700, 350)
+)</code></pre><img src="1ea8de57.svg" alt="Example block output"/><h4 id="Other-places-this-model-is-the-right-one"><a class="docs-heading-anchor" href="#Other-places-this-model-is-the-right-one">Other places this model is the right one</a><a id="Other-places-this-model-is-the-right-one-1"></a><a class="docs-heading-anchor-permalink" href="#Other-places-this-model-is-the-right-one" title="Permalink"></a></h4><ul><li><strong>Quantitative / parameter mapping.</strong> Multi-echo <span>$T_2$</span> (above), inversion-recovery <span>$T_1$</span>, multi-echo <span>$T_2^{*}$</span> and <span>$B_0$</span> mapping, diffusion with many <span>$b$</span>-values. The dictionary is a forward simulation of the sequence, and the parameter map is fitted afterwards from the reconstructed evolutions.</li><li><strong>MR fingerprinting.</strong> The same construction with a much larger dictionary over <span>$(T_1, T_2, B_1, \ldots)$</span>; the subspace reconstruction is the standard way to make the highly-undersampled fingerprinting time series tractable.</li><li><strong>Dynamic contrast enhancement.</strong> The dictionary is a family of plausible enhancement curves (arterial input convolved with tissue responses) rather than a Bloch simulation.</li><li><strong>Cardiac cine and real-time imaging.</strong> The <em>k-t</em> PCA family, with the basis learned from training data acquired in the same scan. Beware: cine dynamics are driven by <em>motion</em>, and a moving edge is much less low-rank than a decaying exponential — expect to need more components, or a locally low-rank model instead (see tutorial 7).</li></ul><p>When the low-dimensional structure is real but you cannot write down a basis in advance, use a low-rank <em>regularizer</em> (<code>LowRank</code>, <code>LocallyLowRank</code>, tutorial 7) instead: same intuition, learned during the solve, at the cost of a penalty rather than a hard constraint.</p><h3 id="2.2-KSpaceToImage-—-solving-in-the-k-space-domain"><a class="docs-heading-anchor" href="#2.2-KSpaceToImage-—-solving-in-the-k-space-domain">2.2 <code>KSpaceToImage</code> — solving in the k-space domain</a><a id="2.2-KSpaceToImage-—-solving-in-the-k-space-domain-1"></a><a class="docs-heading-anchor-permalink" href="#2.2-KSpaceToImage-—-solving-in-the-k-space-domain" title="Permalink"></a></h3><p>The other signal model turns the problem inside out. The optimization variable is the full multi-channel k-space <span>$k \in \mathbb{C}^{N_x \times N_y \times N_c}$</span>; the encoding operator during the solve is then just the subsampling operator <span>$\mathcal{P}$</span>, so data consistency is <span>$\mathcal{P}k = y$</span> and needs no Fourier transform and no sensitivity maps at all. The result is mapped to an image afterwards by an inverse FFT and the model&#39;s own <code>coil_combination</code>.</p><p class="math-container">\[\hat k = \arg\min_k\; \tfrac12\|\mathcal{P}k - y\|^2 + \mathcal{R}(k), \qquad \hat x = \text{combine}(\mathcal{F}^{-1}\hat k)\]</p><p>This is the natural home for any regularizer that is a statement about k-space rather than about the image — <code>SPIRiTConsistency</code> being the example the package ships, and structured low-rank methods being the other family. <code>SPIRiT(; iterative = true)</code> lowers to precisely this: a <code>KSpaceToImage</code> variable, a <code>SPIRiTConsistency</code> term built from the calibrated kernel, and hard data consistency.</p><p>Because <span>$\mathcal{P}\mathcal{P}^*$</span> is diagonal, <code>HardConsistency()</code> is closed-form here, which is why the lowered SPIRiT can use it without an inner CG.</p><pre><code class="language-julia hljs"># Plain CG in the k-space domain, no k-space regularizer: this just interpolates nothing and
+# combines the coils, so it is the k-space-domain spelling of a zero-filled reconstruction.
+x_ksp = reconstruct(
+    acq_pi,
+    IterativeReconstruction(;
+        signal_model = KSpaceToImage(AdjointSensitivity()), algorithm = CGNR(), maxit = 10
+    )
+)
+println(&quot;KSpaceToImage, no k-space prior  &quot;, round(nrmse(x_ksp, img_pi), digits = 4))
+
+# Adding the SPIRiT self-consistency term is what makes the k-space variable pay off — this is the
+# hand-built version of `SPIRiT(; iterative = true)`.
+kernel = Ristretto._calibrate_spirit_kernel(
+    acq_pi, SPIRiT(kernel_size = (5, 5), calib_size = (Nx, 24))
+)
+x_ksp_spirit = reconstruct(
+    acq_pi,
+    IterativeReconstruction(
+        SPIRiTConsistency(kernel; λ = 1.0);
+        signal_model = KSpaceToImage(RootSumSquares()),
+        # POGM carries the gradient-based adaptive restart by default, which is what the
+        # `FISTA(adaptive = true)` this cell used to name was after.
+        fidelity = HardConsistency(), algorithm = POGM(), maxit = 30
+    )
+)
+println(&quot;KSpaceToImage + SPIRiTConsistency &quot;, round(nrmse(x_ksp_spirit, img_pi), digits = 4))
+
+side_by_side(
+    unname(x_ksp), unname(x_ksp_spirit);
+    titles = (&quot;k-space CG, no prior&quot;, &quot;+ SPIRiT consistency&quot;), size = (900, 360)
+)</code></pre><img src="48b8f284.svg" alt="Example block output"/><h3 id="2.3-No-calibration-region-at-all:-structured-low-rank-k-space"><a class="docs-heading-anchor" href="#2.3-No-calibration-region-at-all:-structured-low-rank-k-space">2.3 No calibration region at all: structured low-rank k-space</a><a id="2.3-No-calibration-region-at-all:-structured-low-rank-k-space-1"></a><a class="docs-heading-anchor-permalink" href="#2.3-No-calibration-region-at-all:-structured-low-rank-k-space" title="Permalink"></a></h3><p>Both methods above need an ACS block. Take it away — an irregular sampling pattern with no fully-sampled centre — and GRAPPA has nothing to fit its kernel to and SPIRiT has nothing to calibrate <span>$G$</span> from. This happens in practice more often than it sounds: prospectively undersampled scans that never acquired a calibration region, patterns where motion corrupted the centre, and acquisitions where the ACS lines would cost too much time.</p><p>The way out is to notice that the <em>same</em> relation GRAPPA and SPIRiT calibrate — every k-space sample is a linear combination of its neighbours across coils — can be read off the undersampled data itself, without ever writing the kernel down. Stack every sliding window of multi-coil k-space as a row of one big matrix (a <strong>block-Hankel</strong> matrix, with the coils stacked as extra columns) and that matrix is low rank exactly when such linear relations exist. So: fill in the missing samples by asking for the matrix to be low rank. No sensitivity maps, no ACS — <em>calibrationless</em> parallel imaging.</p><p><code>StructuredLowRank</code> is that regularizer, in two forms:</p><ul><li><code>StructuredLowRank(; λ, window = ...)</code> — the nuclear norm of the lifted matrix, i.e. its convex relaxation. This is LORAKS&#39; C-matrix penalty (Haldar 2014).</li><li><code>StructuredLowRank(; max_rank, window = ...)</code> — a hard cap on the rank, imposed by truncating the SVD of the lifted matrix each iteration. This is SAKE (Shin et al. 2014), and it is the Cadzow alternating-projection idea applied to MRI.</li></ul><p>The penalty lives on k-space, not on the image, so the reconstruction is set up with <code>signal_model = KSpaceToImage(...)</code> — the same trick <code>SPIRiT(; iterative = true)</code> uses above.</p><pre><code class="language-julia hljs"># Calibrationless data: irregular ky sampling at R = 2, and no dense centre (the second argument
+# of `UniformRandomSampling` is the fraction of fully-sampled central lines — here, none).
+mask_cl = create_sampling_pattern(UniformRandomSampling(2.0, 0.0), (Nx, Ny))
+println(&quot;sampled ky lines: &quot;, sum(mask_cl[2]), &quot; / &quot;, Ny, &quot;  (no ACS block)&quot;)
+
+acq_cl_maps = add_noise(
+    simulate_acquisition(
+        img_pi,
+        AcquisitionInfo(;
+            is3D = false, image_size = (Nx, Ny), subsampling = mask_cl, sensitivity_maps = sens
+        ); keep_sensitivity_maps = true
+    );
+    snr_db = 30
+)
+
+# The reconstruction is handed the coil data and nothing else -- rebuilding the acquisition
+# without `sensitivity_maps` is what makes this calibrationless.
+acq_cl = AcquisitionInfo(
+    acq_cl_maps.kspace_data; is3D = false, image_size = (Nx, Ny), subsampling = mask_cl
+)
+
+# Without maps, `DirectReconstruction` returns the individual coil images, so combine them here.
+rss(x) = sqrt.(dropdims(sum(abs2, unname(x); dims = 3); dims = 3))
+x_zf = rss(reconstruct(acq_cl, DirectReconstruction()))
+println(&quot;zero-filled RSS  &quot;, round(nrmse(x_zf, img_pi), digits = 4))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">sampled ky lines: 64 / 128  (no ACS block)
+<span class="sgr33"><span class="sgr1">┌ Warning: </span></span>simulate_acquisition: the phantom has the reconstruction&#39;s size 128×128, so the data are simulated with the operator that will reconstruct them (the inverse crime), and reconstructions look better than they would on measured data. Simulate from a finer, area-sampled phantom, e.g. 202×202; pass `inverse_crime_check = false` where the consistency is intended.
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ Ristretto ~/work/Ristretto.jl/Ristretto.jl/src/simulation/simulate_acquisition.jl:313</span>
+zero-filled RSS  0.6124</code></pre><p>Before reconstructing, it is worth looking at the object the whole method rests on. Lift the zero-filled multi-coil k-space into its block-Hankel matrix and look at the singular values: if the low-rank story is true, they should fall off a cliff. The index at which they do is the <code>max_rank</code> to ask for.</p><pre><code class="language-julia hljs">ksp_grid = zeros(ComplexF32, Nx, Ny, Nc)
+ksp_grid[:, mask_cl[2], :] .= unname(acq_cl.kspace_data)
+
+H_cl = Hankel(ComplexF32, (Nx, Ny), (5, 5); nchannels = Nc, channels = true)
+σ_cl = svdvals(H_cl * ksp_grid)
+println(&quot;lifted matrix: &quot;, size(H_cl)[1][1], &quot; x &quot;, size(H_cl)[1][2])
+
+plot(
+    1:length(σ_cl), σ_cl ./ σ_cl[1];
+    yscale = :log10, lw = 2, label = &quot;&quot;,
+    xlabel = &quot;index&quot;, ylabel = &quot;singular value / largest&quot;,
+    title = &quot;Block-Hankel spectrum, 5x5 window, 8 coils&quot;, size = (650, 330)
+)
+vline!([25]; ls = :dash, lw = 2, label = &quot;max_rank = 25&quot;)</code></pre><img src="dd3f5a7d.svg" alt="Example block output"/><pre><code class="language-julia hljs">slr(reg) = reconstruct(
+    acq_cl,
+    IterativeReconstruction(
+        reg; signal_model = KSpaceToImage(RootSumSquares()), algorithm = ADMM(), maxit = 40
+    )
+)
+
+x_loraks = slr(StructuredLowRank(; λ = 1.0f-2, window = (5, 5)))     # convex, LORAKS-C
+x_sake = slr(StructuredLowRank(; max_rank = 25, window = (5, 5)))    # non-convex, SAKE
+
+println(&quot;zero-filled RSS      &quot;, round(nrmse(x_zf, img_pi), digits = 4))
+println(&quot;LORAKS-C (nuclear)   &quot;, round(nrmse(x_loraks, img_pi), digits = 4))
+println(&quot;SAKE (rank 25)       &quot;, round(nrmse(x_sake, img_pi), digits = 4))
+
+side_by_side(
+    x_zf, unname(x_loraks), unname(x_sake), abs.(unname(img_pi));
+    titles = (&quot;zero-filled RSS&quot;, &quot;LORAKS-C&quot;, &quot;SAKE&quot;, &quot;ground truth&quot;)
+)</code></pre><img src="3d1fd3dc.svg" alt="Example block output"/><p>Both forms turn an unusable zero-filled image into a usable one from data that GRAPPA and SPIRiT cannot touch, and the hard-rank form is the more accurate of the two here — which is the usual finding, and the reason SAKE is stated as a rank constraint in the first place. The nuclear norm shrinks <em>every</em> singular value, including the ones carrying signal, so it pays a bias for its convexity.</p><blockquote><p>⚠️ <strong><code>max_rank</code> gives up convexity.</strong> A rank cap is a projection onto a non-convex set, and it is applied to the lifted matrix rather than to k-space itself, so a splitting algorithm using it is a heuristic: there is no convergence guarantee, and the answer depends on where the iteration starts. The <code>λ</code> form is convex and will not surprise you. Treat a good SAKE result as &quot;this initialization worked&quot;, not as &quot;this is the global optimum&quot;.</p></blockquote><p>Two practical notes:</p><ul><li><p>Cost is one economy SVD of the lifted matrix per iteration — here a <span>$(N_x - 4)(N_y - 4) \times 25 N_c$</span> matrix — so the <code>window</code> is the knob that decides whether this is affordable. <code>(5, 5)</code> or <code>(6, 6)</code> in 2D, <code>(4, 4, 4)</code> in 3D.</p></li><li><p><code>structure</code> chooses <em>which</em> matrix is lifted, and the three available are not interchangeable — they encode different priors:</p><ul><li><code>:c</code> (the default, used above) — the plain block-Hankel (C) matrix. Low rank through the coil relations, and through limited spatial support. This is SAKE / LORAKS-C / ALOHA, and the only structure <code>weights</code> (section 2.4) applies to.</li><li><code>:s</code> — LORAKS&#39; S-matrix, which reads k-space on both sides of DC and is low rank when the image <em>phase</em> varies smoothly. That is the phase constraint of P-LORAKS, and it needs no phase calibration. Because it constrains phase rather than coil relations, it is useful on single-channel data too, where <code>:c</code> has almost nothing to work with.</li><li><code>:g</code> — Haldar&#39;s other phase construction, the G-matrix. Offered as the weaker sibling of <code>:s</code>: by the paper&#39;s own analysis <code>G</code> is rank-deficient but not necessarily <em>low</em> rank unless the support is limited as well, so prefer <code>:s</code> unless you are reproducing G-matrix results.</li></ul><p><code>:s</code> and <code>:g</code> are real matrices with twice the rows and columns of <code>C</code>, so their prox costs about 2.7× as much per iteration (76 ms against ~210 ms on a 64²×8 slab with a <code>(5, 5)</code> window). LORAKS proper imposes both constraints at once, which here means two <code>Component</code> terms — one <code>:c</code>, one <code>:s</code> — each with its own <code>λ</code>.</p></li><li><p><code>kspace_center</code> tells <code>:s</code> and <code>:g</code> where DC sits. It defaults to Ristretto&#39;s centered convention (<code>N ÷ 2 + 1</code>); data declared with <code>shifted_kspace_dims</code>, where DC is at index 1, has to say so.</p></li></ul><h3 id="2.4-ALOHA:-transform-domain-weighting"><a class="docs-heading-anchor" href="#2.4-ALOHA:-transform-domain-weighting">2.4 ALOHA: transform-domain weighting</a><a id="2.4-ALOHA:-transform-domain-weighting-1"></a><a class="docs-heading-anchor-permalink" href="#2.4-ALOHA:-transform-domain-weighting" title="Permalink"></a></h3><p>Plain structured low-rank asks only that k-space samples relate linearly across a small neighbourhood and across coils. ALOHA (Jin, Lee &amp; Ye, 2016) adds a second piece of structure: if a <strong>transform of the image</strong> is sparse — a finite difference (edges), a wavelet band — then the Fourier-domain counterpart of that transform, applied to k-space <em>before</em> the Hankel lift, makes the lifted matrix even lower rank. Concretely, ALOHA lifts <span>$w \odot \hat k$</span> instead of <span>$\hat k$</span>, where <span>$w$</span> is the weight the transform&#39;s sparsity model implies (a difference weight for TV-type sparsity, a band weight for wavelets) — the same block-Hankel machinery, on a reweighted k-space.</p><p><code>weights = :tv</code> selects the first-difference weight model (image-domain TV sparsity); <code>weights = :wavelet</code> selects a pyramidal band-weight model, combined across scales through the same <code>ProximalAverage</code> construction <code>MultiScaleLowRank</code> uses. Everything else — <code>window</code>, <code>max_rank</code> vs. <code>λ</code>, <code>structure = :c</code> — is unchanged.</p><pre><code class="language-julia hljs">x_aloha_tv = slr(StructuredLowRank(; max_rank = 25, window = (5, 5), weights = :tv))
+
+println(&quot;zero-filled RSS      &quot;, round(nrmse(x_zf, img_pi), digits = 4))
+println(&quot;SAKE (unweighted)    &quot;, round(nrmse(x_sake, img_pi), digits = 4))
+println(&quot;ALOHA (weights=:tv)  &quot;, round(nrmse(x_aloha_tv, img_pi), digits = 4))
+
+side_by_side(
+    unname(x_sake), unname(x_aloha_tv), abs.(unname(img_pi));
+    titles = (&quot;SAKE (unweighted)&quot;, &quot;ALOHA (weights=:tv)&quot;, &quot;ground truth&quot;), size = (1050, 350)
+)</code></pre><img src="5958f237.svg" alt="Example block output"/><p>On this particular phantom and sampling pattern, unweighted SAKE is already the more accurate of the two — the TV-sparsity assumption the weighting encodes is not the dominant structure here, so the extra constraint mostly adds bias rather than resolving power. The weighting is also not free: it roughly doubles the work per iteration (each weight in the collection contributes its own lift and SVD, combined through a proximal average). Reach for <code>weights</code> when a plain structured-low-rank result is not accurate enough <em>and</em> the object plausibly has the transform-domain sparsity being assumed — not as a default upgrade.</p><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] P. J. Shin, P. E. Z. Larson, M. A. Ohliger, M. Elad, J. M. Pauly, D. B. Vigneron, and M. Lustig, &quot;Calibrationless parallel imaging reconstruction based on structured low-rank matrix completion,&quot; <em>Magnetic Resonance in Medicine</em>, vol. 72, no. 4, pp. 959–970, 2014, doi: <a href="https://doi.org/10.1002/mrm.24997">10.1002/mrm.24997</a> — SAKE.</p><p>[2] J. P. Haldar, &quot;Low-rank modeling of local k-space neighborhoods (LORAKS) for constrained MRI,&quot; <em>IEEE Transactions on Medical Imaging</em>, vol. 33, no. 3, pp. 668–681, 2014, doi: <a href="https://doi.org/10.1109/TMI.2013.2293974">10.1109/TMI.2013.2293974</a> — LORAKS.</p><p>[3] K. H. Jin, D. Lee, and J. C. Ye, &quot;A general framework for compressed sensing and parallel MRI using annihilating filter based low-rank Hankel matrix,&quot; <em>IEEE Transactions on Computational Imaging</em>, vol. 2, no. 4, pp. 480–495, 2016, doi: <a href="https://doi.org/10.1109/TCI.2016.2601296">10.1109/TCI.2016.2601296</a> (<a href="https://arxiv.org/abs/1504.00532">arXiv:1504.00532</a>, open access) — ALOHA, the <code>weights</code> argument.</p><p>[4] Z.-P. Liang, &quot;Spatiotemporal imaging with partially separable functions,&quot; in <em>Proc. IEEE International Symposium on Biomedical Imaging (ISBI)</em>, 2007, pp. 988–991, doi: <a href="https://doi.org/10.1109/ISBI.2007.357020">10.1109/ISBI.2007.357020</a>.</p><p>[5] H. Pedersen, S. Kozerke, S. Ringgaard, K. Nehrke, and W. Y. Kim, &quot;k-t PCA: Temporally constrained k-t BLAST reconstruction using principal component analysis,&quot; <em>Magnetic Resonance in Medicine</em>, vol. 62, no. 3, pp. 706–716, 2009, doi: <a href="https://doi.org/10.1002/mrm.22052">10.1002/mrm.22052</a>.</p><p>[6] F. H. Petzschner, I. P. Ponce, M. Blaimer, P. M. Jakob, and F. A. Breuer, &quot;Fast MR parameter mapping using k-t principal component analysis,&quot; <em>Magnetic Resonance in Medicine</em>, vol. 66, no. 3, pp. 706–716, 2011, doi: <a href="https://doi.org/10.1002/mrm.22826">10.1002/mrm.22826</a>.</p><p>[7] J. I. Tamir, M. Uecker, W. Chen, P. Lai, M. T. Alley, S. S. Vasanawala, and M. Lustig, &quot;T2 shuffling: Sharp, multicontrast, volumetric fast spin-echo imaging,&quot; <em>Magnetic Resonance in Medicine</em>, vol. 77, no. 1, pp. 180–195, 2017, doi: <a href="https://doi.org/10.1002/mrm.26102">10.1002/mrm.26102</a>.</p><h2 id="Further-reading"><a class="docs-heading-anchor" href="#Further-reading">Further reading</a><a id="Further-reading-1"></a><a class="docs-heading-anchor-permalink" href="#Further-reading" title="Permalink"></a></h2><p>From <em>Questions and Answers in MRI</em>:</p><ul><li><a href="https://mriquestions.com/two-types-of-pi.html">Parallel imaging: the two types</a> — the image-domain / k-space-domain split the signal models here sit on either side of.</li><li><a href="https://mriquestions.com/partial-fourier.html">Partial Fourier</a> and <a href="https://mriquestions.com/phase-symmetry.html">phase conjugate symmetry</a> — the symmetry the structured low-rank methods exploit without being told about it.</li><li><a href="https://mriquestions.com/compressed-sensing.html">Compressed sensing</a> — the background for calibrationless reconstruction.</li></ul><h2 id="Environment"><a class="docs-heading-anchor" href="#Environment">Environment</a><a id="Environment-1"></a><a class="docs-heading-anchor-permalink" href="#Environment" title="Permalink"></a></h2><pre><code class="language-julia hljs">print_versions()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.13.1
+Commit 96ca370cf0e (2026-09-25 19:34 UTC)
+Build Info:
+  Official https://julialang.org release
+Platform Info:
+  OS: Linux (x86_64-linux-gnu)
+  CPU: 4 × AMD EPYC 9V74 80-Core Processor
+  WORD_SIZE: 64
+  LLVM: libLLVM-20.1.8 (ORCJIT, znver4)
+  GC: Built with stock GC
+Threads: 2 default, 1 interactive, 2 GC (on 4 virtual cores)
+Environment:
+  JULIA_PKG_SERVER_REGISTRY_PREFERENCE = eager
+  JULIA_NUM_THREADS = 2
+
+Ristretto                 0.1.0 (dev)
+AbstractOperators       not loaded
+FFTWOperators           not loaded
+NFFTOperators           not loaded
+WaveletOperators        not loaded
+DSPOperators            not loaded
+ContourletOperators     not loaded
+StructuredOptimization  not loaded
+ProximalOperators       not loaded
+ProximalAlgorithms      not loaded
+OperatorCore            not loaded
+NestedThreading           0.1.2</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../10_real_data_dynamic/">« Real dynamic data: cardiac cine</a><a class="docs-footer-nextpage" href="../12_low_level_interface/">The low-level interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Monday 12 October 2026 18:03">Monday 12 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

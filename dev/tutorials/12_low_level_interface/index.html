@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>The low-level interface · Ristretto.jl</title><meta name="title" content="The low-level interface · Ristretto.jl"/><meta property="og:title" content="The low-level interface · Ristretto.jl"/><meta property="twitter:title" content="The low-level interface · Ristretto.jl"/><meta name="description" content="Documentation for Ristretto.jl."/><meta property="og:description" content="Documentation for Ristretto.jl."/><meta property="twitter:description" content="Documentation for Ristretto.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.svg" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Ristretto.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Ristretto.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Ristretto.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../01_getting_started/">Getting started with Ristretto</a></li><li><a class="tocitem" href="../02_acquisition_info/"><code>AcquisitionInfo</code>: describing the acquisition</a></li><li><a class="tocitem" href="../03_simulation/">Simulation tools</a></li><li><a class="tocitem" href="../04_reconstruction_methods/">Reconstruction methods</a></li><li><a class="tocitem" href="../05_regularization/">Regularization</a></li><li><a class="tocitem" href="../06_algorithms_and_configuration/">Algorithms and configuration</a></li><li><a class="tocitem" href="../07_dynamic_and_decomposition/">Dynamic imaging and image decomposition</a></li><li><a class="tocitem" href="../08_non_cartesian/">Non-Cartesian acquisitions</a></li><li><a class="tocitem" href="../09_real_data_cartesian/">Real scanner data, end to end</a></li><li><a class="tocitem" href="../10_real_data_dynamic/">Real dynamic data: cardiac cine</a></li><li><a class="tocitem" href="../11_advanced_reconstruction/">Advanced reconstruction methods</a></li><li class="is-active"><a class="tocitem" href>The low-level interface</a><ul class="internal"><li><a class="tocitem" href="#1.-The-encoding-operator-and-its-parts"><span>1. The encoding operator and its parts</span></a></li><li><a class="tocitem" href="#2.-Adjoint-and-operator-norm-checks"><span>2. Adjoint and operator-norm checks</span></a></li><li><a class="tocitem" href="#3.-build_model-—-what-reconstruct-builds"><span>3. <code>build_model</code> — what <code>reconstruct</code> builds</span></a></li><li><a class="tocitem" href="#4.-Writing-the-optimization-problem-by-hand"><span>4. Writing the optimization problem by hand</span></a></li><li><a class="tocitem" href="#5.-Proximal-operators-directly"><span>5. Proximal operators directly</span></a></li><li><a class="tocitem" href="#6.-Adding-a-regularizer-of-your-own"><span>6. Adding a regularizer of your own</span></a></li><li><a class="tocitem" href="#7.-Adding-an-AbstractOperators-compatible-operator"><span>7. Adding an <code>AbstractOperators</code>-compatible operator</span></a></li><li><a class="tocitem" href="#8.-Adding-a-proximal-operator-of-your-own"><span>8. Adding a proximal operator of your own</span></a></li><li><a class="tocitem" href="#9.-Adding-an-algorithm-of-your-own"><span>9. Adding an algorithm of your own</span></a></li><li><a class="tocitem" href="#Further-reading"><span>Further reading</span></a></li><li><a class="tocitem" href="#Environment"><span>Environment</span></a></li></ul></li></ul></li><li><span class="tocitem">High-level Interface</span><ul><li><a class="tocitem" href="../../high-level/acquisition_info/">AcquisitionInfo</a></li><li><a class="tocitem" href="../../high-level/preprocessing/">Preprocessing</a></li><li><a class="tocitem" href="../../high-level/simulation/">Simulation Tools</a></li><li><a class="tocitem" href="../../high-level/methods/">Reconstruction Methods</a></li><li><a class="tocitem" href="../../high-level/reconstruction/">Reconstruction</a></li><li><a class="tocitem" href="../../high-level/export/">Export</a></li><li><a class="tocitem" href="../../high-level/regularization/">Regularization</a></li><li><a class="tocitem" href="../../high-level/algorithms/">Optimization Algorithms</a></li><li><a class="tocitem" href="../../high-level/nameddims/">Named Dimensions</a></li><li><a class="tocitem" href="../../high-level/task_splitting/">Task Splitting</a></li><li><a class="tocitem" href="../../high-level/image_decomposition/">Image Decomposition</a></li><li><a class="tocitem" href="../../high-level/analysis/">Noise &amp; Analysis</a></li><li><a class="tocitem" href="../../high-level/performance/">Performance &amp; Threading</a></li><li><a class="tocitem" href="../../high-level/gpu/">GPU Reconstruction</a></li></ul></li><li><span class="tocitem">Low-Level Interface</span><ul><li><a class="tocitem" href="../../low-level/operators/">MRI Operators</a></li><li><a class="tocitem" href="../../low-level/custom_reconstruction/">Custom Reconstruction</a></li><li><a class="tocitem" href="../../low-level/abstract_operators/">AbstractOperators.jl</a></li><li><a class="tocitem" href="../../low-level/proximal_operators/">ProximalOperators.jl</a></li></ul></li><li><a class="tocitem" href="../../theory/">Theoretical Background</a></li><li><a class="tocitem" href="../../related_packages/">Related packages</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>The low-level interface</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>The low-level interface</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/hakkelt/Ristretto.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/hakkelt/Ristretto.jl/blob/master/docs/literate/12_low_level_interface.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="12-—-The-low-level-interface"><a class="docs-heading-anchor" href="#12-—-The-low-level-interface">12 — The low-level interface</a><a id="12-—-The-low-level-interface-1"></a><a class="docs-heading-anchor-permalink" href="#12-—-The-low-level-interface" title="Permalink"></a></h1><p><em>Download this tutorial as a <a href="../12_low_level_interface.ipynb">Jupyter notebook</a> (with <a href="../NotebookUtils.jl"><code>NotebookUtils.jl</code></a> next to it).</em></p><p><code>reconstruct</code> is a convenience layer over three packages that can be driven directly: <code>AbstractOperators.jl</code> (linear operators), <code>ProximalOperators.jl</code> (proximal maps) and <code>StructuredOptimization.jl</code> (problem syntax + solvers). This tutorial opens the box.</p><p>Ristretto bundles these packages, with work not yet released upstream, so load them through it (<code>using Ristretto.AbstractOperators</code>), never with <code>Pkg.add</code>. Their own documentation, for the bundled versions: <a href="https://hakkelt.github.io/AbstractOperators.jl/dev/">AbstractOperators</a>, <a href="https://hakkelt.github.io/ProximalOperators.jl/dev/">ProximalOperators</a>, <a href="https://hakkelt.github.io/ProximalAlgorithms.jl/dev/">ProximalAlgorithms</a>, <a href="https://hakkelt.github.io/StructuredOptimization.jl/dev/">StructuredOptimization</a>.</p><p><strong>Contents</strong></p><ol><li>The encoding operator and its parts</li><li>Adjoint and operator-norm checks</li><li><code>build_model</code> — what <code>reconstruct</code> builds</li><li>Writing the optimization problem by hand</li><li>Proximal operators directly</li><li>Adding a regularizer of your own</li><li>Adding an <code>AbstractOperators</code>-compatible operator</li><li>Adding a proximal operator of your own</li><li>Adding an algorithm of your own</li></ol><pre><code class="language-julia hljs">using .NotebookUtils
+
+using Ristretto
+using Ristretto: get_encoding_operator, get_fourier_operator,
+    get_sensitivity_map_operator, get_subsampling_operator, build_model, materialize,
+    get_operator, get_affected_dims, calculate, Regularization, NamedDimsOp
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+using MIRTjim: jim
+using Plots
+using Ristretto.AbstractOperators
+using Ristretto.StructuredOptimization
+using Ristretto.ProximalOperators
+using ProximalCore
+using Ristretto.ProximalAlgorithms
+using Ristretto.WaveletOperators: WaveletOp, WT, wavelet
+using LinearAlgebra
+using Random
+
+Random.seed!(0);</code></pre><h2 id="1.-The-encoding-operator-and-its-parts"><a class="docs-heading-anchor" href="#1.-The-encoding-operator-and-its-parts">1. The encoding operator and its parts</a><a id="1.-The-encoding-operator-and-its-parts-1"></a><a class="docs-heading-anchor-permalink" href="#1.-The-encoding-operator-and-its-parts" title="Permalink"></a></h2><p><span>$\mathcal{A} = \mathcal{P}\,\mathcal{F}\,\mathcal{S}$</span>: sensitivities, Fourier transform, sampling. Each factor is available separately, and they compose with <code>*</code>.</p><pre><code class="language-julia hljs">nx, ny, nc = 128, 128, 8
+x_true = create_shepp_logan_phantom(nx, ny, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+smaps = coil_sensitivities(nx, ny, nc)
+pattern = create_sampling_pattern(
+    VariableDensitySampling(PolynomialDistribution(3), 4.0, 0.05), (nx, ny)
+)
+
+acq = AcquisitionInfo(;
+    is3D = false, image_size = (nx, ny), sensitivity_maps = smaps, subsampling = pattern
+)
+data = simulate_acquisition(x_true + 0.01f0 * randn(ComplexF32, nx, ny), acq; keep_sensitivity_maps = true)
+
+𝒮 = get_sensitivity_map_operator(data)
+ℱ = get_fourier_operator(data)
+𝒫 = get_subsampling_operator(data)
+𝒜 = get_encoding_operator(data)
+
+for (name, op) in (&quot;𝒮&quot; =&gt; 𝒮, &quot;ℱ&quot; =&gt; ℱ, &quot;𝒫&quot; =&gt; 𝒫, &quot;𝒜&quot; =&gt; 𝒜)
+    println(rpad(name, 3), &quot; : &quot;, size(op, 2), &quot; → &quot;, size(op, 1))
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>simulate_acquisition: the phantom has the reconstruction&#39;s size 128×128, so the data are simulated with the operator that will reconstruct them (the inverse crime), and reconstructions look better than they would on measured data. Simulate from a finer, area-sampled phantom, e.g. 202×202; pass `inverse_crime_check = false` where the consistency is intended.
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ Ristretto ~/work/Ristretto.jl/Ristretto.jl/src/simulation/simulate_acquisition.jl:313</span>
+𝒮   : (128, 128) → (128, 128, 8)
+ℱ   : (128, 128, 8) → (128, 128, 8)
+𝒫   : (128, 128, 8) → (128, 32, 8)
+𝒜   : (128, 128) → (128, 32, 8)</code></pre><pre><code class="language-julia hljs"># Composed by hand, the product reproduces the encoding operator.
+𝒜_manual = 𝒫 * ℱ * 𝒮
+y = data.kspace_data
+println(&quot;‖𝒜ᴴy − (𝒫ℱ𝒮)ᴴy‖ / ‖𝒜ᴴy‖ = &quot;, norm(𝒜&#39; * y - 𝒜_manual&#39; * y) / norm(𝒜&#39; * y))
+
+x_adj = 𝒜&#39; * y
+jim(x_adj; title = &quot;A&#39;y - direct reconstruction, by hand&quot;, size = (400, 350))</code></pre><img src="d81d4482.svg" alt="Example block output"/><h2 id="2.-Adjoint-and-operator-norm-checks"><a class="docs-heading-anchor" href="#2.-Adjoint-and-operator-norm-checks">2. Adjoint and operator-norm checks</a><a id="2.-Adjoint-and-operator-norm-checks-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Adjoint-and-operator-norm-checks" title="Permalink"></a></h2><p>Three things worth knowing when you build or wrap operators yourself.</p><p>First, the FFT convention. Ristretto&#39;s Fourier operator is the <code>fft</code>/<code>ifft</code> pair, not the unitary one: the forward transform is unnormalized and <code>&#39;</code> carries the <code>1/(nx·ny)</code> factor. So <code>𝒜&#39;</code> is the <em>inverse-scaled</em> adjoint, and the dot-product identity <span>$\langle \mathcal{A}u, v\rangle = \langle u, \mathcal{A}^H v\rangle$</span> holds only up to that factor — as the ratio below shows. Multiply by <code>nx*ny</code> for the true Hermitian adjoint. (This is also why <code>‖𝒜‖ ≈ 1</code> rather than something of the order of the image size.)</p><pre><code class="language-julia hljs">u = randn(ComplexF32, nx, ny)
+v = randn(ComplexF32, size(y)...)
+
+lhs = dot(𝒜 * u, v)
+rhs = dot(u, 𝒜&#39; * v)
+println(&quot;⟨𝒜u, v⟩   = &quot;, lhs)
+println(&quot;⟨u, 𝒜&#39;v⟩  = &quot;, rhs)
+println(&quot;ratio      = &quot;, round(real(lhs / rhs), digits = 3), &quot;   (nx·ny = &quot;, nx * ny, &quot;)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">⟨𝒜u, v⟩   = -14698.334f0 - 5634.5137f0im
+⟨u, 𝒜&#39;v⟩  = -0.89711475f0 - 0.3439034f0im
+ratio      = 16384.006   (nx·ny = 16384)</code></pre><p>Second, a subtler way to break the same identity: density compensation. It does not apply to <code>𝒜</code> above (this tutorial&#39;s acquisition is Cartesian), but it is the sharpest illustration of &quot;an operator that looks like an adjoint but isn&#39;t&quot;, so it is worth seeing directly on <code>NFFTOperators.jl</code>&#39;s <code>NFFTOp</code>, the operator behind every non-Cartesian <code>𝒜</code> (tutorial 8).</p><p><code>NFFTOp</code>&#39;s <code>dcf</code> keyword only ever weights the <em>adjoint</em> direction (<code>op&#39; * y</code>) — the forward direction (<code>op * image</code>) never sees it. Its default is <code>dcf = nothing</code> (no compensation), which is exactly what makes <code>op&#39;</code> the <em>true</em> adjoint of <code>op</code> and the dot-product identity hold up to the FFT scaling above. Passing <code>dcf = :auto</code> (or an array) turns <code>op&#39;</code> into a density-weighted <em>approximate inverse</em> instead — the fast way to get a reasonable-looking direct reconstruction from non-uniform samples, but no longer the mathematical adjoint, so the identity fails outright rather than by a fixed scale factor. This is why Ristretto&#39;s own encoding operators default to no density compensation (<code>density_compensation</code> is an explicit, opt-in preprocessing step, not something silently baked into <code>𝒜&#39;</code>) — anything that assumes <code>A&#39;</code> is the adjoint (operator-norm estimation via power iteration, CG/CGNR, the check above) needs the true adjoint, not an approximate inverse.</p><pre><code class="language-julia hljs">using Ristretto.NFFTOperators: NFFTOp
+
+traj = Float32.(rand(2, 64, 32) .- 0.5f0)         # a small throwaway radial-ish trajectory
+𝒩_true_adjoint = NFFTOp((nx, ny), traj)            # dcf = nothing (the default): op&#39; is the true adjoint
+𝒩_dcf = NFFTOp((nx, ny), traj, :auto)              # dcf = :auto: op&#39; is a density-weighted approximate inverse
+
+u_n = randn(ComplexF32, nx, ny)
+v_n = randn(ComplexF32, size(traj, 2), size(traj, 3))
+
+for (label, 𝒩) in (&quot;no DCF (dcf = nothing)&quot; =&gt; 𝒩_true_adjoint, &quot;DCF (dcf = :auto)&quot; =&gt; 𝒩_dcf)
+    lhs_n = dot(𝒩 * u_n, v_n)
+    rhs_n = dot(u_n, 𝒩&#39; * v_n)
+    println(
+        rpad(label, 24), &quot;:  ⟨Nu, v⟩ = &quot;, round(lhs_n, digits = 3), &quot;   ⟨u, N&#39;v⟩ = &quot;,
+        round(rhs_n, digits = 3), &quot;   ratio = &quot;, round(real(lhs_n / rhs_n), digits = 3)
+    )
+end
+
+# ⟨Nu, v⟩ is identical in both rows — the forward direction never uses dcf. Only ⟨u, N&#39;v⟩ moves,
+# and with DCF the ratio is nowhere near 1: the dot-product identity has failed, not just been
+# rescaled.</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">no DCF (dcf = nothing)  :  ⟨Nu, v⟩ = 1635.664f0 + 1236.606f0im   ⟨u, N&#39;v⟩ = 1635.662f0 + 1236.604f0im   ratio = 1.0
+DCF (dcf = :auto)       :  ⟨Nu, v⟩ = 1635.664f0 + 1236.606f0im   ⟨u, N&#39;v⟩ = 0.171f0 + 0.17f0im   ratio = 8407.123</code></pre><p>Third, the operator norm: it sets the step size of every proximal algorithm, so Ristretto asks for a value that is guaranteed not to fall below <code>‖𝒜‖</code> before each solve. <code>estimate_opnorm</code> pairs a power iteration, which converges to the norm from below, with <code>opnorm_bound</code>, a closed-form upper bound, and returns the upper end of that interval once it is within <code>rel_margin</code>.</p><pre><code class="language-julia hljs">L_est = AbstractOperators.estimate_opnorm(𝒜)
+println(&quot;‖𝒜‖ (certified upper bound): &quot;, round(L_est, digits = 5))
+
+# `powerit` alone gives the lower end of the same interval: the accurate value, but never safe as
+# a Lipschitz constant, because a truncated run always stops short of the norm.
+L_lower = AbstractOperators.powerit(𝒜; maxit = 1000, rel_margin = 1.0e-10)
+println(&quot;‖𝒜‖ (converged from below):  &quot;, round(L_lower, digits = 5))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">‖𝒜‖ (certified upper bound): 1.0
+‖𝒜‖ (converged from below):  1.0</code></pre><h2 id="3.-build_model-—-what-reconstruct-builds"><a class="docs-heading-anchor" href="#3.-build_model-—-what-reconstruct-builds">3. <code>build_model</code> — what <code>reconstruct</code> builds</a><a id="3.-build_model-—-what-reconstruct-builds-1"></a><a class="docs-heading-anchor-permalink" href="#3.-build_model-—-what-reconstruct-builds" title="Permalink"></a></h2><p><code>build_model</code> returns the <code>StructuredOptimization</code> problem <code>reconstruct</code> would solve, so you can inspect it, hand it to a solver yourself, or modify it.</p><pre><code class="language-julia hljs">terms = build_model(𝒜, y, (L1Wavelet2D(2.0f-3),))
+for t in terms
+    println(t)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ls(𝒜 * x - y)
+0.002 ⋅ ‖𝒲x‖₁</code></pre><pre><code class="language-julia hljs"># The variant that also returns the variables is what you need when a regularizer introduces
+# auxiliary variables of its own (`TotalGeneralizedVariation2D` does): the image is then not at a
+# predictable position in the solver&#39;s variable tuple.
+terms_tgv, x_var, auxiliaries = Ristretto.build_model_with_variables(
+    𝒜, y, (TotalGeneralizedVariation2D(1.0f-3),)
+)
+println(&quot;image variable:      &quot;, size(~x_var))
+println(&quot;auxiliary variables: &quot;, length(auxiliaries), &quot; → &quot;, map(a -&gt; size(~a), auxiliaries))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">image variable:      (128, 128)
+auxiliary variables: 1 → ((16384, 2),)</code></pre><h2 id="4.-Writing-the-optimization-problem-by-hand"><a class="docs-heading-anchor" href="#4.-Writing-the-optimization-problem-by-hand">4. Writing the optimization problem by hand</a><a id="4.-Writing-the-optimization-problem-by-hand-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Writing-the-optimization-problem-by-hand" title="Permalink"></a></h2><p><code>Variable</code>, <code>ls</code>, <code>norm</code> and <code>@minimize</code> are the whole syntax. Below is the compressed-sensing problem of tutorial 1, written out.</p><pre><code class="language-julia hljs">𝒲 = WaveletOp(ComplexF32, wavelet(WT.db4), (nx, ny))
+
+v = Variable(copy(x_adj))                      # warm start from the direct reconstruction
+λ = 2.0f-3
+
+x̂, iterations = @minimize ls(𝒜 * v - y) + λ * norm(𝒲 * v, 1) with FISTA(maxit = 60, verbose = false)
+println(&quot;converged in &quot;, iterations, &quot; iterations&quot;)
+
+nrmse(x) = norm(abs.(x) - abs.(x_true)) / norm(abs.(x_true))
+println(&quot;hand-written NRMSE:  &quot;, round(nrmse(~x̂), digits = 4))
+
+x_api = reconstruct(data, IterativeReconstruction(L1Wavelet2D(λ); maxit = 60))
+println(&quot;`reconstruct` NRMSE: &quot;, round(nrmse(x_api), digits = 4))
+
+# The two are the same problem but not the same run: `reconstruct` also scales the data, hands
+# FISTA a Lipschitz-constant hint from ‖𝒜‖ and applies its own relative stopping rule, which is
+# worth a visible amount of accuracy at a fixed iteration count.
+
+jim(
+    jim(~x̂; title = &quot;hand-written problem&quot;),
+    jim(x_api; title = &quot;reconstruct(...)&quot;);
+    layout = (1, 2), size = (800, 350)
+)</code></pre><img src="f7780720.svg" alt="Example block output"/><pre><code class="language-julia hljs"># Two variables, two priors, summed into one image: `a` is penalized by plain image-domain ℓ1
+# (sparse pixels) and `b` by wavelet-domain ℓ1 (sparse wavelet coefficients). This is the same
+# additive, multi-variable syntax tutorial 7&#39;s L+S model uses — but not the same model: L+S there
+# is low-rank (nuclear norm of the space × time Casorati matrix) plus sparse, which needs several
+# time frames to have a matrix to be low rank across; a single static image does not. Here both
+# terms are ℓ1, just in different domains, so the point is the *syntax* — `@minimize` accepts any
+# number of `Variable`s and sums their terms — not a claim that this decomposition is meaningful
+# on its own.
+a = Variable(zeros(ComplexF32, nx, ny))
+b = Variable(copy(x_adj))
+
+(â, b̂), it2 = @minimize ls(𝒜 * (a + b) - y) + 5.0f-3 * norm(a, 1) + 1.0f-3 * norm(𝒲 * b, 1) with FISTA(maxit = 40, verbose = false)
+frac_small(x, tol) = count(&lt;(tol), abs.(x)) / length(x)
+println(&quot;iterations: &quot;, it2, &quot;, NRMSE of the sum: &quot;, round(nrmse(~â + ~b̂), digits = 4))
+println(
+    &quot;  a (image-domain ℓ1):   &quot;, round(100 * frac_small(~â, 1.0f-3 * maximum(abs, ~â)), digits = 1),
+    &quot;% near-zero pixels&quot;
+)
+println(
+    &quot;  b (wavelet-domain ℓ1): &quot;,
+    round(100 * frac_small(𝒲 * ~b̂, 1.0f-3 * maximum(abs, 𝒲 * ~b̂)), digits = 1),
+    &quot;% near-zero wavelet coefficients&quot;
+)
+
+jim(
+    jim(~â; title = &quot;sparse part (a)&quot;),
+    jim(~b̂; title = &quot;wavelet-sparse part (b)&quot;),
+    jim(~â + ~b̂; title = &quot;sum (a + b)&quot;);
+    layout = (1, 3), size = (1100, 330)
+)</code></pre><img src="e4067182.svg" alt="Example block output"/><pre><code class="language-julia hljs"># `problem` + `solve` is the non-macro form, and lets you inspect what a given solver expects.
+p = problem(ls(𝒜 * v - y), λ * norm(𝒲 * v, 1))
+alg, kwargs, variables = StructuredOptimization.parse_problem(p, FISTA())
+println(&quot;keys prepared for FISTA: &quot;, keys(kwargs))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">keys prepared for FISTA: [:f, :g]</code></pre><h2 id="5.-Proximal-operators-directly"><a class="docs-heading-anchor" href="#5.-Proximal-operators-directly">5. Proximal operators directly</a><a id="5.-Proximal-operators-directly-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Proximal-operators-directly" title="Permalink"></a></h2><p>Every regularizer is ultimately a proximal map. They can be evaluated on their own, which is the quickest way to understand what a term does — and to test a new one.</p><pre><code class="language-julia hljs">z = randn(ComplexF32, 8, 8)
+γ = 0.5
+
+f = NormL1(0.3)
+p_l1 = similar(z)
+value = prox!(p_l1, f, z, γ)
+println(&quot;NormL1: value at the prox point = &quot;, round(value, digits = 4))
+println(&quot;soft thresholding by γλ = &quot;, γ * 0.3, &quot;:&quot;)
+println(&quot;  |z|     &quot;, round.(abs.(z[1:4, 1]), digits = 3))
+println(&quot;  |prox|  &quot;, round.(abs.(p_l1[1:4, 1]), digits = 3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NormL1: value at the prox point = 14.6574
+soft thresholding by γλ = 0.15:
+  |z|     Float32[1.509, 0.894, 0.709, 0.565]
+  |prox|  Float32[1.359, 0.744, 0.559, 0.415]</code></pre><pre><code class="language-julia hljs"># The nuclear norm shrinks singular values instead of entries.
+M = randn(ComplexF32, 16, 6)
+p_nuc = similar(M)
+prox!(p_nuc, NuclearNorm(0.8), M, 1.0)
+println(&quot;singular values before: &quot;, round.(svdvals(M)[1:6], digits = 3))
+println(&quot;singular values after:  &quot;, round.(svdvals(p_nuc)[1:6], digits = 3))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">singular values before: Float32[5.239, 4.393, 3.678, 3.359, 2.168, 1.887]
+singular values after:  Float32[4.439, 3.593, 2.878, 2.559, 1.368, 1.087]</code></pre><pre><code class="language-julia hljs"># Ristretto&#39;s regularizers expose the same thing through `calculate` (the value) and `get_operator`
+# (the transform), which is what the extension interface is built on.
+reg = L1Wavelet2D(2.0f-3)
+println(&quot;value of the term at x_true: &quot;, round(calculate(reg, x_true), digits = 4))
+println(&quot;its operator: &quot;, typeof(get_operator(reg, x_true)).name.name)
+println(&quot;dimensions it couples: &quot;, get_affected_dims(reg, nothing, (:x, :y, :slice)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">value of the term at x_true: 1.4142
+its operator: WaveletOp
+dimensions it couples: (:x, :y)</code></pre><h2 id="6.-Adding-a-regularizer-of-your-own"><a class="docs-heading-anchor" href="#6.-Adding-a-regularizer-of-your-own">6. Adding a regularizer of your own</a><a id="6.-Adding-a-regularizer-of-your-own-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Adding-a-regularizer-of-your-own" title="Permalink"></a></h2><p>A regularizer is a <code>struct &lt;: Regularization</code> plus three methods:</p><ul><li><code>get_operator(reg, x; threaded)</code> — the linear transform it penalizes.</li><li><code>materialize(reg, x::Variable; threaded)</code> — the <code>StructuredOptimization.Term</code>.</li><li><code>get_affected_dims(reg, dimspec, image_dims)</code> — which image dimensions it couples (this is what decides whether task splitting still applies across slices).</li></ul><p>Optionally <code>scale_regularization</code> (if the term is homogeneous, so that data scaling can adjust λ), <code>bind_dimensions</code> (if it is parameterized by a dimension name) and <code>materialize_with_auxiliaries</code> (if it introduces extra optimization variables).</p><p>Here is a spatially weighted ℓ₁ penalty: sparsity enforced only outside a region of interest, which is a crude way of saying &quot;I know where the object is&quot;.</p><pre><code class="language-julia hljs">struct MaskedL1{T, W} &lt;: Regularization
+    λ::T
+    weights::W
+end
+
+# The penalty is element-wise, so the operator is the identity and the spatial weights ride along
+# in the proximal function (`NormL1` accepts an array of weights).
+Ristretto.get_operator(reg::MaskedL1, x::AbstractArray; threaded::Bool = true) =
+    Eye(eltype(x), size(x))
+
+# The `::Nothing` slot is the dimension specification a dimension-parameterized regularizer would
+# use; an element-wise penalty couples nothing, so it returns an empty tuple.
+Ristretto.get_affected_dims(::MaskedL1, ::Nothing, image_dims) = ()
+
+# ℓ₁ is homogeneous of degree one, so λ scales linearly with the data scaling.
+Ristretto.scale_regularization(reg::MaskedL1, factor::Real) =
+    MaskedL1(reg.λ * factor, reg.weights)
+
+function Ristretto.materialize(reg::MaskedL1, x::Variable{T}; threaded::Bool) where {T}
+    op = get_operator(reg, ~x; threaded)
+    Γ = real(T).(reg.λ .* reg.weights)
+    return StructuredOptimization.Term(1, NormL1(Γ), op * x, &quot;‖Γ .* x‖₁&quot;)
+end</code></pre><pre><code class="language-julia hljs"># Weight the background 10× more heavily than the object.
+radius = [sqrt((i - nx / 2)^2 + (j - ny / 2)^2) for i in 1:nx, j in 1:ny]
+weights = Float32.(ifelse.(radius .&lt; 0.42nx, 0.1, 1.0))
+
+x_masked = reconstruct(data, IterativeReconstruction(MaskedL1(5.0f-3, weights); maxit = 60))
+println(&quot;MaskedL1 NRMSE: &quot;, round(nrmse(x_masked), digits = 4))
+println(&quot;plain L1Image:  &quot;, round(nrmse(reconstruct(data, IterativeReconstruction(L1Image(5.0f-3); maxit = 60))), digits = 4))
+
+jim(
+    jim(weights; title = &quot;penalty weights&quot;),
+    jim(x_masked; title = &quot;MaskedL1 reconstruction&quot;);
+    layout = (1, 2), size = (800, 350)
+)</code></pre><img src="759db7f4.svg" alt="Example block output"/><p>(Down-weighting the object means <em>less</em> regularization where the signal is, so this particular prior is worse than plain <code>L1Image</code> on this phantom. The point is the interface: a fifteen-line regularizer drops straight into <code>reconstruct</code>, data scaling, algorithm selection and task splitting.)</p><pre><code class="language-julia hljs"># It works through the whole stack: `calculate` evaluates it, and task splitting still applies
+# across batch dimensions because `get_affected_dims` says it couples nothing.
+println(&quot;value at x_true: &quot;, round(calculate(MaskedL1(5.0f-3, weights), x_true), digits = 4))
+println(&quot;affected dims:   &quot;, get_affected_dims(MaskedL1(5.0f-3, weights), nothing, (:x, :y, :slice)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">value at x_true: 0.6054
+affected dims:   ()</code></pre><h2 id="7.-Adding-an-AbstractOperators-compatible-operator"><a class="docs-heading-anchor" href="#7.-Adding-an-AbstractOperators-compatible-operator">7. Adding an <code>AbstractOperators</code>-compatible operator</a><a id="7.-Adding-an-AbstractOperators-compatible-operator-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Adding-an-AbstractOperators-compatible-operator" title="Permalink"></a></h2><p>The encoding operator itself, <code>𝒜 = 𝒫ℱ𝒮</code>, is built from <code>AbstractOperators.AbstractOperator</code>s — the same interface a custom operator implements. The contract is small:</p><ul><li><code>struct MyOp &lt;: LinearOperator</code> carrying whatever the operator needs (here, a fixed pixel shift).</li><li><code>Base.size(L::MyOp)</code> — <code>(codomain_size, domain_size)</code>, matrix convention.</li><li><code>LinearAlgebra.mul!(y, L::MyOp, x)</code> — the forward map, in place.</li><li><code>Base.adjoint(L::MyOp)</code> (or an <code>AdjointOperator</code> wrapper with its own <code>mul!</code>) — the adjoint map, also in place.</li></ul><p>Optionally, the <strong>property traits</strong> from <code>properties.jl</code> — <code>is_linear</code>, <code>is_AcA_diagonal</code>, <code>is_AAc_diagonal</code>, <code>diag_AcA</code>, <code>is_orthogonal</code>, <code>is_full_row_rank</code> and friends — which is how a solver decides whether it can use the operator without applying it: <code>is_AAc_diagonal</code> is what lets <code>HardConsistency</code> project in closed form (§2.2 of tutorial 11), and an orthogonal operator skips the operator-norm power iteration entirely (<code>estimate_opnorm</code> returns <code>1</code> directly).</p><p>A circular pixel shift is a clean example: it is exactly invertible (shift back), its adjoint <em>is</em> its inverse (shifting is a permutation, so <code>L&#39;L = I</code>), and it needs no operator-norm estimate at all — properties worth declaring explicitly rather than leaving for the generic, more expensive fallbacks (<code>get_normal_op(L) = L&#39; * L</code>, <code>opnorm(L) = powerit(L)</code>) to rediscover.</p><p>The adjoint is the part that is easy to get wrong. <code>L&#39;</code> does not build a new operator: the generic <code>Base.adjoint(L::AbstractOperator)</code> wraps <code>L</code> in an <code>AdjointOperator</code>, and it is the <em>second</em> <code>mul!</code> method — <code>mul!(y, ::AdjointOperator{&lt;:MyOp}, b)</code> — that says what the adjoint does. Every operator in <code>AbstractOperators</code> is written this way, and a custom one has to supply both halves; there is no automatic transpose to fall back on.</p><pre><code class="language-julia hljs">struct CircShift{T, N} &lt;: LinearOperator
+    dim::NTuple{N, Int}
+    offset::NTuple{N, Int}
+end
+CircShift(::Type{T}, dim::NTuple{N, Int}, offset::NTuple{N, Int}) where {T, N} = CircShift{T, N}(dim, offset)
+
+Base.size(L::CircShift) = (L.dim, L.dim)          # square: same shape in and out
+AbstractOperators.domain_type(::CircShift{T}) where {T} = T
+AbstractOperators.codomain_type(::CircShift{T}) where {T} = T
+
+# The forward map.
+function LinearAlgebra.mul!(y::AbstractArray, L::CircShift, x::AbstractArray)
+    y .= circshift(x, L.offset)
+    return y
+end
+
+# The adjoint map: shifting is a permutation matrix, so its transpose is its inverse — the shift
+# in the opposite direction. `L.A` reaches the wrapped operator inside the `AdjointOperator`.
+function LinearAlgebra.mul!(y::AbstractArray, L::AbstractOperators.AdjointOperator{&lt;:CircShift}, b::AbstractArray)
+    y .= circshift(b, .-(L.A.offset))
+    return y
+end
+
+# Properties: exactly orthogonal, so L&#39;L = AAc = I, and the operator norm is 1 without an
+# estimate.
+AbstractOperators.is_linear(::CircShift) = true
+AbstractOperators.is_orthogonal(::CircShift) = true
+AbstractOperators.is_AcA_diagonal(::CircShift) = true
+AbstractOperators.diag_AcA(::CircShift{T}) where {T} = one(real(T))
+AbstractOperators.is_AAc_diagonal(::CircShift) = true
+AbstractOperators.diag_AAc(::CircShift{T}) where {T} = one(real(T))</code></pre><pre><code class="language-julia hljs">𝒞shift = CircShift(ComplexF32, (nx, ny), (nx ÷ 4, -ny ÷ 3))   # a quarter of the FOV, so the shift is visible
+shifted = 𝒞shift * x_true
+back = 𝒞shift&#39; * shifted
+
+println(&quot;round trip error (should be 0):     &quot;, norm(back - x_true))
+println(&quot;adjoint == inverse (orthogonal op):  &quot;, norm(𝒞shift&#39; * (𝒞shift * x_true) - x_true))
+println(&quot;‖𝒞shift‖ without power iteration:    &quot;, AbstractOperators.estimate_opnorm(𝒞shift))
+
+jim(
+    jim(x_true; title = &quot;original&quot;),
+    jim(shifted; title = &quot;circularly shifted&quot;);
+    layout = (1, 2), size = (800, 350)
+)</code></pre><img src="1fbf1953.svg" alt="Example block output"/><h2 id="8.-Adding-a-proximal-operator-of-your-own"><a class="docs-heading-anchor" href="#8.-Adding-a-proximal-operator-of-your-own">8. Adding a proximal operator of your own</a><a id="8.-Adding-a-proximal-operator-of-your-own-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Adding-a-proximal-operator-of-your-own" title="Permalink"></a></h2><p>A proximal function needs three things: a callable that returns its value, a <code>prox!</code> that writes the proximal point in place and returns the value <em>there</em>, and the <code>is_*</code> traits a parser consults (<code>is_proximable</code>, <code>is_convex</code>, and so on — §1 of this tutorial reads <code>get_assumptions</code> off exactly these).</p><p>To check a from-scratch implementation actually is the right proximal operator rather than just plausible code, re-derive <code>NormL1</code> — whose closed form (soft thresholding) is well known — independently, and confirm it agrees with the fork&#39;s own <code>NormL1</code> bit for bit.</p><pre><code class="language-julia hljs">struct MyNormL1{T}
+    λ::T
+end
+
+ProximalCore.is_proximable(::Type{&lt;:MyNormL1}) = true
+ProximalCore.is_convex(::Type{&lt;:MyNormL1}) = true
+
+(f::MyNormL1)(x) = f.λ * sum(abs, x)
+
+function ProximalCore.prox!(y, f::MyNormL1, x, γ)
+    τ = f.λ * γ
+    y .= sign.(x) .* max.(abs.(x) .- τ, 0)
+    return f(y)
+end</code></pre><pre><code class="language-julia hljs">z_test = randn(ComplexF32, 200)
+γ_test = 0.7
+λ_test = 0.4f0
+
+y_mine = similar(z_test)
+val_mine = ProximalCore.prox!(y_mine, MyNormL1(λ_test), z_test, γ_test)
+
+y_fork = similar(z_test)
+val_fork = prox!(y_fork, NormL1(λ_test), z_test, γ_test)
+
+println(&quot;prox points agree: &quot;, y_mine ≈ y_fork)
+println(&quot;values agree:      &quot;, val_mine ≈ val_fork, &quot;  (&quot;, round(val_mine, digits = 4), &quot; vs &quot;, round(val_fork, digits = 4), &quot;)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">prox points agree: true
+values agree:      true  (53.0313 vs 53.0313)</code></pre><p>Dropping <code>MyNormL1</code> into a reconstruction needs no further wiring — <code>materialize</code> for any regularizer just needs to produce a <code>StructuredOptimization.Term</code> built from <em>some</em> proximal function, and the parser only ever inspects the <code>is_*</code> traits, never the concrete type. Doing that by hand (rather than through <code>@minimize</code>&#39;s DSL, which recognizes <code>norm(·, 1)</code> specially but not an arbitrary callable) is exactly <code>StructuredOptimization.Term(coeff, f, operator*x)</code>, the same constructor <code>MaskedL1</code>&#39;s <code>materialize</code> used in §6.</p><pre><code class="language-julia hljs">v_custom = Variable(copy(x_adj))
+term_custom = StructuredOptimization.Term(1, MyNormL1(5.0f-3), Eye(ComplexF32, (nx, ny)) * v_custom)
+p_custom = problem(ls(𝒜 * v_custom - y), term_custom)
+x̂_custom, _ = solve(p_custom, FISTA(maxit = 60, verbose = false))
+
+x_mynorm = reconstruct(
+    data,
+    IterativeReconstruction(L1Image(5.0f-3); maxit = 60)   # Ristretto&#39;s own L1Image, for reference
+)
+println(&quot;Ristretto&#39;s L1Image NRMSE:    &quot;, round(nrmse(x_mynorm), digits = 4))
+println(&quot;hand-written MyNormL1:  &quot;, round(nrmse(~v_custom), digits = 4))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Ristretto&#39;s L1Image NRMSE:    0.0587
+hand-written MyNormL1:  0.0589</code></pre><h2 id="9.-Adding-an-algorithm-of-your-own"><a class="docs-heading-anchor" href="#9.-Adding-an-algorithm-of-your-own">9. Adding an algorithm of your own</a><a id="9.-Adding-an-algorithm-of-your-own-1"></a><a class="docs-heading-anchor-permalink" href="#9.-Adding-an-algorithm-of-your-own" title="Permalink"></a></h2><p>An algorithm is not registered with <code>Ristretto</code> at all. It is a plain iterator following <code>ProximalAlgorithms</code>&#39; protocol, plus one declaration — <code>get_assumptions</code> — that says which model shapes it can solve. Ristretto reads that declaration off whatever type it is handed (<code>DEFAULT_ALGORITHMS</code> in tutorial 6 §1 is the same mechanism), so an algorithm written in a tutorial cell is a legal <code>algorithm =</code> argument the moment it exists.</p><p>The protocol has five parts:</p><ol><li>An <strong>iteration type</strong> holding the problem (<code>f</code>, <code>g</code>, <code>x0</code>) and the algorithm&#39;s parameters.</li><li>A <strong>state type</strong>, mutated in place, so an iteration allocates nothing per step.</li><li><code>Base.iterate(iter)</code> and <code>Base.iterate(iter, state)</code> — the first sets the state up, the second advances it by one step. The iterator is infinite; stopping is the caller&#39;s business.</li><li><code>default_stopping_criterion</code> / <code>default_solution</code> / <code>default_iteration_summary</code> — how to stop, what to hand back, what to print. <code>default_solution</code> is also what Ristretto&#39;s <code>on_iteration</code> callback sees.</li><li><code>get_assumptions</code> — the model shape, as a set of terms and the traits each must satisfy.</li></ol><p>ISTA is the smallest complete example: one gradient step on the smooth term, one prox on the other. Everything below is written from scratch and then checked against the fork&#39;s own <code>ISTA</code>, which is the only honest way to know a from-scratch implementation is right.</p><pre><code class="language-julia hljs">using Ristretto.ProximalAlgorithms: IterativeAlgorithm, AssumptionGroup, SimpleTerm, get_assumptions,
+    value_and_gradient, lower_bound_smoothness_constant, default_display
+using ProximalCore: is_smooth, is_convex, is_proximable
+
+# 1. The iteration: the problem, plus a step size (or the Lipschitz constant to derive it from).
+Base.@kwdef struct MyISTAIteration{Tx, Tf, Tg, TLf, Tgamma}
+    f::Tf = ProximalCore.Zero()
+    g::Tg = ProximalCore.Zero()
+    x0::Tx
+    Lf::TLf = nothing
+    gamma::Tgamma = Lf === nothing ? nothing : 1 / Lf
+end
+
+Base.IteratorSize(::Type{&lt;:MyISTAIteration}) = Base.IsInfinite()
+
+# 2. The state. `res = x - z` is the fixed-point residual: it is what the stopping rule reads.
+mutable struct MyISTAState{R, Tx}
+    x::Tx        # current iterate
+    y::Tx        # forward (gradient-step) point
+    z::Tx        # forward-backward point
+    res::Tx      # x - z
+    grad::Tx     # gradient of f at x
+    gamma::R     # step size
+    f_x::R       # value of f at x
+    g_z::R       # value of g at z
+end</code></pre><pre><code class="language-julia hljs"># 3a. Setting up: one gradient step, one prox, and a step size if none was supplied.
+function Base.iterate(iter::MyISTAIteration)
+    x = copy(iter.x0)
+    R = real(eltype(x))
+    f_x, grad = value_and_gradient(iter.f, x)
+    gamma = iter.gamma === nothing ?
+        1 / lower_bound_smoothness_constant(iter.f, I, x, grad) : iter.gamma
+    y = x .- gamma .* grad
+    z, g_z = ProximalCore.prox(iter.g, y, gamma)
+    state = MyISTAState(x, y, z, x .- z, copy(grad), R(gamma), R(f_x), R(g_z))
+    return state, state
+end
+
+# 3b. One step: swap the buffers (the previous z becomes the new x), re-evaluate, prox again.
+function Base.iterate(iter::MyISTAIteration, state::MyISTAState{R}) where {R}
+    state.x, state.z = state.z, state.x
+    f_x, grad = value_and_gradient(iter.f, state.x)
+    state.f_x = R(f_x)
+    state.grad .= grad
+    state.y .= state.x .- state.gamma .* state.grad
+    state.g_z = R(ProximalCore.prox!(state.z, iter.g, state.y, state.gamma))
+    state.res .= state.x .- state.z
+    return state, state
+end
+
+# 4. Stopping, solution and display.
+ProximalAlgorithms.default_stopping_criterion(tol, ::MyISTAIteration, state::MyISTAState) =
+    norm(state.res, Inf) / state.gamma &lt;= tol
+ProximalAlgorithms.default_solution(::MyISTAIteration, state::MyISTAState) = state.z
+ProximalAlgorithms.default_iteration_summary(it, ::MyISTAIteration, state::MyISTAState) =
+    (&quot;&quot; =&gt; it, &quot;γ&quot; =&gt; state.gamma, &quot;f(x)&quot; =&gt; state.f_x, &quot;g(z)&quot; =&gt; state.g_z)
+
+# The user-facing constructor: `IterativeAlgorithm` wraps the iteration with the loop that runs it.
+MyISTA(;
+    maxit = 10_000,
+    tol = 1.0e-8,
+    stop = (iter, state) -&gt; ProximalAlgorithms.default_stopping_criterion(tol, iter, state),
+    solution = ProximalAlgorithms.default_solution,
+    verbose = false,
+    freq = 100,
+    summary = ProximalAlgorithms.default_iteration_summary,
+    display = default_display,
+    kwargs...,
+) = IterativeAlgorithm(MyISTAIteration; maxit, stop, solution, verbose, freq, summary, display, kwargs...)
+
+# 5. The declaration Ristretto&#39;s solver selection reads: a smooth convex term plus a proximable convex
+#    one. This is exactly what ISTA can solve, and no more — declaring anything wider here would
+#    let Ristretto hand this algorithm a model it cannot minimize.
+ProximalAlgorithms.get_assumptions(::Type{&lt;:MyISTAIteration}) = AssumptionGroup(
+    SimpleTerm(:f =&gt; (is_smooth, is_convex)),
+    SimpleTerm(:g =&gt; (is_proximable, is_convex))
+)
+
+println(&quot;MyISTA: &quot;, get_assumptions(MyISTA()))
+println(&quot;ISTA:   &quot;, get_assumptions(ISTA()))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MyISTA: f(x) + g(x) where f is_smooth, and is_convex; and g is_proximable, and is_convex
+ISTA:   f(x) + g(x) where f is_locally_smooth; and g is_proximable</code></pre><p>Both declarations are the same, which is the check that matters before running anything: Ristretto will accept <code>MyISTA()</code> for exactly the models it accepts <code>ISTA()</code> for.</p><p>Now the numerical check. Same data, same regularizer, same iteration count, one solver against the other — a from-scratch ISTA that is correct must track the fork&#39;s to solver tolerance.</p><pre><code class="language-julia hljs">x_myista = reconstruct(
+    data, IterativeReconstruction(L1Wavelet2D(2.0f-3); algorithm = MyISTA(), maxit = 60, reltol = 0.0)
+)
+x_ista = reconstruct(
+    data, IterativeReconstruction(L1Wavelet2D(2.0f-3); algorithm = ISTA(), maxit = 60, reltol = 0.0)
+)
+
+println(&quot;MyISTA NRMSE:            &quot;, round(nrmse(x_myista), digits = 4))
+println(&quot;fork&#39;s ISTA NRMSE:       &quot;, round(nrmse(x_ista), digits = 4))
+println(&quot;relative difference:     &quot;, round(norm(unname(x_myista) - unname(x_ista)) / norm(unname(x_ista)), sigdigits = 3))
+
+side_by_side(
+    x_ista, x_myista; titles = (&quot;fork&#39;s ISTA&quot;, &quot;MyISTA (this cell)&quot;), size = (750, 350)
+)</code></pre><img src="daa07085.svg" alt="Example block output"/><p>The same protocol is what lets an algorithm the vendored fork already ships, but that <code>DEFAULT_ALGORITHMS</code> does not list, be used without any Ristretto-side change — <code>ZeroFPR</code>, a quasi-Newton accelerated proximal-gradient method, declares the same model shape:</p><pre><code class="language-julia hljs">using Ristretto.ProximalAlgorithms: ZeroFPR, ZeroFPRIteration
+
+println(&quot;ZeroFPR: &quot;, get_assumptions(ZeroFPR()))
+
+x_zerofpr = reconstruct(
+    data, IterativeReconstruction(L1Wavelet2D(2.0f-3); algorithm = ZeroFPR(), maxit = 60)
+)
+println(&quot;FISTA   NRMSE: &quot;, round(nrmse(x_api), digits = 4))
+println(&quot;ZeroFPR NRMSE: &quot;, round(nrmse(x_zerofpr), digits = 4))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ZeroFPR: f(Ax) + g(x) where f is_smooth; and A is_linear; and g is_proximable
+FISTA   NRMSE: 0.1013
+ZeroFPR NRMSE: 0.0969</code></pre><p>Nothing in <code>Ristretto</code> had to change in either case: <code>get_assumptions</code> is read off the type Ristretto is handed, so any <code>ProximalAlgorithms</code>-shaped iteration — the package&#39;s own, or one written in a tutorial cell — plugs into the same solver selection <code>DEFAULT_ALGORITHMS</code> uses, with no registration step.</p><h2 id="Further-reading"><a class="docs-heading-anchor" href="#Further-reading">Further reading</a><a id="Further-reading-1"></a><a class="docs-heading-anchor-permalink" href="#Further-reading" title="Permalink"></a></h2><p>What the operators in this tutorial stand for physically, from <em>Questions and Answers in MRI</em>:</p><ul><li><a href="https://mriquestions.com/what-is-k-space.html">What is k-space?</a> — the codomain of <span>$\mathcal{F}$</span>.</li><li><a href="https://mriquestions.com/k-space-trajectories.html">k-space: trajectories</a> — what the NFFT operator&#39;s trajectory argument describes.</li><li><a href="https://mriquestions.com/what-is-pi.html">Parallel imaging</a> — what <span>$\mathcal{S}$</span> models.</li></ul><h2 id="Environment"><a class="docs-heading-anchor" href="#Environment">Environment</a><a id="Environment-1"></a><a class="docs-heading-anchor-permalink" href="#Environment" title="Permalink"></a></h2><pre><code class="language-julia hljs">print_versions()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.13.1
+Commit 96ca370cf0e (2026-09-25 19:34 UTC)
+Build Info:
+  Official https://julialang.org release
+Platform Info:
+  OS: Linux (x86_64-linux-gnu)
+  CPU: 4 × AMD EPYC 9V74 80-Core Processor
+  WORD_SIZE: 64
+  LLVM: libLLVM-20.1.8 (ORCJIT, znver4)
+  GC: Built with stock GC
+Threads: 2 default, 1 interactive, 2 GC (on 4 virtual cores)
+Environment:
+  JULIA_PKG_SERVER_REGISTRY_PREFERENCE = eager
+  JULIA_NUM_THREADS = 2
+
+Ristretto                 0.1.0 (dev)
+AbstractOperators       not loaded
+FFTWOperators           not loaded
+NFFTOperators           not loaded
+WaveletOperators        not loaded
+DSPOperators            not loaded
+ContourletOperators     not loaded
+StructuredOptimization  not loaded
+ProximalOperators       not loaded
+ProximalAlgorithms      not loaded
+OperatorCore            not loaded
+NestedThreading           0.1.2</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../11_advanced_reconstruction/">« Advanced reconstruction methods</a><a class="docs-footer-nextpage" href="../../high-level/acquisition_info/">AcquisitionInfo »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Monday 12 October 2026 18:03">Monday 12 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

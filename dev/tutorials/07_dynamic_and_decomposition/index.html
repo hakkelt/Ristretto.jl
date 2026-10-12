@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Dynamic imaging and image decomposition · Ristretto.jl</title><meta name="title" content="Dynamic imaging and image decomposition · Ristretto.jl"/><meta property="og:title" content="Dynamic imaging and image decomposition · Ristretto.jl"/><meta property="twitter:title" content="Dynamic imaging and image decomposition · Ristretto.jl"/><meta name="description" content="Documentation for Ristretto.jl."/><meta property="og:description" content="Documentation for Ristretto.jl."/><meta property="twitter:description" content="Documentation for Ristretto.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.svg" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Ristretto.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Ristretto.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Ristretto.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../01_getting_started/">Getting started with Ristretto</a></li><li><a class="tocitem" href="../02_acquisition_info/"><code>AcquisitionInfo</code>: describing the acquisition</a></li><li><a class="tocitem" href="../03_simulation/">Simulation tools</a></li><li><a class="tocitem" href="../04_reconstruction_methods/">Reconstruction methods</a></li><li><a class="tocitem" href="../05_regularization/">Regularization</a></li><li><a class="tocitem" href="../06_algorithms_and_configuration/">Algorithms and configuration</a></li><li class="is-active"><a class="tocitem" href>Dynamic imaging and image decomposition</a><ul class="internal"><li><a class="tocitem" href="#1.-A-dynamic-torso-phantom-dataset"><span>1. A dynamic torso-phantom dataset</span></a></li><li><a class="tocitem" href="#2.-Temporal-regularizers"><span>2. Temporal regularizers</span></a></li><li><a class="tocitem" href="#3.-Low-rank-regularizers"><span>3. Low-rank regularizers</span></a></li><li><a class="tocitem" href="#4.-Image-decomposition-—-low-rank-sparse"><span>4. Image decomposition — low-rank + sparse</span></a></li><li><a class="tocitem" href="#Further-reading"><span>Further reading</span></a></li><li><a class="tocitem" href="#Environment"><span>Environment</span></a></li></ul></li><li><a class="tocitem" href="../08_non_cartesian/">Non-Cartesian acquisitions</a></li><li><a class="tocitem" href="../09_real_data_cartesian/">Real scanner data, end to end</a></li><li><a class="tocitem" href="../10_real_data_dynamic/">Real dynamic data: cardiac cine</a></li><li><a class="tocitem" href="../11_advanced_reconstruction/">Advanced reconstruction methods</a></li><li><a class="tocitem" href="../12_low_level_interface/">The low-level interface</a></li></ul></li><li><span class="tocitem">High-level Interface</span><ul><li><a class="tocitem" href="../../high-level/acquisition_info/">AcquisitionInfo</a></li><li><a class="tocitem" href="../../high-level/preprocessing/">Preprocessing</a></li><li><a class="tocitem" href="../../high-level/simulation/">Simulation Tools</a></li><li><a class="tocitem" href="../../high-level/methods/">Reconstruction Methods</a></li><li><a class="tocitem" href="../../high-level/reconstruction/">Reconstruction</a></li><li><a class="tocitem" href="../../high-level/export/">Export</a></li><li><a class="tocitem" href="../../high-level/regularization/">Regularization</a></li><li><a class="tocitem" href="../../high-level/algorithms/">Optimization Algorithms</a></li><li><a class="tocitem" href="../../high-level/nameddims/">Named Dimensions</a></li><li><a class="tocitem" href="../../high-level/task_splitting/">Task Splitting</a></li><li><a class="tocitem" href="../../high-level/image_decomposition/">Image Decomposition</a></li><li><a class="tocitem" href="../../high-level/analysis/">Noise &amp; Analysis</a></li><li><a class="tocitem" href="../../high-level/performance/">Performance &amp; Threading</a></li><li><a class="tocitem" href="../../high-level/gpu/">GPU Reconstruction</a></li></ul></li><li><span class="tocitem">Low-Level Interface</span><ul><li><a class="tocitem" href="../../low-level/operators/">MRI Operators</a></li><li><a class="tocitem" href="../../low-level/custom_reconstruction/">Custom Reconstruction</a></li><li><a class="tocitem" href="../../low-level/abstract_operators/">AbstractOperators.jl</a></li><li><a class="tocitem" href="../../low-level/proximal_operators/">ProximalOperators.jl</a></li></ul></li><li><a class="tocitem" href="../../theory/">Theoretical Background</a></li><li><a class="tocitem" href="../../related_packages/">Related packages</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Dynamic imaging and image decomposition</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Dynamic imaging and image decomposition</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/hakkelt/Ristretto.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/hakkelt/Ristretto.jl/blob/master/docs/literate/07_dynamic_and_decomposition.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="7-—-Dynamic-imaging-and-image-decomposition"><a class="docs-heading-anchor" href="#7-—-Dynamic-imaging-and-image-decomposition">7 — Dynamic imaging and image decomposition</a><a id="7-—-Dynamic-imaging-and-image-decomposition-1"></a><a class="docs-heading-anchor-permalink" href="#7-—-Dynamic-imaging-and-image-decomposition" title="Permalink"></a></h1><p><em>Download this tutorial as a <a href="../07_dynamic_and_decomposition.ipynb">Jupyter notebook</a> (with <a href="../NotebookUtils.jl"><code>NotebookUtils.jl</code></a> next to it).</em></p><p>Everything in this tutorial needs more than one image: a time series, or a model that splits one image into additive parts.</p><p><strong>Image decomposition</strong> is the subject here: the image <em>is</em> a sum of components, each carrying its own regularizer (low-rank + sparse, cartoon + ramp), all solved together in one problem. It is unrelated to <strong>task splitting</strong>, which runs one <em>independent</em> reconstruction per batch element and lives in tutorial 06 §8.</p><p><strong>Contents</strong></p><ol><li>A dynamic torso-phantom dataset</li><li>Temporal regularizers</li><li>Low-rank regularizers</li><li>Image decomposition — low-rank + sparse</li></ol><pre><code class="language-julia hljs">using .NotebookUtils
+
+using Ristretto
+using GeometricMedicalPhantoms: create_torso_phantom, TissueMask,
+    generate_respiratory_signal, generate_cardiac_signals
+using MIRTjim: jim
+using Plots
+using NamedDims
+using LinearAlgebra
+using Statistics: mean
+using Random
+
+Random.seed!(0);</code></pre><h2 id="1.-A-dynamic-torso-phantom-dataset"><a class="docs-heading-anchor" href="#1.-A-dynamic-torso-phantom-dataset">1. A dynamic torso-phantom dataset</a><a id="1.-A-dynamic-torso-phantom-dataset-1"></a><a class="docs-heading-anchor-permalink" href="#1.-A-dynamic-torso-phantom-dataset" title="Permalink"></a></h2><p>The phantom is <code>create_torso_phantom</code> from <a href="https://github.com/hakkelt/GeometricMedicalPhantoms.jl">GeometricMedicalPhantoms.jl</a>, driven by that package&#39;s physiological signal generators:</p><ul><li><code>generate_cardiac_signals(duration, fs, hr)</code> returns the four chamber volumes in millilitres (<code>lv</code>, <code>rv</code>, <code>la</code>, <code>ra</code>); the phantom rescales its chambers to follow them.</li><li><code>generate_respiratory_signal(duration, fs, rr)</code> returns lung volume in litres; the phantom moves the diaphragm and the structures above it accordingly.</li></ul><p>Sixteen frames spanning one cardiac cycle at 60 bpm, with the respiratory signal sampled over the same one-second window, gives a short cine with a strongly moving heart and a slow through-plane drift. A coronal slice through the mid-chest cuts through both ventricles and, unlike an axial slice, also shows the diaphragm — the structure the respiratory signal moves.</p><pre><code class="language-julia hljs">n, nt, nc, nz, yslice = 64, 16, 4, 64, 32
+
+_, cardiac = generate_cardiac_signals(1.0, Float64(nt), 60.0)     # one beat, nt frames
+_, respiratory = generate_respiratory_signal(1.0, Float64(nt), 15.0)
+println(
+    &quot;LV volume over the cine: &quot;, round(minimum(cardiac.lv), digits = 1), &quot; – &quot;,
+    round(maximum(cardiac.lv), digits = 1), &quot; mL&quot;
+)
+println(
+    &quot;lung volume:             &quot;, round(minimum(respiratory), digits = 2), &quot; – &quot;,
+    round(maximum(respiratory), digits = 2), &quot; L&quot;
+)
+
+volume = create_torso_phantom(
+    n, n, nz; respiratory_signal = respiratory, cardiac_volumes = cardiac, eltype = ComplexF32
+)
+series = NamedDimsArray{(:x, :y, :time)}(volume[:, yslice, :, :])   # coronal: fix the y axis
+println(&quot;series: &quot;, size(series), &quot; &quot;, dimnames(series))
+
+animate_slices(series; title = i -&gt; &quot;dynamic series, frame $i of $nt&quot;, fps = 8, size = (400, 350))</code></pre><img src="26e017da.gif" alt="Example block output"/><h3 id="Tissue-masks"><a class="docs-heading-anchor" href="#Tissue-masks">Tissue masks</a><a id="Tissue-masks-1"></a><a class="docs-heading-anchor-permalink" href="#Tissue-masks" title="Permalink"></a></h3><p>Passing <code>ti = TissueMask(lv_blood = true)</code> builds the <em>same</em> phantom with one tissue set to 1 and everything else to 0, frame by frame, so the masks move with the anatomy. That gives an error metric per tissue instead of a single global number — which matters here, because a dynamic reconstruction can be excellent everywhere except in the one structure that moves.</p><pre><code class="language-julia hljs">tissue_mask(mask) = create_torso_phantom(
+    n, n, nz; respiratory_signal = respiratory, cardiac_volumes = cardiac, ti = mask
+)[:, yslice, :, :]
+
+masks = (
+    lv_blood = tissue_mask(TissueMask(lv_blood = true)),
+    rv_blood = tissue_mask(TissueMask(rv_blood = true)),
+    heart = tissue_mask(TissueMask(heart = true)),
+    lung = tissue_mask(TissueMask(lung = true)),
+    bones = tissue_mask(TissueMask(bones = true)),
+)
+
+for (name, m) in pairs(masks)
+    println(
+        rpad(string(name), 10), &quot; &quot;, lpad(sum(m), 6), &quot; voxel-frames; per-frame area &quot;,
+        extrema(sum(m[:, :, t]) for t in 1:nt)
+    )
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">lv_blood     1046 voxel-frames; per-frame area (48, 99)
+rv_blood     1619 voxel-frames; per-frame area (81, 140)
+heart        2215 voxel-frames; per-frame area (127, 166)
+lung        18270 voxel-frames; per-frame area (1099, 1159)
+bones        1840 voxel-frames; per-frame area (110, 124)</code></pre><p>The left-ventricular blood pool shrinks from 124 pixels to 69 and back over the sixteen frames — that contraction is the moving structure every temporal method below is judged on.</p><pre><code class="language-julia hljs">plot(
+    [sum(masks.lv_blood[:, :, t]) for t in 1:nt];
+    label = &quot;LV blood pool&quot;, lw = 2, marker = :circle, xlabel = &quot;frame&quot;, ylabel = &quot;area (pixels)&quot;,
+    size = (650, 300)
+)
+plot!([sum(masks.rv_blood[:, :, t]) for t in 1:nt]; label = &quot;RV blood pool&quot;, lw = 2, marker = :circle)</code></pre><img src="8394c15a.svg" alt="Example block output"/><pre><code class="language-julia hljs">jim(
+    jim(Float32.(masks.lv_blood[:, :, 1]); title = &quot;LV mask, frame 1 (diastole)&quot;),
+    jim(Float32.(masks.lv_blood[:, :, 6]); title = &quot;LV mask, frame 6 (systole)&quot;),
+    jim(Float32.(masks.lung[:, :, 1]); title = &quot;lung mask&quot;);
+    layout = (1, 3), size = (1050, 330)
+)</code></pre><img src="22d0efcf.svg" alt="Example block output"/><h3 id="Undersampling-and-the-error-metrics"><a class="docs-heading-anchor" href="#Undersampling-and-the-error-metrics">Undersampling and the error metrics</a><a id="Undersampling-and-the-error-metrics-1"></a><a class="docs-heading-anchor-permalink" href="#Undersampling-and-the-error-metrics" title="Permalink"></a></h3><p>Phase encodes are undersampled with a fully sampled centre, the same pattern for every frame.</p><pre><code class="language-julia hljs">mask_y = falses(n)
+mask_y[1:4:n] .= true
+mask_y[(n ÷ 2 - 4):(n ÷ 2 + 4)] .= true
+println(&quot;acceleration: &quot;, round(n / sum(mask_y), digits = 2), &quot;×&quot;)
+
+smaps = NamedDimsArray{(:x, :y, :coil)}(coil_sensitivities(n, n, nc))
+acq_dyn = AcquisitionInfo(;
+    is3D = false, image_size = (n, n), sensitivity_maps = smaps, subsampling = (:, mask_y)
+)
+data_dyn = simulate_acquisition(series + 0.01f0 * randn(ComplexF32, n, n, nt), acq_dyn; keep_sensitivity_maps = true)
+println(&quot;k-space: &quot;, size(data_dyn.kspace_data), &quot; &quot;, dimnames(data_dyn.kspace_data))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">acceleration: 2.78×
+<span class="sgr33"><span class="sgr1">┌ Warning: </span></span>simulate_acquisition: the phantom has the reconstruction&#39;s size 64×64, so the data are simulated with the operator that will reconstruct them (the inverse crime), and reconstructions look better than they would on measured data. Simulate from a finer, area-sampled phantom, e.g. 101×101; pass `inverse_crime_check = false` where the consistency is intended.
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ Ristretto ~/work/Ristretto.jl/Ristretto.jl/src/simulation/simulate_acquisition.jl:313</span>
+k-space: (64, 23, 4, 16) (:kx, :ky, :coil, :time)</code></pre><pre><code class="language-julia hljs"># Global NRMSE comes from NotebookUtils; the per-tissue one restricts both arrays to a mask.
+nrmse_dyn(x̂) = nrmse(unname(x̂), unname(series))
+function tissue_nrmse(x̂, mask)
+    a, b = abs.(unname(x̂)), abs.(unname(series))
+    return norm(a[mask] - b[mask]) / norm(b[mask])
+end
+
+function report(label, x̂)
+    print(rpad(label, 26), &quot; global: &quot;, round(nrmse_dyn(x̂), digits = 4))
+    for (name, m) in pairs(masks)
+        print(&quot;, &quot;, name, &quot;: &quot;, round(tissue_nrmse(x̂, m), digits = 4))
+    end
+    return println()
+end
+
+x_dyn_direct = reconstruct(data_dyn)
+report(&quot;direct&quot;, x_dyn_direct)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">direct                     global: 0.2294, lv_blood: 0.0919, rv_blood: 0.0778, heart: 0.2003, lung: 0.7583, bones: 0.2569</code></pre><h2 id="2.-Temporal-regularizers"><a class="docs-heading-anchor" href="#2.-Temporal-regularizers">2. Temporal regularizers</a><a id="2.-Temporal-regularizers-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Temporal-regularizers" title="Permalink"></a></h2><h3 id="L1TemporalFourier"><a class="docs-heading-anchor" href="#L1TemporalFourier"><code>L1TemporalFourier</code></a><a id="L1TemporalFourier-1"></a><a class="docs-heading-anchor-permalink" href="#L1TemporalFourier" title="Permalink"></a></h3><p>Sparsity along the temporal frequency axis — the k-t SPARSE transform. Ideal when the dynamics are periodic or smooth (cine, cardiac), which is exactly what a one-beat cine is.</p><h3 id="TemporalTotalVariation"><a class="docs-heading-anchor" href="#TemporalTotalVariation"><code>TemporalTotalVariation</code></a><a id="TemporalTotalVariation-1"></a><a class="docs-heading-anchor-permalink" href="#TemporalTotalVariation" title="Permalink"></a></h3><p>Penalizes frame-to-frame differences instead. Right for irregular dynamics: free-breathing, real-time, first-pass perfusion. It is the temporal counterpart of spatial TV and, like it, falls back to ADMM.</p><pre><code class="language-julia hljs">x_tf = reconstruct(
+    data_dyn, IterativeReconstruction(L1TemporalFourier(2.0f-2; time_dim = :time); maxit = 60)
+)
+x_ttv = reconstruct(
+    data_dyn, IterativeReconstruction(TemporalTotalVariation(2.0f-2; time_dim = :time); maxit = 60)
+)
+x_spatiotemporal = reconstruct(
+    data_dyn,
+    IterativeReconstruction(
+        TotalVariation2D(1.0f-3), TemporalTotalVariation(2.0f-2; time_dim = :time);
+        algorithm = ADMM(), maxit = 60
+    )
+)
+
+report(&quot;direct&quot;, x_dyn_direct)
+report(&quot;L1TemporalFourier&quot;, x_tf)
+report(&quot;TemporalTotalVariation&quot;, x_ttv)
+report(&quot;spatial TV + temporal TV&quot;, x_spatiotemporal)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">direct                     global: 0.2294, lv_blood: 0.0919, rv_blood: 0.0778, heart: 0.2003, lung: 0.7583, bones: 0.2569
+L1TemporalFourier          global: 0.1784, lv_blood: 0.0976, rv_blood: 0.0846, heart: 0.2283, lung: 0.747, bones: 0.2107
+TemporalTotalVariation     global: 0.0878, lv_blood: 0.043, rv_blood: 0.034, heart: 0.0805, lung: 0.3156, bones: 0.1093
+spatial TV + temporal TV   global: 0.0304, lv_blood: 0.0204, rv_blood: 0.0154, heart: 0.0536, lung: 0.0503, bones: 0.0432</code></pre><p>Read the columns, not just the first one. Every method improves the global number, but the ranking inside the <em>lung</em> — low signal, and moving with the diaphragm — is different from the ranking inside the blood pools, and the lung is where each method&#39;s error is largest.</p><pre><code class="language-julia hljs">frame = 8
+side_by_side(
+    unname(series)[:, :, frame], unname(x_dyn_direct)[:, :, frame],
+    unname(x_tf)[:, :, frame], unname(x_ttv)[:, :, frame];
+    titles = (&quot;truth&quot;, &quot;direct&quot;, &quot;temporal Fourier&quot;, &quot;temporal TV&quot;)
+)</code></pre><img src="ed633f79.svg" alt="Example block output"/><h3 id="The-temporal-profile-through-the-moving-structure"><a class="docs-heading-anchor" href="#The-temporal-profile-through-the-moving-structure">The temporal profile through the moving structure</a><a id="The-temporal-profile-through-the-moving-structure-1"></a><a class="docs-heading-anchor-permalink" href="#The-temporal-profile-through-the-moving-structure" title="Permalink"></a></h3><p>The point of a temporal term is the time course, not the single frame. A y–t profile through a fixed column across the ventricle shows it directly: the horizontal axis is time, so a moving wall is a slanted edge, and blurring it is immediately visible.</p><pre><code class="language-julia hljs">column = 34
+profile(x) = abs.(unname(x))[:, column, :]
+side_by_side(
+    profile(series), profile(x_dyn_direct), profile(x_tf), profile(x_ttv);
+    titles = (&quot;truth&quot;, &quot;direct&quot;, &quot;temporal Fourier&quot;, &quot;temporal TV&quot;)
+)</code></pre><img src="5610205b.svg" alt="Example block output"/><h2 id="3.-Low-rank-regularizers"><a class="docs-heading-anchor" href="#3.-Low-rank-regularizers">3. Low-rank regularizers</a><a id="3.-Low-rank-regularizers-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Low-rank-regularizers" title="Permalink"></a></h2><p>A dynamic series reshaped as a <a href="https://cds.ismrm.org/protected/18MProceedings/PDFfiles/E1262.html">Casorati matrix</a> (space × time) is nearly low rank whenever the frames are correlated — and a cine is, since most of the field of view does not move at all.</p><ul><li><code>LowRank(λ)</code> — nuclear norm of the whole matrix.</li><li><code>RankLimit(k)</code> — a hard rank constraint instead of a penalty.</li><li><code>LocallyLowRank(λ; block_size)</code> — nuclear norm per spatial block, for dynamics that vary across the field of view. A torso cine is exactly that case: the heart moves, the chest wall barely does.</li><li><code>MultiScaleLowRank(λ; block_sizes)</code> — several block sizes at once, via a proximal average.</li></ul><pre><code class="language-julia hljs"># Each method gets its own λ sweep rather than reusing one value across all three — the three
+# regularizers penalize different things (a global Casorati matrix, per-block matrices, several
+# block sizes at once) and there is no reason their best λ would coincide. Each sweep is checked
+# for an interior optimum (neither endpoint is the winner); an edge optimum would mean the range
+# needs widening, not that the method is simply &quot;worse&quot;.
+λs = [2.0f-3, 3.5f-3, 5.0f-3, 1.0f-2, 2.0f-2, 3.5f-2, 5.0f-2, 7.0f-2, 1.0f-1]
+
+function sweep(build_reg)
+    results = map(λs) do λ
+        x̂ = reconstruct(data_dyn, IterativeReconstruction(build_reg(λ); maxit = 60))
+        return λ, x̂, nrmse_dyn(x̂)
+    end
+    best = results[argmin(last.(results))]
+    return best
+end
+
+λ_lr, x_lr, nrmse_lr = sweep(λ -&gt; LowRank(λ; time_dim = :time))
+λ_llr, x_llr, nrmse_llr = sweep(λ -&gt; LocallyLowRank(λ; block_size = 8, time_dim = :time))
+λ_mslr, x_mslr, nrmse_mslr = sweep(λ -&gt; MultiScaleLowRank(λ; block_sizes = (4, 8, 16), time_dim = :time))
+
+println(&quot;best λ (interior optimum unless noted):&quot;)
+for (label, λ, best_nrmse) in ((&quot;LowRank&quot;, λ_lr, nrmse_lr), (&quot;LocallyLowRank(8)&quot;, λ_llr, nrmse_llr), (&quot;MultiScaleLowRank&quot;, λ_mslr, nrmse_mslr))
+    edge = λ in (first(λs), last(λs)) ? &quot;  (EDGE — widen the sweep)&quot; : &quot;&quot;
+    println(rpad(label, 20), &quot; λ = &quot;, λ, &quot;  NRMSE &quot;, round(best_nrmse, digits = 4), edge)
+end
+
+report(&quot;LowRank&quot;, x_lr)
+report(&quot;LocallyLowRank(8)&quot;, x_llr)
+report(&quot;MultiScaleLowRank&quot;, x_mslr)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">best λ (interior optimum unless noted):
+LowRank              λ = 0.002  NRMSE 0.116  (EDGE — widen the sweep)
+LocallyLowRank(8)    λ = 0.01  NRMSE 0.1016
+MultiScaleLowRank    λ = 0.02  NRMSE 0.1034
+LowRank                    global: 0.116, lv_blood: 0.0499, rv_blood: 0.0448, heart: 0.1069, lung: 0.4059, bones: 0.1549
+LocallyLowRank(8)          global: 0.1016, lv_blood: 0.038, rv_blood: 0.033, heart: 0.087, lung: 0.3193, bones: 0.1459
+MultiScaleLowRank          global: 0.1034, lv_blood: 0.0423, rv_blood: 0.0353, heart: 0.0923, lung: 0.3068, bones: 0.1526</code></pre><p><code>MultiScaleLowRank</code> also accepts one λ per scale instead of a single shared one — coarser blocks capture more of the signal energy, so they often want a different threshold than fine blocks. Comparing a per-scale λ against the best shared one shows what the extra degree of freedom buys.</p><pre><code class="language-julia hljs">x_mslr_per_scale = reconstruct(
+    data_dyn,
+    IterativeReconstruction(
+        MultiScaleLowRank([3.0f-2, 5.0f-2, 8.0f-2]; block_sizes = (4, 8, 16), time_dim = :time); maxit = 60
+    )
+)
+report(&quot;MultiScaleLowRank, shared λ&quot;, x_mslr)
+report(&quot;MultiScaleLowRank, per-scale λ&quot;, x_mslr_per_scale)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MultiScaleLowRank, shared λ global: 0.1034, lv_blood: 0.0423, rv_blood: 0.0353, heart: 0.0923, lung: 0.3068, bones: 0.1526
+MultiScaleLowRank, per-scale λ global: 0.1079, lv_blood: 0.0479, rv_blood: 0.0407, heart: 0.1016, lung: 0.2924, bones: 0.1627</code></pre><pre><code class="language-julia hljs"># `shift = :random` redraws the block grid before every proximal step, which averages out the
+# block boundaries a fixed grid can leave at large λ. It changes the objective from iteration to
+# iteration, so it must not be combined with a line-search algorithm — hence the explicit
+# `POGM()`, whose step size is fixed by `Lf` (tutorial 06 §7).
+x_llr_shift = reconstruct(
+    data_dyn,
+    IterativeReconstruction(
+        LocallyLowRank(5.0f-2; block_size = 8, time_dim = :time, shift = :random);
+        algorithm = POGM(), maxit = 60
+    )
+)
+report(&quot;LocallyLowRank, random&quot;, x_llr_shift)
+
+side_by_side(
+    unname(x_lr)[:, :, frame], unname(x_llr)[:, :, frame],
+    unname(x_llr_shift)[:, :, frame], unname(x_mslr)[:, :, frame];
+    titles = (&quot;LowRank&quot;, &quot;LocallyLowRank&quot;, &quot;LLR, random grid&quot;, &quot;MultiScaleLowRank&quot;)
+)</code></pre><img src="75e91740.svg" alt="Example block output"/><pre><code class="language-julia hljs"># How low-rank is the result? Singular values of the Casorati matrix.
+casorati(x) = reshape(abs.(unname(x)), n * n, nt)
+plot(
+    svdvals(casorati(series))[1:12]; label = &quot;truth&quot;, lw = 2, marker = :circle,
+    yscale = :log10, xlabel = &quot;index&quot;, ylabel = &quot;singular value&quot;, size = (650, 350)
+)
+plot!(svdvals(casorati(x_dyn_direct))[1:12]; label = &quot;direct&quot;, lw = 2, marker = :circle)
+plot!(svdvals(casorati(x_lr))[1:12]; label = &quot;LowRank&quot;, lw = 2, marker = :circle)</code></pre><img src="799bb7d7.svg" alt="Example block output"/><h2 id="4.-Image-decomposition-—-low-rank-sparse"><a class="docs-heading-anchor" href="#4.-Image-decomposition-—-low-rank-sparse">4. Image decomposition — low-rank + sparse</a><a id="4.-Image-decomposition-—-low-rank-sparse-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Image-decomposition-—-low-rank-sparse" title="Permalink"></a></h2><p><code>Component(name, regularizers...)</code> declares one additive part of the image. The data term sees the <em>sum</em> of the components, so its cost is that of a single-image reconstruction; each part gets its own prior. The classic model (Otazo, Candès &amp; Sodickson 2015) is a low-rank background plus a temporally sparse foreground, and a cardiac cine is what it was designed for: the static chest is the background, the beating heart is the foreground.</p><p>The sparse part is penalized with <code>L1Image</code>, as in RPCA and in Otazo&#39;s L+S, rather than with a temporal-difference term — and that choice is what makes the split work at all. A <em>static</em> background costs <code>TemporalTotalVariation</code> nothing, so with that as the sparse term the &quot;sparse&quot; component absorbs the whole image at every λ and the low-rank one is left holding a few percent of the energy. An ℓ₁ penalty on the pixels themselves is expensive for a static background, so the background goes where it belongs.</p><p>The two λ then control the split directly. At <code>(8e-2, 2e-3)</code> the low-rank part carries about 98 % of the image energy and the sparse part is non-zero on roughly a seventh of the voxels — most of the energy in <code>L</code>, and an <code>S</code> that is neither empty nor a second copy of the image.</p><pre><code class="language-julia hljs">img_ls = reconstruct(
+    data_dyn,
+    IterativeReconstruction(
+        Component(:lowrank, LowRank(8.0f-2; time_dim = :time)),
+        Component(:sparse, L1Image(2.0f-3));
+        maxit = 80
+    )
+)
+
+println(typeof(img_ls).name.name)
+println(&quot;components: &quot;, keys(components(img_ls)))
+report(&quot;L+S&quot;, img_ls)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ReconImage
+components: (:lowrank, :sparse)
+L+S                        global: 0.1104, lv_blood: 0.0474, rv_blood: 0.0401, heart: 0.1093, lung: 0.3681, bones: 0.1504</code></pre><pre><code class="language-julia hljs"># The result behaves as an array equal to the sum of its parts …
+println(&quot;sum of components == total: &quot;, sum(values(components(img_ls))) ≈ total_image(img_ls))
+
+# … and the parts are reachable directly by name on the image itself.
+L = img_ls.lowrank
+S = img_ls.sparse
+
+# Played rather than tiled: the point of the decomposition is what each part does *over time* —
+# `L` should barely move while `S` carries the beat — and a single frame cannot show that. Each
+# panel keeps its own fixed colour scale across the animation: `S` holds a small fraction of the
+# energy by construction, so a scale shared with `L` would render it black, and a scale
+# recomputed per frame would flicker.
+clim_of(x) = (0.0, maximum(abs, unname(x)))
+cl_L, cl_S, cl_sum = clim_of(L), clim_of(S), clim_of(total_image(img_ls))
+
+animate_frames(nt; fps = 8) do i
+    jim(
+        jim(unname(L)[:, :, i]; title = &quot;L - background&quot;, clim = cl_L),
+        jim(unname(S)[:, :, i]; title = &quot;S - dynamics&quot;, clim = cl_S),
+        jim(unname(total_image(img_ls))[:, :, i]; title = &quot;L + S&quot;, clim = cl_sum);
+        layout = (1, 3), size = (1000, 320), plot_title = &quot;frame $i of $nt&quot;,
+    )
+end</code></pre><img src="ab1389c4.gif" alt="Example block output"/><pre><code class="language-julia hljs"># A component may carry several regularizers, exactly like the plain API.
+img_multi = reconstruct(
+    data_dyn,
+    IterativeReconstruction(
+        Component(:structured, LowRank(5.0f-2; time_dim = :time), TotalVariation2D(5.0f-4)),
+        Component(:sparse, L1Image(5.0f-3));
+        maxit = 40
+    )
+)
+report(&quot;two-reg component&quot;, img_multi)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">two-reg component          global: 0.0632, lv_blood: 0.0237, rv_blood: 0.0226, heart: 0.071, lung: 0.156, bones: 0.0972</code></pre><pre><code class="language-julia hljs"># The initial guess can be given per component (a `NamedTuple` keyed by component name). By
+# default the first component starts from the direct reconstruction and the rest from zero —
+# the usual L+S/RPCA warm start.
+img_warm = reconstruct(
+    data_dyn,
+    IterativeReconstruction(
+        Component(:lowrank, LowRank(8.0f-2; time_dim = :time)),
+        Component(:sparse, L1Image(2.0f-3));
+        maxit = 40
+    );
+    x₀ = (lowrank = x_dyn_direct, sparse = zero(x_dyn_direct))
+)
+report(&quot;warm-started L+S&quot;, img_warm)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">warm-started L+S           global: 0.1105, lv_blood: 0.0474, rv_blood: 0.04, heart: 0.1095, lung: 0.3687, bones: 0.1505</code></pre><pre><code class="language-julia hljs"># A single component is rejected — that is just the plain regularization API.
+try
+    reconstruct(data_dyn, IterativeReconstruction(Component(:only, LowRank(5.0f-2))))
+catch e
+    println(sprint(showerror, e))
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ArgumentError: Image decomposition needs at least two components; use the plain regularization API for a single component.
+length(components) &gt;= 2 must hold. Got
+length(components) =&gt; 1</code></pre><h2 id="Further-reading"><a class="docs-heading-anchor" href="#Further-reading">Further reading</a><a id="Further-reading-1"></a><a class="docs-heading-anchor-permalink" href="#Further-reading" title="Permalink"></a></h2><p>The acquisitions these temporal models are built for, from <em>Questions and Answers in MRI</em>:</p><ul><li><a href="https://mriquestions.com/real-time-cine.html">Real-time cine</a> — the regime where every frame is drastically undersampled, which is what the temporal priors here exploit.</li><li><a href="https://mriquestions.com/cine-parameters.html">SSFP cardiac cine</a> — the segmented alternative, and the temporal-resolution budget it works under.</li><li><a href="https://mriquestions.com/compressed-sensing.html">Compressed sensing</a> — why a different sampling pattern per frame is what makes these priors work.</li></ul><h2 id="Environment"><a class="docs-heading-anchor" href="#Environment">Environment</a><a id="Environment-1"></a><a class="docs-heading-anchor-permalink" href="#Environment" title="Permalink"></a></h2><pre><code class="language-julia hljs">print_versions()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.13.1
+Commit 96ca370cf0e (2026-09-25 19:34 UTC)
+Build Info:
+  Official https://julialang.org release
+Platform Info:
+  OS: Linux (x86_64-linux-gnu)
+  CPU: 4 × AMD EPYC 9V74 80-Core Processor
+  WORD_SIZE: 64
+  LLVM: libLLVM-20.1.8 (ORCJIT, znver4)
+  GC: Built with stock GC
+Threads: 2 default, 1 interactive, 2 GC (on 4 virtual cores)
+Environment:
+  JULIA_PKG_SERVER_REGISTRY_PREFERENCE = eager
+  JULIA_NUM_THREADS = 2
+
+Ristretto                 0.1.0 (dev)
+AbstractOperators       not loaded
+FFTWOperators           not loaded
+NFFTOperators           not loaded
+WaveletOperators        not loaded
+DSPOperators            not loaded
+ContourletOperators     not loaded
+StructuredOptimization  not loaded
+ProximalOperators       not loaded
+ProximalAlgorithms      not loaded
+OperatorCore            not loaded
+NestedThreading           0.1.2</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06_algorithms_and_configuration/">« Algorithms and configuration</a><a class="docs-footer-nextpage" href="../08_non_cartesian/">Non-Cartesian acquisitions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Monday 12 October 2026 18:03">Monday 12 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
