@@ -100,7 +100,9 @@ reconstructs many.
 ### Time to accuracy
 
 Target NRMSE against the ground truth in the method column; time per toolbox, the fastest in
-bold, the NRMSE reached in brackets. 8 threads, OpenBLAS.
+bold, the NRMSE reached in brackets. 8 threads, OpenBLAS. BART's TGV is not quite the same
+penalty: since BART 1.0 it weights the two terms by (1, √3) and halves the symmetrised gradient,
+so its λ is calibrated separately and only the target is shared.
 
 ```@eval
 using Markdown

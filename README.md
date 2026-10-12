@@ -69,20 +69,22 @@ for the method, every case and the GPU numbers.
 
 | case | method | Ristretto | BART | BART (MEASURE) | SigPy | MRIReco | MIRT | MRpro |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| Shepp–Logan 2D 1 coil Cartesian | Anisotropic TV (NRMSE≤0.05859) | **22 ms** | 207 ms | 527 ms | 160 ms | 446 ms | — | — |
-| Shepp–Logan 2D 1 coil Cartesian | L1-Wavelet (NRMSE≤0.1993) | **44 ms** | 73 ms | 406 ms | 66 ms | 364 ms | — | 90 ms |
-| Shepp–Logan 2D 1 coil Cartesian | Total Variation (NRMSE≤0.09241) | **23 ms** | 73 ms | 410 ms | 102 ms | — | — | — |
-| Shepp–Logan 2D 8 coils Cartesian | Anisotropic TV (NRMSE≤0.04141) | **47 ms** | 593 ms | 842 ms | 523 ms | 710 ms | — | — |
-| Shepp–Logan 2D 8 coils Cartesian | L1-Wavelet (NRMSE≤0.2653) | **80 ms** | 101 ms | 403 ms | 274 ms | 408 ms | — | 206 ms |
-| Shepp–Logan 2D 8 coils Cartesian | Total Variation (NRMSE≤0.08046) | **47 ms** | 136 ms | 427 ms | 561 ms | — | — | — |
-| Shepp–Logan 2D 8 coils radial | Total Variation (NRMSE≤0.1138) | **249 ms** | 429 ms | 1.0 s | 5.2 s | — | — | — |
-| Shepp–Logan 3D 8 coils Cartesian | Total Variation (NRMSE≤0.1516) | 6.9 s | **6.3 s** | 7.2 s | 106.2 s | — | — | — |
-| Shepp–Logan multi-slice 8 coils Cartesian | Total Variation (NRMSE≤0.1033) | **270 ms** | 7.2 s | 10.2 s | 2.6 s | — | — | — |
-| torso cine 8 coils Cartesian | Global Low-Rank (NRMSE≤0.07693) | **1.1 s** | 4.9 s | 4.7 s | 7.8 s | 3.2 s | 38.1 s | 10.8 s |
-| torso cine 8 coils Cartesian | L1-Wavelet (NRMSE≤0.1824) | **477 ms** | 1.5 s | 1.7 s | 6.5 s | 1.5 s | — | 3.0 s |
-| torso cine 8 coils Cartesian | Locally Low-Rank (NRMSE≤0.0603) | **2.8 s** | 12.9 s | 12.0 s | — | 5.5 s | — | — |
-| torso cine 8 coils Cartesian | Temporal TV (NRMSE≤0.01589) | **1.5 s** | 2.5 s | 2.5 s | 13.7 s | — | — | — |
-| torso cine 8 coils radial | Global Low-Rank (NRMSE≤0.1248) | **2.5 s** | 2.6 s | 2.9 s | 63.7 s | 3.7 s | 146.5 s | 13.0 s |
+| Shepp–Logan 2D 1 coil Cartesian | Anisotropic TV (NRMSE≤0.05859) | **22 ms** | 77 ms | 405 ms | 144 ms | 452 ms | — | — |
+| Shepp–Logan 2D 1 coil Cartesian | L1-Wavelet (NRMSE≤0.1993) | **41 ms** | 73 ms | 406 ms | 67 ms | 365 ms | — | 92 ms |
+| Shepp–Logan 2D 1 coil Cartesian | TGV (NRMSE≤0.02509) | **342 ms** | 1.9 s | 2.1 s | — | — | — | — |
+| Shepp–Logan 2D 1 coil Cartesian | Total Variation (NRMSE≤0.09241) | **21 ms** | 174 ms | 509 ms | 93 ms | — | — | — |
+| Shepp–Logan 2D 8 coils Cartesian | Anisotropic TV (NRMSE≤0.04141) | **59 ms** | 630 ms | 802 ms | 573 ms | 713 ms | — | — |
+| Shepp–Logan 2D 8 coils Cartesian | L1-Wavelet (NRMSE≤0.2653) | **82 ms** | 285 ms | 431 ms | 275 ms | 411 ms | — | 211 ms |
+| Shepp–Logan 2D 8 coils Cartesian | TGV (NRMSE≤0.0168) | **416 ms** | 2.3 s | 2.3 s | — | — | — | — |
+| Shepp–Logan 2D 8 coils Cartesian | Total Variation (NRMSE≤0.08046) | **46 ms** | 279 ms | 567 ms | 561 ms | — | — | — |
+| Shepp–Logan 2D 8 coils radial | Total Variation (NRMSE≤0.1138) | **245 ms** | 345 ms | 1.0 s | 4.7 s | — | — | — |
+| Shepp–Logan 3D 8 coils Cartesian | Total Variation (NRMSE≤0.1516) | **6.6 s** | 11.6 s | 11.8 s | 98.5 s | — | — | — |
+| Shepp–Logan multi-slice 8 coils Cartesian | Total Variation (NRMSE≤0.1033) | **273 ms** | 7.1 s | 9.2 s | 2.6 s | — | — | — |
+| torso cine 8 coils Cartesian | Global Low-Rank (NRMSE≤0.07498) | **1.1 s** | 13.2 s | 12.6 s | 14.4 s | 3.1 s | 37.6 s | 20.9 s |
+| torso cine 8 coils Cartesian | L1-Wavelet (NRMSE≤0.1824) | **463 ms** | 1.7 s | 1.7 s | 6.3 s | 1.6 s | — | 2.8 s |
+| torso cine 8 coils Cartesian | Locally Low-Rank (NRMSE≤0.06021) | **2.9 s** | 11.6 s | 9.9 s | — | 5.5 s | — | — |
+| torso cine 8 coils Cartesian | Temporal TV (NRMSE≤0.01589) | **1.4 s** | 6.2 s | 5.7 s | 14.6 s | — | — | — |
+| torso cine 8 coils radial | Global Low-Rank (NRMSE≤0.1248) | **2.4 s** | 2.9 s | 3.0 s | 59.4 s | 3.8 s | 167.5 s | 12.9 s |
 
 ## Citation
 

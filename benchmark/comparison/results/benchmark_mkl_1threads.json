@@ -16,28 +16,6 @@
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
-            "framework": "BART (MKL)",
-            "method": "Anisotropic TV (NRMSE≤0.05859, 150 it)",
-            "nrmse_gt": 0.04546888545155525,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 183.79899999999998
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "Anisotropic TV (NRMSE≤0.05859, 150 it)",
-            "nrmse_gt": 0.04546895623207092,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 422.896
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
             "framework": "MRIReco",
             "method": "Anisotropic TV (NRMSE≤0.05859, 8 it)",
             "nrmse_gt": 0.05101552031757457,
@@ -60,34 +38,34 @@
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
-            "framework": "Ristretto (MKL)",
-            "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 150 it)",
-            "nrmse_gt": 0.0219282079488039,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 147.718347
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
             "framework": "BART (MKL)",
-            "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 300 it)",
-            "nrmse_gt": 0.0526173934340477,
+            "method": "Anisotropic TV (NRMSE≤0.05859, 80 it)",
+            "nrmse_gt": 0.011810741387307644,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 516.822
+            "time_ms": 68.428
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
-            "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 300 it)",
-            "nrmse_gt": 0.0526173934340477,
+            "method": "Anisotropic TV (NRMSE≤0.05859, 80 it)",
+            "nrmse_gt": 0.011810733005404472,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 726.012
+            "time_ms": 314.52599999999995
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "Ristretto (MKL)",
+            "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 150 it)",
+            "nrmse_gt": 0.0219282079488039,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 147.718347
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -110,6 +88,28 @@
             "nrmse_ristretto": 0.0,
             "threads": 1,
             "time_ms": 669.802931
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 80 it)",
+            "nrmse_gt": 0.04632288217544556,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 149.57500000000002
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "Anisotropic TV (PDHG) (NRMSE≤0.05859, 80 it)",
+            "nrmse_gt": 0.04632287099957466,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 395.58500000000004
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -192,6 +192,50 @@
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "TGV (NRMSE≤0.02509, 300 it)",
+            "nrmse_gt": 0.017792189493775368,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 1762.692
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "TGV (NRMSE≤0.02509, 300 it)",
+            "nrmse_gt": 0.017792314291000366,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 1969.7659999999998
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "Total Variation (NRMSE≤0.09241, 150 it)",
+            "nrmse_gt": 0.03391091898083687,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 168.314
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "Total Variation (NRMSE≤0.09241, 150 it)",
+            "nrmse_gt": 0.03391086682677269,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 405.23199999999997
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Total Variation (NRMSE≤0.09241, 8 it)",
             "nrmse_gt": 0.056077610701322556,
@@ -214,56 +258,34 @@
             "case_id": "shepp_logan_2d_1ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
-            "framework": "BART (MKL)",
-            "method": "Total Variation (NRMSE≤0.09241, 80 it)",
-            "nrmse_gt": 0.044591184705495834,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 66.168
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "Total Variation (NRMSE≤0.09241, 80 it)",
-            "nrmse_gt": 0.044591184705495834,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 314.445
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL)",
-            "method": "Total Variation (PDHG) (NRMSE≤0.09241, 150 it)",
-            "nrmse_gt": 0.05275816097855568,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 234.81199999999998
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "Total Variation (PDHG) (NRMSE≤0.09241, 150 it)",
-            "nrmse_gt": 0.05275816470384598,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 477.904
-        },
-        {
-            "case_id": "shepp_logan_2d_1ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Total Variation (PDHG) (NRMSE≤0.09241, 150 it)",
             "nrmse_gt": 0.05527791753411293,
             "nrmse_ristretto": 0.0,
             "threads": 1,
             "time_ms": 92.735503
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "Total Variation (PDHG) (NRMSE≤0.09241, 300 it)",
+            "nrmse_gt": 0.03874431550502777,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 457.778
+        },
+        {
+            "case_id": "shepp_logan_2d_1ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "Total Variation (PDHG) (NRMSE≤0.09241, 300 it)",
+            "nrmse_gt": 0.03874432295560837,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 608.58
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -370,10 +392,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.02588791400194168,
-            "nrmse_ristretto": 0.02285313978791237,
+            "nrmse_gt": 0.009911512956023216,
+            "nrmse_ristretto": 0.005772419739514589,
             "threads": 1,
-            "time_ms": 268.793
+            "time_ms": 264.29200000000003
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -381,10 +403,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.02588803321123123,
-            "nrmse_ristretto": 0.022853264585137367,
+            "nrmse_gt": 0.009911506436765194,
+            "nrmse_ristretto": 0.00577240576967597,
             "threads": 1,
-            "time_ms": 504.63499999999993
+            "time_ms": 496.391
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -425,10 +447,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.10096235573291779,
-            "nrmse_ristretto": 0.09776534140110016,
+            "nrmse_gt": 0.028656624257564545,
+            "nrmse_ristretto": 0.025085270404815674,
             "threads": 1,
-            "time_ms": 350.11199999999997
+            "time_ms": 338.842
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -436,10 +458,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.10096235573291779,
-            "nrmse_ristretto": 0.09776533395051956,
+            "nrmse_gt": 0.028656616806983948,
+            "nrmse_ristretto": 0.025085264816880226,
             "threads": 1,
-            "time_ms": 621.565
+            "time_ms": 554.196
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -480,10 +502,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.17452828586101532,
-            "nrmse_ristretto": 0.1418563723564148,
+            "nrmse_gt": 0.2182774543762207,
+            "nrmse_ristretto": 0.16768305003643036,
             "threads": 1,
-            "time_ms": 48.467000000000006
+            "time_ms": 48.080999999999996
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -491,10 +513,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.17452827095985413,
-            "nrmse_ristretto": 0.1418563574552536,
+            "nrmse_gt": 0.2182774543762207,
+            "nrmse_ristretto": 0.16768305003643036,
             "threads": 1,
-            "time_ms": 294.325
+            "time_ms": 294.788
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -546,10 +568,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.062151312828063965,
-            "nrmse_ristretto": 0.05140616372227669,
+            "nrmse_gt": 0.031789977103471756,
+            "nrmse_ristretto": 0.022437147796154022,
             "threads": 1,
-            "time_ms": 652.535
+            "time_ms": 992.72
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -557,10 +579,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.06215135008096695,
-            "nrmse_ristretto": 0.05140620470046997,
+            "nrmse_gt": 0.031790029257535934,
+            "nrmse_ristretto": 0.022437307983636856,
             "threads": 1,
-            "time_ms": 891.0219999999999
+            "time_ms": 1223.577
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -579,10 +601,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.01663718931376934,
-            "nrmse_ristretto": 0.012503653764724731,
+            "nrmse_gt": 0.021437490358948708,
+            "nrmse_ristretto": 0.01398716401308775,
             "threads": 1,
-            "time_ms": 248.34300000000002
+            "time_ms": 244.88
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -590,10 +612,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.01663716323673725,
-            "nrmse_ristretto": 0.01250362116843462,
+            "nrmse_gt": 0.021437490358948708,
+            "nrmse_ristretto": 0.013987191952764988,
             "threads": 1,
-            "time_ms": 476.554
+            "time_ms": 471.74300000000005
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -623,10 +645,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.03835057467222214,
-            "nrmse_ristretto": 0.02620166353881359,
+            "nrmse_gt": 0.0818447694182396,
+            "nrmse_ristretto": 0.06019418314099312,
             "threads": 1,
-            "time_ms": 306.83700000000005
+            "time_ms": 310.08299999999997
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -634,10 +656,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.038350578397512436,
-            "nrmse_ristretto": 0.026201661676168442,
+            "nrmse_gt": 0.08184477686882019,
+            "nrmse_ristretto": 0.060194190591573715,
             "threads": 1,
-            "time_ms": 516.91
+            "time_ms": 550.259
         },
         {
             "case_id": "shepp_logan_2d_1ch_cartesian",
@@ -689,10 +711,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (NRMSE≤0.04141, 150 it)",
-            "nrmse_gt": 0.007596778683364391,
+            "nrmse_gt": 0.0058379266411066055,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 592.1030000000001
+            "time_ms": 576.545
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -700,10 +722,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (NRMSE≤0.04141, 150 it)",
-            "nrmse_gt": 0.007596662733703852,
+            "nrmse_gt": 0.005837943870574236,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 751.29
+            "time_ms": 731.82
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -733,10 +755,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (PDHG) (NRMSE≤0.04141, 150 it)",
-            "nrmse_gt": 0.027858411893248558,
+            "nrmse_gt": 0.029075955972075462,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 804.2550000000001
+            "time_ms": 806.816
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -744,10 +766,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (PDHG) (NRMSE≤0.04141, 150 it)",
-            "nrmse_gt": 0.027858417481184006,
+            "nrmse_gt": 0.02907596342265606,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 942.5120000000001
+            "time_ms": 1058.756
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -781,28 +803,6 @@
             "nrmse_ristretto": 0.0,
             "threads": 1,
             "time_ms": 491.14884800000004
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL)",
-            "method": "L1-Wavelet (NRMSE≤0.2653, 12 it)",
-            "nrmse_gt": 0.245940163731575,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 115.392
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "L1-Wavelet (NRMSE≤0.2653, 12 it)",
-            "nrmse_gt": 0.24594014883041382,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 331.927
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -852,12 +852,56 @@
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "L1-Wavelet (NRMSE≤0.2653, 50 it)",
+            "nrmse_gt": 0.15606220066547394,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 242.981
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "L1-Wavelet (NRMSE≤0.2653, 50 it)",
+            "nrmse_gt": 0.1560620367527008,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 440.62
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "TGV (NRMSE≤0.0168, 30 it)",
             "nrmse_gt": 0.015272202901542187,
             "nrmse_ristretto": 0.0,
             "threads": 1,
             "time_ms": 633.178649
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "TGV (NRMSE≤0.0168, 300 it)",
+            "nrmse_gt": 0.0144207663834095,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 1996.0500000000002
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "TGV (NRMSE≤0.0168, 300 it)",
+            "nrmse_gt": 0.014420849271118641,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 1912.7549999999999
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -874,28 +918,6 @@
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
-            "framework": "BART (MKL)",
-            "method": "Total Variation (NRMSE≤0.08046, 40 it)",
-            "nrmse_gt": 0.07648923993110657,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 137.142
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "Total Variation (NRMSE≤0.08046, 40 it)",
-            "nrmse_gt": 0.07648927718400955,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 368.43399999999997
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Total Variation (NRMSE≤0.08046, 8 it)",
             "nrmse_gt": 0.07178772240877151,
@@ -907,34 +929,56 @@
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
-            "framework": "Ristretto (MKL)",
-            "method": "Total Variation (PDHG) (NRMSE≤0.08046, 150 it)",
-            "nrmse_gt": 0.035735007375478745,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 337.383734
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
             "framework": "BART (MKL)",
-            "method": "Total Variation (PDHG) (NRMSE≤0.08046, 300 it)",
-            "nrmse_gt": 0.03294204920530319,
+            "method": "Total Variation (NRMSE≤0.08046, 80 it)",
+            "nrmse_gt": 0.06931741535663605,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 1478.1470000000002
+            "time_ms": 247.421
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
-            "method": "Total Variation (PDHG) (NRMSE≤0.08046, 300 it)",
-            "nrmse_gt": 0.03294204920530319,
+            "method": "Total Variation (NRMSE≤0.08046, 80 it)",
+            "nrmse_gt": 0.0693170577287674,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 2196.762
+            "time_ms": 461.69500000000005
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "Total Variation (PDHG) (NRMSE≤0.08046, 150 it)",
+            "nrmse_gt": 0.07414454966783524,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 780.624
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "Total Variation (PDHG) (NRMSE≤0.08046, 150 it)",
+            "nrmse_gt": 0.07414454966783524,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 993.1529999999999
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "Ristretto (MKL)",
+            "method": "Total Variation (PDHG) (NRMSE≤0.08046, 150 it)",
+            "nrmse_gt": 0.035735007375478745,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 337.383734
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -976,7 +1020,7 @@
             "framework": "BART (MKL, MEASURE)",
             "method": "Adjoint",
             "nrmse_gt": 0.48063069581985474,
-            "nrmse_ristretto": 7.304775806460384e-8,
+            "nrmse_ristretto": 7.182753591905566e-8,
             "threads": 1,
             "time_ms": -1.0
         },
@@ -1044,7 +1088,7 @@
             "nrmse_gt": 0.3773016929626465,
             "nrmse_ristretto": 4.481999349081889e-5,
             "threads": 1,
-            "time_ms": 31.585
+            "time_ms": 31.508000000000003
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1052,10 +1096,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.37730151414871216,
-            "nrmse_ristretto": 4.487208934733644e-5,
+            "nrmse_gt": 0.3773016333580017,
+            "nrmse_ristretto": 4.4838121539214626e-5,
             "threads": 1,
-            "time_ms": 272.57
+            "time_ms": 276.53299999999996
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1118,10 +1162,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.004316460806876421,
-            "nrmse_ristretto": 0.007341061253100634,
+            "nrmse_gt": 0.005542031489312649,
+            "nrmse_ristretto": 0.007640192750841379,
             "threads": 1,
-            "time_ms": 863.311
+            "time_ms": 839.303
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1129,10 +1173,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.0043164463713765144,
-            "nrmse_ristretto": 0.0073410640470683575,
+            "nrmse_gt": 0.005542025435715914,
+            "nrmse_ristretto": 0.007640192285180092,
             "threads": 1,
-            "time_ms": 989.072
+            "time_ms": 966.8820000000001
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1173,10 +1217,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.027694158256053925,
-            "nrmse_ristretto": 0.08169791102409363,
+            "nrmse_gt": 0.015762124210596085,
+            "nrmse_ristretto": 0.0874781683087349,
             "threads": 1,
-            "time_ms": 1048.959
+            "time_ms": 1051.5410000000002
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1184,10 +1228,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.027694161981344223,
-            "nrmse_ristretto": 0.08169790357351303,
+            "nrmse_gt": 0.015762124210596085,
+            "nrmse_ristretto": 0.0874781683087349,
             "threads": 1,
-            "time_ms": 1241.249
+            "time_ms": 1592.4089999999999
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1228,10 +1272,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.20671816170215607,
-            "nrmse_ristretto": 0.1851314753293991,
+            "nrmse_gt": 0.32811352610588074,
+            "nrmse_ristretto": 0.14474794268608093,
             "threads": 1,
-            "time_ms": 142.381
+            "time_ms": 141.45499999999998
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1239,10 +1283,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.20671816170215607,
-            "nrmse_ristretto": 0.1851314902305603,
+            "nrmse_gt": 0.3281134366989136,
+            "nrmse_ristretto": 0.14474791288375854,
             "threads": 1,
-            "time_ms": 353.279
+            "time_ms": 370.679
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1294,10 +1338,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.0206760261207819,
-            "nrmse_ristretto": 0.02313111163675785,
+            "nrmse_gt": 0.020568400621414185,
+            "nrmse_ristretto": 0.02313201315701008,
             "threads": 1,
-            "time_ms": 1163.125
+            "time_ms": 1161.648
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1305,10 +1349,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.020675884559750557,
-            "nrmse_ristretto": 0.02313101477921009,
+            "nrmse_gt": 0.020568346604704857,
+            "nrmse_ristretto": 0.02313174679875374,
             "threads": 1,
-            "time_ms": 1218.421
+            "time_ms": 1222.066
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1327,10 +1371,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.036624256521463394,
-            "nrmse_ristretto": 0.033893946558237076,
+            "nrmse_gt": 0.015322262421250343,
+            "nrmse_ristretto": 0.013799578882753849,
             "threads": 1,
-            "time_ms": 681.885
+            "time_ms": 691.476
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1338,10 +1382,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.036625418812036514,
-            "nrmse_ristretto": 0.033895134925842285,
+            "nrmse_gt": 0.015322181396186352,
+            "nrmse_ristretto": 0.013799604028463364,
             "threads": 1,
-            "time_ms": 804.634
+            "time_ms": 838.059
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1371,10 +1415,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.09351728111505508,
-            "nrmse_ristretto": 0.08183086663484573,
+            "nrmse_gt": 0.03990676626563072,
+            "nrmse_ristretto": 0.02509842999279499,
             "threads": 1,
-            "time_ms": 1011.8549999999999
+            "time_ms": 1020.3800000000001
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1382,10 +1426,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.09351727366447449,
-            "nrmse_ristretto": 0.08183086663484573,
+            "nrmse_gt": 0.03990676626563072,
+            "nrmse_ristretto": 0.02509843185544014,
             "threads": 1,
-            "time_ms": 1248.138
+            "time_ms": 1239.288
         },
         {
             "case_id": "shepp_logan_2d_8ch_cartesian",
@@ -1448,21 +1492,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (NRMSE≤0.1138, 40 it)",
-            "nrmse_gt": 0.10460910946130753,
+            "nrmse_gt": 0.10556676238775253,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 514.839
-        },
-        {
-            "case_id": "shepp_logan_2d_8ch_radial",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "Total Variation (NRMSE≤0.1138, 40 it)",
-            "nrmse_gt": 0.10293080657720566,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 958.203
+            "time_ms": 528.0500000000001
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1488,14 +1521,25 @@
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "Total Variation (NRMSE≤0.1138, 80 it)",
+            "nrmse_gt": 0.07625762373209,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 1231.533
+        },
+        {
+            "case_id": "shepp_logan_2d_8ch_radial",
             "category": "CG-SENSE",
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.26227644085884094,
-            "nrmse_ristretto": 0.026732532307505608,
+            "nrmse_gt": 0.26191651821136475,
+            "nrmse_ristretto": 0.02832811512053013,
             "threads": 1,
-            "time_ms": 213.729
+            "time_ms": 213.514
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1503,10 +1547,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.2632794678211212,
-            "nrmse_ristretto": 0.022599978372454643,
+            "nrmse_gt": 0.26311323046684265,
+            "nrmse_ristretto": 0.023270761594176292,
             "threads": 1,
-            "time_ms": 792.632
+            "time_ms": 791.48
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1580,8 +1624,8 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "DCF Adjoint (Gridding)",
-            "nrmse_gt": 0.39296403527259827,
-            "nrmse_ristretto": 0.0030902517028152943,
+            "nrmse_gt": 0.3929640054702759,
+            "nrmse_ristretto": 0.003090251237154007,
             "threads": 1,
             "time_ms": -1.0
         },
@@ -1657,10 +1701,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.05231364443898201,
-            "nrmse_ristretto": 0.0504961796104908,
+            "nrmse_gt": 0.01959940232336521,
+            "nrmse_ristretto": 0.005604078993201256,
             "threads": 1,
-            "time_ms": 2558.819
+            "time_ms": 2979.1029999999996
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1668,10 +1712,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.05935627594590187,
-            "nrmse_ristretto": 0.057908251881599426,
+            "nrmse_gt": 0.024748405441641808,
+            "nrmse_ristretto": 0.007921136915683746,
             "threads": 1,
-            "time_ms": 2037.4439999999997
+            "time_ms": 2386.656
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1712,10 +1756,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.02771502174437046,
-            "nrmse_ristretto": 0.01350314449518919,
+            "nrmse_gt": 0.023835990577936172,
+            "nrmse_ristretto": 0.010425803251564503,
             "threads": 1,
-            "time_ms": 25110.986
+            "time_ms": 24378.467
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1723,10 +1767,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.02771502174437046,
-            "nrmse_ristretto": 0.01350314449518919,
+            "nrmse_gt": 0.02383599244058132,
+            "nrmse_ristretto": 0.010425803251564503,
             "threads": 1,
-            "time_ms": 20794.744000000002
+            "time_ms": 20868.639000000003
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1770,7 +1814,7 @@
             "nrmse_gt": 0.2789718210697174,
             "nrmse_ristretto": 0.05548814311623573,
             "threads": 1,
-            "time_ms": 535.5210000000001
+            "time_ms": 532.6149999999999
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1778,10 +1822,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.27897176146507263,
-            "nrmse_ristretto": 0.05548813194036484,
+            "nrmse_gt": 0.27897170186042786,
+            "nrmse_ristretto": 0.055488161742687225,
             "threads": 1,
-            "time_ms": 1050.4579999999999
+            "time_ms": 1049.634
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1833,10 +1877,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.0467522069811821,
-            "nrmse_ristretto": 0.03830796107649803,
+            "nrmse_gt": 0.044296976178884506,
+            "nrmse_ristretto": 0.03532595559954643,
             "threads": 1,
-            "time_ms": 2975.017
+            "time_ms": 2317.4100000000003
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1844,10 +1888,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.06320807337760925,
-            "nrmse_ristretto": 0.05306391045451164,
+            "nrmse_gt": 0.030258461833000183,
+            "nrmse_ristretto": 0.02159266546368599,
             "threads": 1,
-            "time_ms": 2923.168
+            "time_ms": 2327.484
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1877,10 +1921,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.1110440269112587,
-            "nrmse_ristretto": 0.0947258248925209,
+            "nrmse_gt": 0.041361961513757706,
+            "nrmse_ristretto": 0.014972190372645855,
             "threads": 1,
-            "time_ms": 25237.336
+            "time_ms": 25040.085000000003
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1888,10 +1932,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.1110440269112587,
-            "nrmse_ristretto": 0.0947258248925209,
+            "nrmse_gt": 0.041361961513757706,
+            "nrmse_ristretto": 0.014972187578678131,
             "threads": 1,
-            "time_ms": 22062.254
+            "time_ms": 21337.945
         },
         {
             "case_id": "shepp_logan_2d_8ch_radial",
@@ -1941,34 +1985,34 @@
             "case_id": "shepp_logan_3d_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
-            "framework": "BART (MKL)",
-            "method": "Total Variation (NRMSE≤0.1516, 20 it)",
-            "nrmse_gt": 0.1409827470779419,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 16684.925
-        },
-        {
-            "case_id": "shepp_logan_3d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "Total Variation (NRMSE≤0.1516, 20 it)",
-            "nrmse_gt": 0.1409827470779419,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 12905.346
-        },
-        {
-            "case_id": "shepp_logan_3d_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Total Variation (NRMSE≤0.1516, 5 it)",
             "nrmse_gt": 0.11899116635322571,
             "nrmse_ristretto": 0.0,
             "threads": 1,
             "time_ms": 12759.899589999999
+        },
+        {
+            "case_id": "shepp_logan_3d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "Total Variation (NRMSE≤0.1516, 50 it)",
+            "nrmse_gt": 0.10522755980491638,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 31146.302
+        },
+        {
+            "case_id": "shepp_logan_3d_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "Total Variation (NRMSE≤0.1516, 50 it)",
+            "nrmse_gt": 0.1052275225520134,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 22416.817000000003
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -1988,7 +2032,7 @@
             "framework": "BART (MKL, MEASURE)",
             "method": "Adjoint",
             "nrmse_gt": 0.43823301792144775,
-            "nrmse_ristretto": 8.686473051966459e-8,
+            "nrmse_ristretto": 8.783239024978684e-8,
             "threads": 1,
             "time_ms": -1.0
         },
@@ -2054,9 +2098,9 @@
             "framework": "BART (MKL)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.2935772240161896,
-            "nrmse_ristretto": 7.232325879158452e-5,
+            "nrmse_ristretto": 7.231820927700028e-5,
             "threads": 1,
-            "time_ms": 5520.682
+            "time_ms": 5450.8910000000005
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2065,9 +2109,9 @@
             "framework": "BART (MKL, MEASURE)",
             "method": "CG-SENSE (10 it)",
             "nrmse_gt": 0.2935772240161896,
-            "nrmse_ristretto": 7.23274060874246e-5,
+            "nrmse_ristretto": 7.232435746118426e-5,
             "threads": 1,
-            "time_ms": 5192.755
+            "time_ms": 5174.6179999999995
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2130,10 +2174,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.010721543803811073,
-            "nrmse_ristretto": 0.008083359338343143,
+            "nrmse_gt": 0.003566488390788436,
+            "nrmse_ristretto": 0.0060972548089921474,
             "threads": 1,
-            "time_ms": 201614.94400000002
+            "time_ms": 187310.995
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2141,10 +2185,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.0107215391471982,
-            "nrmse_ristretto": 0.008083352819085121,
+            "nrmse_gt": 0.003566483734175563,
+            "nrmse_ristretto": 0.006097245495766401,
             "threads": 1,
-            "time_ms": 141925.478
+            "time_ms": 132166.314
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2185,10 +2229,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.04829661175608635,
-            "nrmse_ristretto": 0.05495403707027435,
+            "nrmse_gt": 0.05831820145249367,
+            "nrmse_ristretto": 0.0377621129155159,
             "threads": 1,
-            "time_ms": 186870.911
+            "time_ms": 186372.624
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2196,10 +2240,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.04829661175608635,
-            "nrmse_ristretto": 0.05495404079556465,
+            "nrmse_gt": 0.05831820145249367,
+            "nrmse_ristretto": 0.0377621129155159,
             "threads": 1,
-            "time_ms": 151974.669
+            "time_ms": 150907.35900000003
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2240,10 +2284,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.2080553025007248,
-            "nrmse_ristretto": 0.04925837740302086,
+            "nrmse_gt": 0.17433594167232513,
+            "nrmse_ristretto": 0.10994917899370193,
             "threads": 1,
-            "time_ms": 26415.818000000003
+            "time_ms": 26508.151
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2251,10 +2295,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.2080553025007248,
-            "nrmse_ristretto": 0.04925839602947235,
+            "nrmse_gt": 0.17433594167232513,
+            "nrmse_ristretto": 0.10994917899370193,
             "threads": 1,
-            "time_ms": 19833.290999999997
+            "time_ms": 19589.785
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2306,10 +2350,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.021085016429424286,
-            "nrmse_ristretto": 0.02505573444068432,
+            "nrmse_gt": 0.041493333876132965,
+            "nrmse_ristretto": 0.041800279170274734,
             "threads": 1,
-            "time_ms": 181540.71600000001
+            "time_ms": 189113.02599999998
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2317,10 +2361,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.02108500711619854,
-            "nrmse_ristretto": 0.025055725127458572,
+            "nrmse_gt": 0.04149331897497177,
+            "nrmse_ristretto": 0.041800253093242645,
             "threads": 1,
-            "time_ms": 122906.989
+            "time_ms": 132779.14200000002
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2350,10 +2394,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.08392869681119919,
-            "nrmse_ristretto": 0.05363607779145241,
+            "nrmse_gt": 0.11726969480514526,
+            "nrmse_ristretto": 0.09003062546253204,
             "threads": 1,
-            "time_ms": 177744.053
+            "time_ms": 175766.541
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2361,10 +2405,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.08392869681119919,
-            "nrmse_ristretto": 0.05363607779145241,
+            "nrmse_gt": 0.11726968735456467,
+            "nrmse_ristretto": 0.09003062546253204,
             "threads": 1,
-            "time_ms": 137015.412
+            "time_ms": 135850.71300000002
         },
         {
             "case_id": "shepp_logan_3d_8ch_cartesian",
@@ -2405,10 +2449,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (NRMSE≤0.1033, 150 it)",
-            "nrmse_gt": 0.06725839129498393,
+            "nrmse_gt": 0.025283624886263373,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 6510.923000000001
+            "time_ms": 6403.404
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2416,10 +2460,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (NRMSE≤0.1033, 150 it)",
-            "nrmse_gt": 0.06725797496726334,
+            "nrmse_gt": 0.02528364905482477,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 8580.727999999997
+            "time_ms": 8520.712000000001
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2460,8 +2504,8 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Adjoint",
-            "nrmse_gt": 0.4855304711896267,
-            "nrmse_ristretto": 8.375231223044561e-8,
+            "nrmse_gt": 0.48553047111227393,
+            "nrmse_ristretto": 8.422753874225453e-8,
             "threads": 1,
             "time_ms": -1.0
         },
@@ -2529,7 +2573,7 @@
             "nrmse_gt": 0.400901223174512,
             "nrmse_ristretto": 0.0005902921157797306,
             "threads": 1,
-            "time_ms": 381.256
+            "time_ms": 378.26400000000007
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2537,10 +2581,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.40090120710657196,
-            "nrmse_ristretto": 0.0005902768345461734,
+            "nrmse_gt": 0.40090116627267436,
+            "nrmse_ristretto": 0.0005902950723882453,
             "threads": 1,
-            "time_ms": 3300.4300000000003
+            "time_ms": 3291.991
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2603,10 +2647,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.003980715274670711,
-            "nrmse_ristretto": 0.012327165960674666,
+            "nrmse_gt": 0.005045426481394465,
+            "nrmse_ristretto": 0.012492369914070805,
             "threads": 1,
-            "time_ms": 9690.329000000002
+            "time_ms": 9696.073
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2614,10 +2658,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (20 it)",
-            "nrmse_gt": 0.003980694080133945,
-            "nrmse_ristretto": 0.012327167253176436,
+            "nrmse_gt": 0.005045422530008365,
+            "nrmse_ristretto": 0.012492369027025831,
             "threads": 1,
-            "time_ms": 11349.901999999998
+            "time_ms": 11277.108999999999
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2658,10 +2702,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.02734181863092642,
-            "nrmse_ristretto": 0.13009846993894278,
+            "nrmse_gt": 0.045318212125797376,
+            "nrmse_ristretto": 0.12319534359307491,
             "threads": 1,
-            "time_ms": 12569.401000000002
+            "time_ms": 12520.367
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2669,10 +2713,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Anisotropic TV (PDHG) (200 it)",
-            "nrmse_gt": 0.027341814989261942,
-            "nrmse_ristretto": 0.13009847028967386,
+            "nrmse_gt": 0.04531821341251844,
+            "nrmse_ristretto": 0.12319534289840012,
             "threads": 1,
-            "time_ms": 16313.461
+            "time_ms": 17403.859
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2713,10 +2757,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.22175321579620424,
-            "nrmse_ristretto": 0.19407905400194891,
+            "nrmse_gt": 0.3381532811713103,
+            "nrmse_ristretto": 0.14616658941915076,
             "threads": 1,
-            "time_ms": 1706.945
+            "time_ms": 1705.67
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2724,10 +2768,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.2217532157780988,
-            "nrmse_ristretto": 0.19407906074822576,
+            "nrmse_gt": 0.3381532853122746,
+            "nrmse_ristretto": 0.1461665625275313,
             "threads": 1,
-            "time_ms": 4355.911
+            "time_ms": 4331.58
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2779,10 +2823,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.047159574483532474,
-            "nrmse_ristretto": 0.049955594202947436,
+            "nrmse_gt": 0.02534700710706228,
+            "nrmse_ristretto": 0.03731848128374908,
             "threads": 1,
-            "time_ms": 10457.422999999999
+            "time_ms": 12017.325
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2790,10 +2834,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "TGV (20 it)",
-            "nrmse_gt": 0.047159523250224954,
-            "nrmse_ristretto": 0.049955575030460664,
+            "nrmse_gt": 0.025347018611364246,
+            "nrmse_ristretto": 0.03731849263611995,
             "threads": 1,
-            "time_ms": 11626.715
+            "time_ms": 13047.493
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2812,10 +2856,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.03495762039118341,
-            "nrmse_ristretto": 0.029066588686570534,
+            "nrmse_gt": 0.017429238198039876,
+            "nrmse_ristretto": 0.0167742556451116,
             "threads": 1,
-            "time_ms": 9498.227
+            "time_ms": 9470.302
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2823,10 +2867,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (20 it)",
-            "nrmse_gt": 0.034957574570038556,
-            "nrmse_ristretto": 0.02906652440353524,
+            "nrmse_gt": 0.01742936072662569,
+            "nrmse_ristretto": 0.016774262349240544,
             "threads": 1,
-            "time_ms": 11180.736
+            "time_ms": 11276.28
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2856,10 +2900,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.04245799618520828,
-            "nrmse_ristretto": 0.0306879060292106,
+            "nrmse_gt": 0.06481122799556573,
+            "nrmse_ristretto": 0.05501586325054466,
             "threads": 1,
-            "time_ms": 12168.373999999998
+            "time_ms": 12139.089
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2867,10 +2911,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Total Variation (PDHG) (200 it)",
-            "nrmse_gt": 0.042457992164159804,
-            "nrmse_ristretto": 0.03068790318443873,
+            "nrmse_gt": 0.06481122366720411,
+            "nrmse_ristretto": 0.055015858822802355,
             "threads": 1,
-            "time_ms": 16883.353
+            "time_ms": 16440.797
         },
         {
             "case_id": "shepp_logan_multislice_8ch_cartesian",
@@ -2931,6 +2975,28 @@
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "Global Low-Rank (NRMSE≤0.07498, 200 it)",
+            "nrmse_gt": 0.06836418062448502,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 29285.913999999997
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "Global Low-Rank (NRMSE≤0.07498, 200 it)",
+            "nrmse_gt": 0.06836416572332382,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 17546.964
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
             "framework": "MIRT",
             "method": "Global Low-Rank (NRMSE≤0.07693, 10 it)",
             "nrmse_gt": 0.06851666668457825,
@@ -2964,28 +3030,6 @@
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
-            "framework": "BART (MKL)",
-            "method": "Global Low-Rank (NRMSE≤0.07693, 100 it)",
-            "nrmse_gt": 0.0749923437833786,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 11762.01
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "Global Low-Rank (NRMSE≤0.07693, 100 it)",
-            "nrmse_gt": 0.07499239593744278,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 7331.821
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
             "framework": "Ristretto (MKL)",
             "method": "Global Low-Rank (NRMSE≤0.07693, 5 it)",
             "nrmse_gt": 0.07346753031015396,
@@ -3013,7 +3057,7 @@
             "nrmse_gt": 0.18101027607917786,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 4767.8279999999995
+            "time_ms": 4630.7970000000005
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3021,10 +3065,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "L1-Wavelet (NRMSE≤0.1824, 20 it)",
-            "nrmse_gt": 0.18101029098033905,
+            "nrmse_gt": 0.18101027607917786,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 4181.902
+            "time_ms": 4123.649
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3074,6 +3118,28 @@
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
+            "framework": "BART (MKL)",
+            "method": "Locally Low-Rank (NRMSE≤0.06021, 200 it)",
+            "nrmse_gt": 0.05555568262934685,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 31087.198999999997
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
+            "framework": "BART (MKL, MEASURE)",
+            "method": "Locally Low-Rank (NRMSE≤0.06021, 200 it)",
+            "nrmse_gt": 0.055555667728185654,
+            "nrmse_ristretto": 0.0,
+            "threads": 1,
+            "time_ms": 20772.984
+        },
+        {
+            "case_id": "torso_cine_8ch_cartesian",
+            "category": "Accuracy race",
+            "data_source": "synthetic",
             "framework": "MRIReco",
             "method": "Locally Low-Rank (NRMSE≤0.0603, 20 it)",
             "nrmse_gt": 0.05157494169149715,
@@ -3091,28 +3157,6 @@
             "nrmse_ristretto": 0.0,
             "threads": 1,
             "time_ms": 8052.888888
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL)",
-            "method": "Locally Low-Rank (NRMSE≤0.0603, 200 it)",
-            "nrmse_gt": 0.05793912708759308,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 39089.734
-        },
-        {
-            "case_id": "torso_cine_8ch_cartesian",
-            "category": "Accuracy race",
-            "data_source": "synthetic",
-            "framework": "BART (MKL, MEASURE)",
-            "method": "Locally Low-Rank (NRMSE≤0.0603, 200 it)",
-            "nrmse_gt": 0.05793914571404457,
-            "nrmse_ristretto": 0.0,
-            "threads": 1,
-            "time_ms": 27125.153000000002
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3141,22 +3185,22 @@
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "BART (MKL)",
-            "method": "Temporal TV (NRMSE≤0.01589, 50 it)",
-            "nrmse_gt": 0.014181731268763542,
+            "method": "Temporal TV (NRMSE≤0.01589, 100 it)",
+            "nrmse_gt": 0.006553960498422384,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 5266.959
+            "time_ms": 13271.089999999998
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
             "category": "Accuracy race",
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
-            "method": "Temporal TV (NRMSE≤0.01589, 50 it)",
-            "nrmse_gt": 0.01418172474950552,
+            "method": "Temporal TV (NRMSE≤0.01589, 100 it)",
+            "nrmse_gt": 0.006553954444825649,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 4934.88
+            "time_ms": 11456.314
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3231,7 +3275,7 @@
             "framework": "BART (MKL, MEASURE)",
             "method": "Adjoint",
             "nrmse_gt": 0.26091456413269043,
-            "nrmse_ristretto": 7.046900662999178e-8,
+            "nrmse_ristretto": 7.034786619897204e-8,
             "threads": 1,
             "time_ms": -1.0
         },
@@ -3299,7 +3343,7 @@
             "nrmse_gt": 0.18591301143169403,
             "nrmse_ristretto": 0.00397765077650547,
             "threads": 1,
-            "time_ms": 945.844
+            "time_ms": 935.596
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3307,10 +3351,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.18591301143169403,
-            "nrmse_ristretto": 0.0039776526391506195,
+            "nrmse_gt": 0.18591299653053284,
+            "nrmse_ristretto": 0.003977654967457056,
             "threads": 1,
-            "time_ms": 1030.883
+            "time_ms": 1039.321
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3373,10 +3417,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.07063768059015274,
-            "nrmse_ristretto": 0.013803485780954361,
+            "nrmse_gt": 0.06836418062448502,
+            "nrmse_ristretto": 0.009755910374224186,
             "threads": 1,
-            "time_ms": 30135.058999999997
+            "time_ms": 29811.140000000003
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3384,10 +3428,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.07063768059015274,
-            "nrmse_ristretto": 0.01380343921482563,
+            "nrmse_gt": 0.06836416572332382,
+            "nrmse_ristretto": 0.009755832143127918,
             "threads": 1,
-            "time_ms": 18286.006
+            "time_ms": 17934.157
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3453,7 +3497,7 @@
             "nrmse_gt": 0.18101027607917786,
             "nrmse_ristretto": 0.047583576291799545,
             "threads": 1,
-            "time_ms": 4547.888999999999
+            "time_ms": 4581.438
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3461,10 +3505,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.18101029098033905,
-            "nrmse_ristretto": 0.04758358374238014,
+            "nrmse_gt": 0.18101027607917786,
+            "nrmse_ristretto": 0.047583576291799545,
             "threads": 1,
-            "time_ms": 4125.955
+            "time_ms": 4122.8550000000005
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3516,10 +3560,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.05793912708759308,
-            "nrmse_ristretto": 0.01116152573376894,
+            "nrmse_gt": 0.05555568262934685,
+            "nrmse_ristretto": 0.03305067867040634,
             "threads": 1,
-            "time_ms": 38810.318
+            "time_ms": 30459.836
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3527,10 +3571,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.057939060032367706,
-            "nrmse_ristretto": 0.011161485686898232,
+            "nrmse_gt": 0.055555734783411026,
+            "nrmse_ristretto": 0.033050667494535446,
             "threads": 1,
-            "time_ms": 27243.506
+            "time_ms": 20578.25
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3560,10 +3604,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.005731124430894852,
-            "nrmse_ristretto": 0.003184274071827531,
+            "nrmse_gt": 0.005337080918252468,
+            "nrmse_ristretto": 0.0046297465451061726,
             "threads": 1,
-            "time_ms": 29406.197
+            "time_ms": 29229.916
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3571,10 +3615,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.005731126759201288,
-            "nrmse_ristretto": 0.003184271277859807,
+            "nrmse_gt": 0.005337081383913755,
+            "nrmse_ristretto": 0.00462974701076746,
             "threads": 1,
-            "time_ms": 26270.3
+            "time_ms": 25642.922
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3604,10 +3648,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.04586739093065262,
-            "nrmse_ristretto": 0.04298743978142738,
+            "nrmse_gt": 0.01838388666510582,
+            "nrmse_ristretto": 0.016916517168283463,
             "threads": 1,
-            "time_ms": 28566.358
+            "time_ms": 28305.704999999998
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3615,10 +3659,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.04586739093065262,
-            "nrmse_ristretto": 0.04298744350671768,
+            "nrmse_gt": 0.01838388480246067,
+            "nrmse_ristretto": 0.016916517168283463,
             "threads": 1,
-            "time_ms": 27234.611999999997
+            "time_ms": 32063.24
         },
         {
             "case_id": "torso_cine_8ch_cartesian",
@@ -3659,10 +3703,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Global Low-Rank (NRMSE≤0.1248, 20 it)",
-            "nrmse_gt": 0.12327820807695389,
+            "nrmse_gt": 0.12317223846912384,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 9083.162
+            "time_ms": 9203.802
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3670,10 +3714,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Global Low-Rank (NRMSE≤0.1248, 20 it)",
-            "nrmse_gt": 0.12331996858119965,
+            "nrmse_gt": 0.12321516126394272,
             "nrmse_ristretto": 0.0,
             "threads": 1,
-            "time_ms": 7343.788
+            "time_ms": 7338.556
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3736,10 +3780,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.13838674128055573,
-            "nrmse_ristretto": 0.010350084863603115,
+            "nrmse_gt": 0.13843698799610138,
+            "nrmse_ristretto": 0.010202161967754364,
             "threads": 1,
-            "time_ms": 4596.507
+            "time_ms": 4603.311
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3747,10 +3791,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "CG-SENSE (10 it)",
-            "nrmse_gt": 0.13826633989810944,
-            "nrmse_ristretto": 0.010690373368561268,
+            "nrmse_gt": 0.13809509575366974,
+            "nrmse_ristretto": 0.011197003535926342,
             "threads": 1,
-            "time_ms": 4367.089
+            "time_ms": 4378.401
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3813,10 +3857,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.11492416262626648,
-            "nrmse_ristretto": 0.033613063395023346,
+            "nrmse_gt": 0.11515713483095169,
+            "nrmse_ristretto": 0.034099314361810684,
             "threads": 1,
-            "time_ms": 93670.405
+            "time_ms": 93079.10800000001
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3824,10 +3868,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Global Low-Rank (20 it)",
-            "nrmse_gt": 0.11504966765642166,
-            "nrmse_ristretto": 0.033885158598423004,
+            "nrmse_gt": 0.11530395597219467,
+            "nrmse_ristretto": 0.03472635895013809,
             "threads": 1,
-            "time_ms": 72317.405
+            "time_ms": 71910.296
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3890,10 +3934,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.13906119763851166,
-            "nrmse_ristretto": 0.01966857723891735,
+            "nrmse_gt": 0.14210814237594604,
+            "nrmse_ristretto": 0.034682538360357285,
             "threads": 1,
-            "time_ms": 13795.874
+            "time_ms": 13858.927
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3901,10 +3945,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "L1-Wavelet (20 it)",
-            "nrmse_gt": 0.13906119763851166,
-            "nrmse_ristretto": 0.01966857723891735,
+            "nrmse_gt": 0.14210815727710724,
+            "nrmse_ristretto": 0.03468254953622818,
             "threads": 1,
-            "time_ms": 11303.541
+            "time_ms": 11414.737000000001
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3956,10 +4000,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.10210979729890823,
-            "nrmse_ristretto": 0.04137948527932167,
+            "nrmse_gt": 0.10062288492918015,
+            "nrmse_ristretto": 0.03967287018895149,
             "threads": 1,
-            "time_ms": 99997.687
+            "time_ms": 98450.578
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -3967,10 +4011,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Locally Low-Rank (20 it)",
-            "nrmse_gt": 0.10209079831838608,
-            "nrmse_ristretto": 0.04127924144268036,
+            "nrmse_gt": 0.10061456263065338,
+            "nrmse_ristretto": 0.03950066119432449,
             "threads": 1,
-            "time_ms": 79195.361
+            "time_ms": 77947.708
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4000,10 +4044,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.07328202575445175,
-            "nrmse_ristretto": 0.03076975792646408,
+            "nrmse_gt": 0.07018763571977615,
+            "nrmse_ristretto": 0.02790006808936596,
             "threads": 1,
-            "time_ms": 80879.115
+            "time_ms": 82784.874
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4011,10 +4055,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Temporal TV (20 it)",
-            "nrmse_gt": 0.07328198105096817,
-            "nrmse_ristretto": 0.030769770964980125,
+            "nrmse_gt": 0.07018786668777466,
+            "nrmse_ristretto": 0.0279003344476223,
             "threads": 1,
-            "time_ms": 62264.194
+            "time_ms": 63869.471
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4044,10 +4088,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.08681966364383698,
-            "nrmse_ristretto": 0.057047806680202484,
+            "nrmse_gt": 0.09076739847660065,
+            "nrmse_ristretto": 0.06042521819472313,
             "threads": 1,
-            "time_ms": 485267.15
+            "time_ms": 489604.81399999995
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4055,10 +4099,10 @@
             "data_source": "synthetic",
             "framework": "BART (MKL, MEASURE)",
             "method": "Temporal TV (PDHG) (200 it)",
-            "nrmse_gt": 0.08681967109441757,
-            "nrmse_ristretto": 0.057047806680202484,
+            "nrmse_gt": 0.09076739847660065,
+            "nrmse_ristretto": 0.06042521819472313,
             "threads": 1,
-            "time_ms": 476406.537
+            "time_ms": 473708.44899999996
         },
         {
             "case_id": "torso_cine_8ch_radial",
@@ -4111,7 +4155,7 @@
             "framework": "BART (MKL, MEASURE)",
             "method": "DCF Adjoint (Gridding)",
             "nrmse_gt": 0.22410278022289276,
-            "nrmse_ristretto": 0.002481831470504403,
+            "nrmse_ristretto": 0.002481830772012472,
             "threads": 1,
             "time_ms": -1.0
         },
@@ -4190,15 +4234,17 @@
             "AMD EPYC 7763 64-Core Processor"
         ],
         "cpu_threads": [
+            "128",
             "256"
         ],
         "dates": [
             "2026-10-10",
-            "2026-10-11"
+            "2026-10-12"
         ],
         "gpu": [],
         "hostnames": [
             "x1000c4s0b0n0",
+            "x1000c4s2b1n1",
             "x1000c7s2b0n0"
         ],
         "julia_version": [
