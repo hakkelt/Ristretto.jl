@@ -189,16 +189,26 @@ plot(
 # no k-space placeholder is needed. `simulate_acquisition` handles non-Cartesian trajectories
 # exactly like Cartesian ones: it builds the encoding operator, applies it to the image, and
 # returns a new acquisition object with the k-space data filled in.
+#
+# To keep the comparisons below honest the data avoid the *inverse crime* (see the Simulation
+# tutorial): the object is rasterized area-sampled on a grid about 1.6 times finer than the
+# reconstruction, the coil maps act on that finer grid, and the returned acquisition carries no
+# maps — §4 estimates them from the data. Images are scored against the same object area-sampled
+# at the reconstruction size.
 
 nx, ny = 96, 96
 nsamp, nspokes = 128, 96
+nfine = 154  # ≈ 1.6 × 96
 
 traj = radial_trajectory(nsamp, nspokes; ordering = GoldenAngle())
-x_true = create_shepp_logan_phantom(nx, ny, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
-smaps = coil_sensitivities(nx, ny, 4)
+area_sampled_phantom(n) = create_shepp_logan_phantom(
+    n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32, supersample = 4
+)
+x_true = area_sampled_phantom(nx)
+smaps_fine = coil_sensitivities(nfine, nfine, 4)
 
-acq_radial = AcquisitionInfo(; trajectory = traj, image_size = (nx, ny), sensitivity_maps = smaps)
-data_radial = simulate_acquisition(x_true, acq_radial; keep_sensitivity_maps = true)
+acq_radial = AcquisitionInfo(; trajectory = traj, image_size = (nx, ny), sensitivity_maps = smaps_fine)
+data_radial = simulate_acquisition(area_sampled_phantom(nfine), acq_radial; keep_sensitivity_maps = false)
 
 println("radial k-space: ", size(data_radial.kspace_data))
 ## Radial Nyquist needs about (π/2)·N spokes; fewer than that is undersampling.
@@ -232,7 +242,7 @@ jim(
 # about.
 
 𝒜_nodcf = get_encoding_operator(data_radial)
-x_adjoint_nodcf = 𝒜_nodcf' * data_radial.kspace_data
+x_adjoint_nodcf = 𝒜_nodcf' * data_radial.kspace_data  # no maps yet: one image per coil
 println("no DCF: adjoint magnitude range = ", extrema(abs.(x_adjoint_nodcf)))
 jim(abs.(x_adjoint_nodcf[:, :, 1]); title = "plain adjoint, no DCF (coil 1)", size = (380, 350))
 
@@ -295,6 +305,39 @@ plot(
     layout = (1, 2), size = (950, 340)
 )
 
+# ### Calibrating sensitivity maps from non-Cartesian samples
+#
+# Every sensitivity estimator reads a calibration window out of a Cartesian grid, which these
+# samples are not — but `estimate_sensitivities` takes the non-Cartesian acquisition directly and
+# does the gridding itself: a density-compensated NFFT adjoint, back to Cartesian k-space, then
+# the estimator. It uses `acq.dcf` when the acquisition carries one (as `acq_pipe` does now) and
+# `:auto` otherwise, so the maps do not inherit the blur the unweighted adjoint of §3 has.
+#
+# The maps come back on the same centred image grid the non-Cartesian reconstruction uses, so
+# they can be attached and used without any `fftshift` of your own. A series with a `:time` axis
+# is averaged over that axis before calibrating (`average_dims`); see `10_real_data_dynamic` §10,
+# which does this on a real spiral scan.
+
+acq_pipe = estimate_sensitivities(acq_pipe; method = ESPIRiT(calib_size = 24, kernel_size = 6))
+maps_estimated = acq_pipe.sensitivity_maps
+## The maps come back in the same flavour as the k-space they were calibrated from: a plain array
+## here, since this tutorial's simulated data carries no dimension names, and a `NamedDimsArray`
+## with `(:x, :y, :coil)` when it does.
+println("estimated maps: ", size(maps_estimated), " ", typeof(maps_estimated))
+
+## Sensitivity maps are defined only up to one common phase per pixel, so the honest comparison is
+## of magnitudes; the estimate is zero where ESPIRiT's eigenvalue test finds no coil signal, which
+## is the black background the simulated maps do not have.
+side_by_side(
+    abs.(coil_sensitivities(nx, ny, 4)[:, :, 1]), abs.(unname(maps_estimated)[:, :, 1]);
+    titles = ("|S| coil 1, simulated", "|S| coil 1, estimated"), size = (900, 420)
+)
+
+# The estimated maps are attached to every acquisition that is reconstructed from here on.
+
+data_radial = AcquisitionInfo(data_radial; sensitivity_maps = maps_estimated)
+acq_voronoi = AcquisitionInfo(acq_voronoi; sensitivity_maps = maps_estimated)
+
 #-
 x_nodcf = reconstruct(data_radial)
 x_pipe = reconstruct(acq_pipe)
@@ -326,35 +369,6 @@ side_by_side(
 # `VoronoiDCF` gives a result close to `PipeMenonDCF` on this golden-angle trajectory rather than
 # the "edge samples blow up" failure an unclipped Voronoi diagram would show.
 
-# ### Calibrating sensitivity maps from non-Cartesian samples
-#
-# Every sensitivity estimator reads a calibration window out of a Cartesian grid, which these
-# samples are not — but `estimate_sensitivities` takes the non-Cartesian acquisition directly and
-# does the gridding itself: a density-compensated NFFT adjoint, back to Cartesian k-space, then
-# the estimator. It uses `acq.dcf` when the acquisition carries one (as `acq_pipe` does now) and
-# `:auto` otherwise, so the maps do not inherit the blur the unweighted adjoint of §3 has.
-#
-# The maps come back on the same centred image grid the non-Cartesian reconstruction uses, so
-# they can be attached and used without any `fftshift` of your own. A series with a `:time` axis
-# is averaged over that axis before calibrating (`average_dims`); see `10_real_data_dynamic` §10,
-# which does this on a real spiral scan.
-
-maps_estimated = estimate_sensitivities(
-    acq_pipe; method = ESPIRiT(calib_size = 24, kernel_size = 6)
-).sensitivity_maps
-## The maps come back in the same flavour as the k-space they were calibrated from: a plain array
-## here, since this tutorial's simulated data carries no dimension names, and a `NamedDimsArray`
-## with `(:x, :y, :coil)` when it does.
-println("estimated maps: ", size(maps_estimated), " ", typeof(maps_estimated))
-
-## Sensitivity maps are defined only up to one common phase per pixel, so the honest comparison is
-## of magnitudes; the estimate is zero where ESPIRiT's eigenvalue test finds no coil signal, which
-## is the black background the simulated maps do not have.
-side_by_side(
-    abs.(unname(smaps)[:, :, 1]), abs.(unname(maps_estimated)[:, :, 1]);
-    titles = ("|S| coil 1, simulated", "|S| coil 1, estimated"), size = (900, 420)
-)
-
 # ## 5. Iterative and regularized reconstruction
 #
 # An iterative solve does not need a DCF at all — it inverts the operator instead of
@@ -377,8 +391,12 @@ side_by_side(x_pipe, x_cg, x_tv; titles = ("gridded adjoint", "CG-SENSE", "TV co
 ## Fewer spokes: the regime where the regularizer earns its keep.
 nspokes_us = 32
 traj_us = unname(traj)[:, :, 1:nspokes_us]
-acq_us = AcquisitionInfo(; trajectory = traj_us, image_size = (nx, ny), sensitivity_maps = smaps)
-data_us = simulate_acquisition(x_true, acq_us; keep_sensitivity_maps = true)
+acq_us = AcquisitionInfo(; trajectory = traj_us, image_size = (nx, ny), sensitivity_maps = smaps_fine)
+data_us = simulate_acquisition(area_sampled_phantom(nfine), acq_us; keep_sensitivity_maps = false)
+## The densely sampled k-space centre of a radial scan is enough to calibrate from, even at 32
+## spokes.
+maps_us = estimate_sensitivities(density_compensation(data_us); method = ESPIRiT(calib_size = 24, kernel_size = 6)).sensitivity_maps
+data_us = AcquisitionInfo(data_us; sensitivity_maps = maps_us)
 println(
     "spokes: ", nspokes_us, "  (acceleration ≈ ",
     round(ceil(π / 2 * nx) / nspokes_us, digits = 1), "× relative to radial Nyquist)"
@@ -397,161 +415,110 @@ side_by_side(
 
 # ## 6. Gradient-delay correction
 #
-# Gradient hardware delays and eddy currents shift the actual sampled k-space location along each
-# spoke relative to its nominal position, which blurs the image and produces streak/ring
-# artifacts. Two estimators:
+# Gradient hardware delays and eddy currents move the actually sampled k-space positions away from
+# the nominal trajectory, which blurs the image and produces streak and ring artefacts. The usual
+# model gives each spoke with direction $\mathbf n$ the displacement $S\mathbf n$, with a
+# symmetric 2×2 delay tensor $S$ (Peters et al. [1]; Moussavi et al.): an isotropic delay
+# ($S \propto I$) slides every spoke along itself, an anisotropic one also moves it sideways. Two
+# estimators read $S$ from the radial data itself:
 #
-# - `OpposingSpokes()` — cross-correlates spoke pairs, fitting an isotropic `(dx, dy)` shift from
-#   the peak position of the readout signal.
-# - `RING()` — fits the full anisotropic delay tensor `(dx, dy, dxy)` from the same peak-fitting
-#   approach.
+# - `OpposingSpokes()` [5] pairs each spoke with the one pointing the opposite way. The delay moves
+#   both along their own direction, i.e. in opposite directions in k-space, so the sub-sample shift
+#   that aligns the two complex profiles is twice the delay. Needs spokes over the full circle.
+# - `RING()` [2] finds where pairs of nearly orthogonal spokes really intersect — the point where
+#   both measure the same complex value — and solves for $S$. Works on any ordering and from few
+#   spokes; the default.
 #
-# Both estimators work by locating the peak of `|k-space|` along each spoke relative to the
-# nominal sample grid — the classical self-navigator approach ([1], [2] in the references below),
-# calibrated here with an idealized point-source readout (a narrow Gaussian peak),
-# exactly like the package's own tests. A real object's k-space is not this well-behaved, so in
-# practice the estimate comes from a short dedicated calibration acquisition rather than from the
-# imaging data itself — which is the workflow this section reproduces: a calibration trajectory
-# estimates the delay, and the corrected trajectory is then applied to the imaging acquisition.
+# Both return `(dx = Sxx, dy = Syy, dxy = Sxy)` in trajectory units.
 
-Nsamples, Nspokes = 64, 48
+Nsamples, Nspokes = 64, 96
 angles = range(0, 2π; length = Nspokes + 1)[1:Nspokes]
 r = Float32.(range(-0.45, 0.45; length = Nsamples))
+dr = r[2] - r[1]
 
+## The data are simulated from the object area-sampled on a grid about 1.6 times finer than the
+## reconstruction (see the Simulation tutorial), so they do not share the reconstruction's
+## discretisation (no inverse crime); images are scored against the same object area-sampled at
+## the reconstruction size.
 nxg, nyg = 64, 64
-x_gd_true = create_shepp_logan_phantom(nxg, nyg, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+nfine_gd = 102  # ≈ 1.6 × 64
+gd_phantom(n) = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32, supersample = 4)
+x_gd_true = gd_phantom(nxg)
 
-traj_gd_true = zeros(Float32, 2, Nsamples, Nspokes)     # matches the physical sample locations
+traj_gd_nominal = zeros(Float32, 2, Nsamples, Nspokes)  # what the sequence intended
 for s in 1:Nspokes
-    traj_gd_true[1, :, s] = r .* cos(angles[s])
-    traj_gd_true[2, :, s] = r .* sin(angles[s])
+    traj_gd_nominal[1, :, s] = r .* cos(angles[s])
+    traj_gd_nominal[2, :, s] = r .* sin(angles[s])
 end
 
-delay_true = (0.02f0, -0.015f0)                          # ground truth, injected below
-traj_gd_wrong = copy(traj_gd_true)                        # the naive/nominal trajectory, biased by the delay
+S_true = Float32[1.5 0.4; 0.4 -0.8] .* dr             # delay tensor: 1.5 / -0.8 samples, 0.4 cross term
+traj_gd_actual = copy(traj_gd_nominal)                 # where the samples really are
 for s in 1:Nspokes
-    traj_gd_wrong[1, :, s] .+= delay_true[1] * cos(angles[s])
-    traj_gd_wrong[2, :, s] .+= delay_true[2] * sin(angles[s])
+    traj_gd_actual[:, :, s] .+= S_true * [cos(angles[s]), sin(angles[s])]
 end
 
-## A gradient delay slides each spoke **along its own direction**, which is exactly why plotting the
-## two sample sets on top of each other shows nothing: the shifted samples land on the same line as
-## the true ones, between them, and the two point clouds interleave rather than separate. What the
-## delay actually moves is the *point on the spoke where DC is assumed to be*, and that is what the
-## middle panel shows — one marker per spoke, the true one pinned at the origin for every spoke, the
-## biased one tracing the ellipse whose semi-axes are the two delay components. Left to right: the
-## six first spokes end to end for context; the assumed centre of every spoke; and the displacement
-## itself, spoke by spoke.
-p_full = plot(; aspect_ratio = 1, xlabel = "kx", ylabel = "ky", title = "six spokes, full extent", legend = :outertopright)
-for sp in 1:6
-    scatter!(p_full, traj_gd_true[1, :, sp], traj_gd_true[2, :, sp]; markersize = 3, markerstrokewidth = 0, color = 1, label = sp == 1 ? "true" : "")
-    ## `:xcross` is an open marker: it is drawn by its *stroke*, so `markerstrokewidth = 0` would
-    ## leave nothing but a hairline. Give it a width and a dark stroke colour of its own.
-    scatter!(p_full, traj_gd_wrong[1, :, sp], traj_gd_wrong[2, :, sp]; markersize = 4, marker = :xcross, color = :crimson, markerstrokecolor = :crimson, markerstrokewidth = 1.6, label = sp == 1 ? "delay-biased" : "")
-end
-plot!(p_full; xlim = (-0.58, 0.58), ylim = (-0.58, 0.58))
-
-## The midpoint of a spoke's samples: the readout is symmetric about DC, so this is where each
-## trajectory places k = 0.
+## The displacement is a fraction of a sample, invisible at full scale; what it moves is the point
+## each spoke takes for k = 0 (left: the nominal centres all sit at the origin, the actual ones on a
+## small closed curve) and the spokes' offset along and across themselves (right).
 centre(traj, s) = (sum(traj[1, :, s]) / Nsamples, sum(traj[2, :, s]) / Nsamples)
 p_centre = scatter(
-    [centre(traj_gd_true, s)[1] for s in 1:Nspokes], [centre(traj_gd_true, s)[2] for s in 1:Nspokes];
-    aspect_ratio = 1, markersize = 4, markerstrokewidth = 0, label = "true (all at DC)",
-    xlabel = "kx", ylabel = "ky", title = "assumed centre of each spoke", legend = :outertopright,
-    xlim = (-0.03, 0.03), ylim = (-0.03, 0.03),
+    [centre(traj_gd_actual, s)[1] for s in 1:Nspokes] ./ dr, [centre(traj_gd_actual, s)[2] for s in 1:Nspokes] ./ dr;
+    aspect_ratio = 1, markersize = 4, markerstrokewidth = 0, label = "actual",
+    xlabel = "kx (samples)", ylabel = "ky (samples)", title = "k = 0 of each spoke", legend = :outertopright,
 )
-scatter!(
-    p_centre, [centre(traj_gd_wrong, s)[1] for s in 1:Nspokes], [centre(traj_gd_wrong, s)[2] for s in 1:Nspokes];
-    markersize = 5, marker = :xcross, color = :crimson, markerstrokecolor = :crimson,
-    markerstrokewidth = 1.6, label = "delay-biased",
-)
-
+scatter!(p_centre, [0.0], [0.0]; markersize = 6, marker = :xcross, color = :crimson, markerstrokecolor = :crimson, markerstrokewidth = 1.6, label = "nominal")
+along_gd = [dot(S_true * [cos(θ), sin(θ)], [cos(θ), sin(θ)]) / dr for θ in angles]
+across_gd = [dot(S_true * [cos(θ), sin(θ)], [-sin(θ), cos(θ)]) / dr for θ in angles]
 p_shift = plot(
-    rad2deg.(angles), [delay_true[1] .* cos.(angles) delay_true[2] .* sin.(angles)];
-    lw = 2, label = ["dkx (delay in x)" "dky (delay in y)"], xlabel = "spoke angle (deg)",
-    ylabel = "trajectory displacement", title = "delay-induced shift per spoke", legend = :outertopright
+    rad2deg.(angles), [along_gd across_gd]; lw = 2, label = ["along the spoke" "across the spoke"],
+    xlabel = "spoke angle (deg)", ylabel = "displacement (samples)", title = "displacement per spoke", legend = :outertopright,
 )
-plot(p_full, p_centre, p_shift; layout = (1, 3), size = (1400, 400))
+plot(p_centre, p_shift; layout = (1, 2), size = (1100, 380))
 
-# Samples are truly acquired at `traj_gd_true` (the object does not know about the delay); a
-# reconstruction that (wrongly) assumes the nominal, delay-biased trajectory shows the artefact.
+# The object is sampled where the spokes really are; a reconstruction that assumes the nominal
+# trajectory shows the artefact.
 
-acq_gd_true = AcquisitionInfo(;
-    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_true), image_size = (nxg, nyg)
+acq_gd_actual = AcquisitionInfo(;
+    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_actual), image_size = (nxg, nyg)
 )
-data_gd = simulate_acquisition(x_gd_true, acq_gd_true; keep_sensitivity_maps = true)
+data_gd = simulate_acquisition(gd_phantom(nfine_gd), acq_gd_actual)
 
 acq_gd_naive = AcquisitionInfo(
     data_gd.kspace_data;
-    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_wrong), image_size = (nxg, nyg)
+    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_nominal), image_size = (nxg, nyg)
 )
 x_gd_naive = reconstruct(density_compensation(acq_gd_naive; method = PipeMenonDCF(maxit = 15)));
+nothing #hide
 
-# Estimate the delay from a calibration acquisition (idealized point-source signal along the
-# same spoke angles) and correct the nominal trajectory with it.
+# Both estimators read the delay from these imaging data, with no separate calibration scan:
 
-ksp_calib = zeros(ComplexF32, Nsamples, Nspokes)
-for s in 1:Nspokes
-    shift_s = delay_true[1] * cos(angles[s]) + delay_true[2] * sin(angles[s])
-    ksp_calib[:, s] = exp.(-50.0f0 .* (r .- shift_s) .^ 2)
+tensor(d) = [d.dx d.dxy; d.dxy d.dy]
+@printf("%-15s %8s %8s %8s   (samples)\n", "", "Sxx", "Syy", "Sxy")
+@printf("%-15s %8.3f %8.3f %8.3f\n", "true", S_true[1, 1] / dr, S_true[2, 2] / dr, S_true[1, 2] / dr)
+for method in (OpposingSpokes(), RING())
+    est = estimate_gradient_delays(acq_gd_naive; method)
+    @printf("%-15s %8.3f %8.3f %8.3f\n", nameof(typeof(method)), est.dx / dr, est.dy / dr, est.dxy / dr)
 end
-calib_acq = AcquisitionInfo(
-    NamedDimsArray{(:kx, :ky)}(ksp_calib);
-    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_wrong), image_size = (nxg, nyg)
-)
 
-est_opposing = estimate_gradient_delays(calib_acq; method = OpposingSpokes())
-println("true delay          ", delay_true)
-println("OpposingSpokes est.  ", (round(est_opposing[1], digits = 4), round(est_opposing[2], digits = 4)))
-
-calib_corrected = correct_gradient_delays(calib_acq; method = OpposingSpokes())
-corrected_traj = calib_corrected.trajectory
-println("residual trajectory error vs. true: ", round(norm(unname(corrected_traj) - traj_gd_true), digits = 4))
-
-acq_gd_fixed = AcquisitionInfo(data_gd.kspace_data; trajectory = corrected_traj, image_size = (nxg, nyg))
-x_gd_fixed = reconstruct(density_compensation(acq_gd_fixed; method = PipeMenonDCF(maxit = 15)))
+# `correct_gradient_delays` moves each spoke by the estimated displacement ``S\mathbf n``,
+# including the part across the spoke that an anisotropic delay causes.
 
 function aligned_nrmse_gd(x̂)
     a = abs.(unname(x̂))
     α = sum(a .* abs.(x_gd_true)) / sum(abs2, a)
     return norm(α .* a - abs.(x_gd_true)) / norm(abs.(x_gd_true))
 end
-println("naive (uncorrected) nrmse ", round(aligned_nrmse_gd(x_gd_naive), digits = 4))
-println("corrected nrmse           ", round(aligned_nrmse_gd(x_gd_fixed), digits = 4))
+
+acq_gd_fixed = correct_gradient_delays(acq_gd_naive)
+x_gd_fixed = reconstruct(density_compensation(acq_gd_fixed; method = PipeMenonDCF(maxit = 15)))
+for (name, acq, x) in (("nominal", acq_gd_naive, x_gd_naive), ("corrected", acq_gd_fixed, x_gd_fixed))
+    @printf(
+        "%-10s trajectory error %.4f   image nrmse %.4f\n", name,
+        norm(unname(acq.trajectory) - traj_gd_actual), aligned_nrmse_gd(x)
+    )
+end
 
 side_by_side(x_gd_naive, x_gd_fixed; titles = ("uncorrected (delay artefact)", "gradient-delay corrected"), size = (700, 350))
-
-# `RING()` recovers the full anisotropic tensor `(dx, dy, dxy)` the same way, including a
-# nonzero cross-term.
-
-Sxx, Syy, Sxy = 0.02, -0.015, 0.005
-traj_ring_wrong = copy(traj_gd_true)
-ksp_ring = zeros(ComplexF32, Nsamples, Nspokes)
-for s in 1:Nspokes
-    θ = angles[s]
-    shift = Sxx * cos(θ)^2 + Syy * sin(θ)^2 + 2 * Sxy * cos(θ) * sin(θ)
-    traj_ring_wrong[1, :, s] .+= shift * cos(θ)
-    traj_ring_wrong[2, :, s] .+= shift * sin(θ)
-    ksp_ring[:, s] = exp.(-50.0f0 .* (r .- shift) .^ 2)
-end
-acq_ring = AcquisitionInfo(
-    NamedDimsArray{(:kx, :ky)}(ksp_ring);
-    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_ring_wrong), image_size = (nxg, nyg)
-)
-delays_ring = estimate_gradient_delays(acq_ring; method = RING())
-println("true (Sxx, Syy, Sxy) = ", (Sxx, Syy, Sxy))
-println("RING estimate        = ", map(v -> round(v, digits = 4), delays_ring))
-
-@printf("%-6s %10s %10s %10s\n", "", "Sxx", "Syy", "Sxy")
-@printf("%-6s %10.4f %10.4f %10.4f\n", "true", Sxx, Syy, Sxy)
-@printf("%-6s %10.4f %10.4f %10.4f\n", "RING", delays_ring.dx, delays_ring.dy, delays_ring.dxy)
-
-## What the estimate is worth is the trajectory it produces, not the three numbers themselves:
-acq_ring_fixed = correct_gradient_delays(acq_ring; method = RING())
-@printf(
-    "trajectory error vs. true: %.4f before correction, %.4f after\n",
-    norm(traj_ring_wrong - traj_gd_true), norm(unname(acq_ring_fixed.trajectory) - traj_gd_true)
-)
 
 #-
 ## Correction is refused on Cartesian data — there is no trajectory to correct.
@@ -608,14 +575,13 @@ end
 # [1] D. C. Peters, J. A. Derbyshire, and E. R. McVeigh, "Centering the projection reconstruction
 # trajectory: Reducing gradient delay errors," *Magnetic Resonance in Medicine*, vol. 50, no. 1,
 # pp. 1–6, 2003, doi: [10.1002/mrm.10501](https://doi.org/10.1002/mrm.10501)
-# — the opposing-spokes
-# estimator.
+# — the delay model.
 #
 # [2] S. Rosenzweig, H. C. M. Holme, and M. Uecker, "Simple auto-calibrated gradient delay
 # estimation from few spokes using Radial Intersections (RING)," *Magnetic Resonance in Medicine*,
 # vol. 81, no. 3, pp. 1898–1906, 2019,
 # doi: [10.1002/mrm.27506](https://doi.org/10.1002/mrm.27506)
-# ([arXiv:1808.00453](https://arxiv.org/abs/1808.00453), open access) — the `RING()` estimator.
+# ([arXiv:1805.04334](https://arxiv.org/abs/1805.04334), open access) — the `RING()` estimator.
 #
 # [3] J. I. Jackson, C. H. Meyer, D. G. Nishimura, and A. Macovski, "Selection of a convolution
 # function for Fourier inversion using gridding," *IEEE Transactions on Medical Imaging*, vol. 10,
@@ -628,6 +594,9 @@ end
 # doi: `10.1002/(SICI)1522-2594(199901)41:1<179::AID-MRM25>3.0.CO;2-V`
 # ([doi.org](https://doi.org/10.1002/%28SICI%291522-2594%28199901%2941:1%3C179::AID-MRM25%3E3.0.CO;2-V))
 # — the `PipeMenonDCF` density compensation.
+#
+# [5] K. T. Block and M. Uecker, "Simple method for adaptive gradient-delay compensation in radial
+# MRI," *Proc. Intl. Soc. Mag. Reson. Med.* 19, 2816 (2011) — the `OpposingSpokes()` estimator.
 
 # ## Further reading
 #
