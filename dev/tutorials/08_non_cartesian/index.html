@@ -54,14 +54,14 @@ plot(
     traj_scatter(traj_spiral_a; title = &quot;spiral, archimedean&quot;),
     traj_scatter(traj_spiral_vd; title = &quot;spiral, variable density&quot;);
     layout = grid_layout(5), size = (1050, 700)
-)</code></pre><img src="09e95102.svg" alt="Example block output"/><pre><code class="language-julia hljs"># The two fully 3D families, shown in 3D rather than projected onto kx-ky: stack-of-stars is
+)</code></pre><img src="c06af67e.svg" alt="Example block output"/><pre><code class="language-julia hljs"># The two fully 3D families, shown in 3D rather than projected onto kx-ky: stack-of-stars is
 # radial in-plane and Cartesian through-plane (the discrete kz &quot;shells&quot;), while kooshball spokes
 # point quasi-uniformly over the whole sphere.
 plot(
     traj_scatter3d(traj_sos; title = &quot;stack of stars (6 partitions)&quot;, by_kz = true),
     traj_scatter3d(traj_koosh; title = &quot;kooshball&quot;);
     layout = (1, 2), size = (1000, 480)
-)</code></pre><img src="23df7b17.svg" alt="Example block output"/><h3 id="Half-spokes,-phyllotaxis,-FLORET-and-SPARKLING"><a class="docs-heading-anchor" href="#Half-spokes,-phyllotaxis,-FLORET-and-SPARKLING">Half spokes, phyllotaxis, FLORET and SPARKLING</a><a id="Half-spokes,-phyllotaxis,-FLORET-and-SPARKLING-1"></a><a class="docs-heading-anchor-permalink" href="#Half-spokes,-phyllotaxis,-FLORET-and-SPARKLING" title="Permalink"></a></h3><ul><li><code>center_out = true</code> (on <code>radial_trajectory</code>, <code>stack_of_stars_trajectory</code>, <code>kooshball_trajectory</code> and <code>phyllotaxis_trajectory</code>) acquires half spokes, from the k-space center outwards, as UTE and ZTE-like sequences do. A half spoke is a ray, so the angle increments double: the golden angle becomes <code>2π/φ ≈ 222.5°</code>.</li><li><code>phyllotaxis_trajectory(nsamples, nspokes; interleaves)</code> — 3D radial with the spoke tips on a spiral phyllotaxis (Piccini et al. 2011): golden-angle azimuths, polar angle <code>(π/2)√(n/N)</code>. With a Fibonacci number of interleaves each interleave is a smooth spiral from the pole to the equator, one per heartbeat in whole-heart imaging.</li><li><code>floret_trajectory(nsamples, ninterleaves; nhubs = 3)</code> — FLORET (Pipe et al. 2011): center-out Fermat spirals wound on cones about up to three orthogonal hub axes.</li><li><code>sparkling_trajectory(nsamples, nshots; ndims)</code> — SPARKLING (Lazarus et al. 2019): shots optimized so their samples follow a variable target density, within a maximum step (gradient amplitude) and a maximum change of step (slew rate) per sample. The optimization takes some seconds, more for 3D.</li></ul><pre><code class="language-julia hljs">traj_half = radial_trajectory(48, 21; center_out = true)
+)</code></pre><img src="cf1c8161.svg" alt="Example block output"/><h3 id="Half-spokes,-phyllotaxis,-FLORET-and-SPARKLING"><a class="docs-heading-anchor" href="#Half-spokes,-phyllotaxis,-FLORET-and-SPARKLING">Half spokes, phyllotaxis, FLORET and SPARKLING</a><a id="Half-spokes,-phyllotaxis,-FLORET-and-SPARKLING-1"></a><a class="docs-heading-anchor-permalink" href="#Half-spokes,-phyllotaxis,-FLORET-and-SPARKLING" title="Permalink"></a></h3><ul><li><code>center_out = true</code> (on <code>radial_trajectory</code>, <code>stack_of_stars_trajectory</code>, <code>kooshball_trajectory</code> and <code>phyllotaxis_trajectory</code>) acquires half spokes, from the k-space center outwards, as UTE and ZTE-like sequences do. A half spoke is a ray, so the angle increments double: the golden angle becomes <code>2π/φ ≈ 222.5°</code>.</li><li><code>phyllotaxis_trajectory(nsamples, nspokes; interleaves)</code> — 3D radial with the spoke tips on a spiral phyllotaxis (Piccini et al. 2011): golden-angle azimuths, polar angle <code>(π/2)√(n/N)</code>. With a Fibonacci number of interleaves each interleave is a smooth spiral from the pole to the equator, one per heartbeat in whole-heart imaging.</li><li><code>floret_trajectory(nsamples, ninterleaves; nhubs = 3)</code> — FLORET (Pipe et al. 2011): center-out Fermat spirals wound on cones about up to three orthogonal hub axes.</li><li><code>sparkling_trajectory(nsamples, nshots; ndims)</code> — SPARKLING (Lazarus et al. 2019): shots optimized so their samples follow a variable target density, within a maximum step (gradient amplitude) and a maximum change of step (slew rate) per sample. The optimization takes some seconds, more for 3D.</li></ul><pre><code class="language-julia hljs">traj_half = radial_trajectory(48, 21; center_out = true)
 traj_spark = sparkling_trajectory(512, 12; iterations = 100)
 
 function traj_lines(traj; title = &quot;&quot;, kwargs...)
@@ -78,7 +78,7 @@ plot(
     traj_lines(traj_spark; title = &quot;SPARKLING, 12 shots&quot;),
     traj_scatter(traj_spark; title = &quot;SPARKLING samples&quot;);
     layout = (1, 3), size = (1050, 360)
-)</code></pre><img src="83317efd.svg" alt="Example block output"/><pre><code class="language-julia hljs"># Each interleave of the phyllotaxis, each hub of FLORET and each shot of 3D SPARKLING in its own
+)</code></pre><img src="3b17e8cd.svg" alt="Example block output"/><pre><code class="language-julia hljs"># Each interleave of the phyllotaxis, each hub of FLORET and each shot of 3D SPARKLING in its own
 # colour. A 3D line per arm shows the path the gradients trace; the phyllotaxis interleave is
 # drawn through its spoke tips.
 traj_phyllo = phyllotaxis_trajectory(32, 377; interleaves = 13)
@@ -110,15 +110,19 @@ plot(
     arms3d(floret_arms, &quot;FLORET, 3 hubs × 4 arms&quot;; color_by = s -&gt; (s - 1) ÷ 4 + 1),
     arms3d(unname(traj_spark3d), &quot;3D SPARKLING, 16 shots&quot;; color_by = identity);
     layout = (1, 3), size = (1200, 420)
-)</code></pre><img src="8ce79048.svg" alt="Example block output"/><h2 id="2.-Simulating-a-non-Cartesian-acquisition"><a class="docs-heading-anchor" href="#2.-Simulating-a-non-Cartesian-acquisition">2. Simulating a non-Cartesian acquisition</a><a id="2.-Simulating-a-non-Cartesian-acquisition-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Simulating-a-non-Cartesian-acquisition" title="Permalink"></a></h2><p><code>AcquisitionInfo(; trajectory, image_size, sensitivity_maps)</code> is the advertised constructor — no k-space placeholder is needed. <code>simulate_acquisition</code> handles non-Cartesian trajectories exactly like Cartesian ones: it builds the encoding operator, applies it to the image, and returns a new acquisition object with the k-space data filled in.</p><pre><code class="language-julia hljs">nx, ny = 96, 96
+)</code></pre><img src="7f2a9c00.svg" alt="Example block output"/><h2 id="2.-Simulating-a-non-Cartesian-acquisition"><a class="docs-heading-anchor" href="#2.-Simulating-a-non-Cartesian-acquisition">2. Simulating a non-Cartesian acquisition</a><a id="2.-Simulating-a-non-Cartesian-acquisition-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Simulating-a-non-Cartesian-acquisition" title="Permalink"></a></h2><p><code>AcquisitionInfo(; trajectory, image_size, sensitivity_maps)</code> is the advertised constructor — no k-space placeholder is needed. <code>simulate_acquisition</code> handles non-Cartesian trajectories exactly like Cartesian ones: it builds the encoding operator, applies it to the image, and returns a new acquisition object with the k-space data filled in.</p><p>To keep the comparisons below honest the data avoid the <em>inverse crime</em> (see the Simulation tutorial): the object is rasterized area-sampled on a grid about 1.6 times finer than the reconstruction, the coil maps act on that finer grid, and the returned acquisition carries no maps — §4 estimates them from the data. Images are scored against the same object area-sampled at the reconstruction size.</p><pre><code class="language-julia hljs">nx, ny = 96, 96
 nsamp, nspokes = 128, 96
+nfine = 154  # ≈ 1.6 × 96
 
 traj = radial_trajectory(nsamp, nspokes; ordering = GoldenAngle())
-x_true = create_shepp_logan_phantom(nx, ny, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
-smaps = coil_sensitivities(nx, ny, 4)
+area_sampled_phantom(n) = create_shepp_logan_phantom(
+    n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32, supersample = 4
+)
+x_true = area_sampled_phantom(nx)
+smaps_fine = coil_sensitivities(nfine, nfine, 4)
 
-acq_radial = AcquisitionInfo(; trajectory = traj, image_size = (nx, ny), sensitivity_maps = smaps)
-data_radial = simulate_acquisition(x_true, acq_radial; keep_sensitivity_maps = true)
+acq_radial = AcquisitionInfo(; trajectory = traj, image_size = (nx, ny), sensitivity_maps = smaps_fine)
+data_radial = simulate_acquisition(area_sampled_phantom(nfine), acq_radial; keep_sensitivity_maps = false)
 
 println(&quot;radial k-space: &quot;, size(data_radial.kspace_data))
 # Radial Nyquist needs about (π/2)·N spokes; fewer than that is undersampling.
@@ -130,10 +134,10 @@ jim(
     log.(abs.(data_radial.kspace_data[:, :, 1]) .+ 1.0f-6);
     title = &quot;log |k-space|, coil 1&quot;, xlabel = &quot;sample along spoke&quot;, ylabel = &quot;spoke&quot;,
     size = (450, 350),
-)</code></pre><img src="393c89dc.svg" alt="Example block output"/><h2 id="3.-The-NFFT-encoding-operator-—-density-compensation-is-opt-in"><a class="docs-heading-anchor" href="#3.-The-NFFT-encoding-operator-—-density-compensation-is-opt-in">3. The NFFT encoding operator — density compensation is opt-in</a><a id="3.-The-NFFT-encoding-operator-—-density-compensation-is-opt-in-1"></a><a class="docs-heading-anchor-permalink" href="#3.-The-NFFT-encoding-operator-—-density-compensation-is-opt-in" title="Permalink"></a></h2><p><code>get_encoding_operator</code> builds an NFFT-based operator (from <code>NFFTOperators.jl</code>) whenever the acquisition carries a trajectory; everything downstream — <code>reconstruct</code>, regularizers — works exactly as in the Cartesian case.</p><p>Density compensation is <strong>opt-in</strong>, and it is opt-in the same way at both levels of the API:</p><ul><li><strong>High level.</strong> An acquisition carries its weights in <code>acq.dcf</code>, which is empty until <code>density_compensation(acq; method)</code> (§4) fills it. <code>reconstruct</code> uses whatever is there, so &quot;with DCF&quot; versus &quot;without DCF&quot; is a property of the acquisition, not an argument of the call.</li><li><strong>Low level.</strong> <code>get_encoding_operator(acq)</code> forwards <code>acq.dcf</code> to the NFFT operator; the <code>dcf</code> keyword overrides it, with <code>dcf = :auto</code> running the Pipe–Menon estimator inline.</li></ul><p>The default is no weighting, and that default is a mathematical statement: with no DCF, <code>𝒜&#39;</code> is the <em>true</em> adjoint of <code>𝒜</code>, which is what an iterative solver needs. A DCF turns <code>𝒜&#39;</code> into an approximate <em>inverse</em> instead — what a one-shot gridding reconstruction needs, and what §4 is about.</p><pre><code class="language-julia hljs">𝒜_nodcf = get_encoding_operator(data_radial)
-x_adjoint_nodcf = 𝒜_nodcf&#39; * data_radial.kspace_data
+)</code></pre><img src="2c812c1c.svg" alt="Example block output"/><h2 id="3.-The-NFFT-encoding-operator-—-density-compensation-is-opt-in"><a class="docs-heading-anchor" href="#3.-The-NFFT-encoding-operator-—-density-compensation-is-opt-in">3. The NFFT encoding operator — density compensation is opt-in</a><a id="3.-The-NFFT-encoding-operator-—-density-compensation-is-opt-in-1"></a><a class="docs-heading-anchor-permalink" href="#3.-The-NFFT-encoding-operator-—-density-compensation-is-opt-in" title="Permalink"></a></h2><p><code>get_encoding_operator</code> builds an NFFT-based operator (from <code>NFFTOperators.jl</code>) whenever the acquisition carries a trajectory; everything downstream — <code>reconstruct</code>, regularizers — works exactly as in the Cartesian case.</p><p>Density compensation is <strong>opt-in</strong>, and it is opt-in the same way at both levels of the API:</p><ul><li><strong>High level.</strong> An acquisition carries its weights in <code>acq.dcf</code>, which is empty until <code>density_compensation(acq; method)</code> (§4) fills it. <code>reconstruct</code> uses whatever is there, so &quot;with DCF&quot; versus &quot;without DCF&quot; is a property of the acquisition, not an argument of the call.</li><li><strong>Low level.</strong> <code>get_encoding_operator(acq)</code> forwards <code>acq.dcf</code> to the NFFT operator; the <code>dcf</code> keyword overrides it, with <code>dcf = :auto</code> running the Pipe–Menon estimator inline.</li></ul><p>The default is no weighting, and that default is a mathematical statement: with no DCF, <code>𝒜&#39;</code> is the <em>true</em> adjoint of <code>𝒜</code>, which is what an iterative solver needs. A DCF turns <code>𝒜&#39;</code> into an approximate <em>inverse</em> instead — what a one-shot gridding reconstruction needs, and what §4 is about.</p><pre><code class="language-julia hljs">𝒜_nodcf = get_encoding_operator(data_radial)
+x_adjoint_nodcf = 𝒜_nodcf&#39; * data_radial.kspace_data  # no maps yet: one image per coil
 println(&quot;no DCF: adjoint magnitude range = &quot;, extrema(abs.(x_adjoint_nodcf)))
-jim(abs.(x_adjoint_nodcf[:, :, 1]); title = &quot;plain adjoint, no DCF (coil 1)&quot;, size = (380, 350))</code></pre><img src="163b224b.svg" alt="Example block output"/><p>The plain adjoint is dominated by the heavily oversampled k-space center — the image below is badly blurred. This is expected: without density compensation the adjoint is <em>not</em> an estimate of the inverse, it is the exact adjoint of an operator that oversamples low frequencies.</p><h2 id="4.-Density-compensation-—-Pipe–Menon-and-Voronoi"><a class="docs-heading-anchor" href="#4.-Density-compensation-—-Pipe–Menon-and-Voronoi">4. Density compensation — Pipe–Menon and Voronoi</a><a id="4.-Density-compensation-—-Pipe–Menon-and-Voronoi-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Density-compensation-—-Pipe–Menon-and-Voronoi" title="Permalink"></a></h2><ul><li><code>PipeMenonDCF()</code> — iterative, works for any trajectory in 2D or 3D (the default method for <code>density_compensation</code>).</li><li><code>VoronoiDCF()</code> — geometric, exact areas of the Voronoi cells, 2D only. Cells at the edge of the sampled disc are unbounded in an ordinary Voronoi diagram; <code>VoronoiDCF</code> clips every cell against a bounding box (<code>bounds</code>, default <code>(-0.5, 0.5, -0.5, 0.5)</code>, the same domain the trajectory itself is normalized to) before computing its area, so the outermost samples get a finite weight instead of an infinite one.</li></ul><p><strong>Both estimators are wrong at the ends of a readout, and both correct it by default.</strong> The last sample of a spoke has no neighbour beyond it, and each method fails in its own way: Voronoi&#39;s clip against the bounding box has nothing to do with the sampling density, so the outermost sample comes out tens of times too heavy; Pipe–Menon&#39;s iteration sees the same one-sided neighbourhood and rings over the last few samples. Left alone, those weights multiply the noisiest, highest-frequency samples of the acquisition. <code>edge_correction = true</code> (the default on both) replaces <code>edge_samples</code> weights at each end of every readout with the trend of the samples just inside — see <code>correct_dcf_edges</code> — and <code>edge_correction = false</code> shows what the estimator produced on its own, which is what the plot below does.</p><p>The weights are stored on the acquisition (<code>acq.dcf</code>) and forwarded to the Fourier operator, so <code>reconstruct</code> picks them up automatically.</p><pre><code class="language-julia hljs">acq_pipe = density_compensation(data_radial; method = PipeMenonDCF(maxit = 20))
+jim(abs.(x_adjoint_nodcf[:, :, 1]); title = &quot;plain adjoint, no DCF (coil 1)&quot;, size = (380, 350))</code></pre><img src="6093e70b.svg" alt="Example block output"/><p>The plain adjoint is dominated by the heavily oversampled k-space center — the image below is badly blurred. This is expected: without density compensation the adjoint is <em>not</em> an estimate of the inverse, it is the exact adjoint of an operator that oversamples low frequencies.</p><h2 id="4.-Density-compensation-—-Pipe–Menon-and-Voronoi"><a class="docs-heading-anchor" href="#4.-Density-compensation-—-Pipe–Menon-and-Voronoi">4. Density compensation — Pipe–Menon and Voronoi</a><a id="4.-Density-compensation-—-Pipe–Menon-and-Voronoi-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Density-compensation-—-Pipe–Menon-and-Voronoi" title="Permalink"></a></h2><ul><li><code>PipeMenonDCF()</code> — iterative, works for any trajectory in 2D or 3D (the default method for <code>density_compensation</code>).</li><li><code>VoronoiDCF()</code> — geometric, exact areas of the Voronoi cells, 2D only. Cells at the edge of the sampled disc are unbounded in an ordinary Voronoi diagram; <code>VoronoiDCF</code> clips every cell against a bounding box (<code>bounds</code>, default <code>(-0.5, 0.5, -0.5, 0.5)</code>, the same domain the trajectory itself is normalized to) before computing its area, so the outermost samples get a finite weight instead of an infinite one.</li></ul><p><strong>Both estimators are wrong at the ends of a readout, and both correct it by default.</strong> The last sample of a spoke has no neighbour beyond it, and each method fails in its own way: Voronoi&#39;s clip against the bounding box has nothing to do with the sampling density, so the outermost sample comes out tens of times too heavy; Pipe–Menon&#39;s iteration sees the same one-sided neighbourhood and rings over the last few samples. Left alone, those weights multiply the noisiest, highest-frequency samples of the acquisition. <code>edge_correction = true</code> (the default on both) replaces <code>edge_samples</code> weights at each end of every readout with the trend of the samples just inside — see <code>correct_dcf_edges</code> — and <code>edge_correction = false</code> shows what the estimator produced on its own, which is what the plot below does.</p><p>The weights are stored on the acquisition (<code>acq.dcf</code>) and forwarded to the Fourier operator, so <code>reconstruct</code> picks them up automatically.</p><pre><code class="language-julia hljs">acq_pipe = density_compensation(data_radial; method = PipeMenonDCF(maxit = 20))
 acq_voronoi = density_compensation(data_radial; method = VoronoiDCF())
 
 raw_pipe = density_compensation(data_radial; method = PipeMenonDCF(maxit = 20, edge_correction = false))
@@ -163,7 +167,27 @@ plot(
     dcf_panel(raw_pipe.dcf, raw_voronoi.dcf, &quot;edge_correction = false&quot;),
     dcf_panel(acq_pipe.dcf, acq_voronoi.dcf, &quot;edge_correction = true (default)&quot;);
     layout = (1, 2), size = (950, 340)
-)</code></pre><img src="03861a3c.svg" alt="Example block output"/><pre><code class="language-julia hljs">x_nodcf = reconstruct(data_radial)
+)</code></pre><img src="b4a8dce5.svg" alt="Example block output"/><h3 id="Calibrating-sensitivity-maps-from-non-Cartesian-samples"><a class="docs-heading-anchor" href="#Calibrating-sensitivity-maps-from-non-Cartesian-samples">Calibrating sensitivity maps from non-Cartesian samples</a><a id="Calibrating-sensitivity-maps-from-non-Cartesian-samples-1"></a><a class="docs-heading-anchor-permalink" href="#Calibrating-sensitivity-maps-from-non-Cartesian-samples" title="Permalink"></a></h3><p>Every sensitivity estimator reads a calibration window out of a Cartesian grid, which these samples are not — but <code>estimate_sensitivities</code> takes the non-Cartesian acquisition directly and does the gridding itself: a density-compensated NFFT adjoint, back to Cartesian k-space, then the estimator. It uses <code>acq.dcf</code> when the acquisition carries one (as <code>acq_pipe</code> does now) and <code>:auto</code> otherwise, so the maps do not inherit the blur the unweighted adjoint of §3 has.</p><p>The maps come back on the same centred image grid the non-Cartesian reconstruction uses, so they can be attached and used without any <code>fftshift</code> of your own. A series with a <code>:time</code> axis is averaged over that axis before calibrating (<code>average_dims</code>); see <code>10_real_data_dynamic</code> §10, which does this on a real spiral scan.</p><pre><code class="language-julia hljs">acq_pipe = estimate_sensitivities(acq_pipe; method = ESPIRiT(calib_size = 24, kernel_size = 6))
+maps_estimated = acq_pipe.sensitivity_maps
+# The maps come back in the same flavour as the k-space they were calibrated from: a plain array
+# here, since this tutorial&#39;s simulated data carries no dimension names, and a `NamedDimsArray`
+# with `(:x, :y, :coil)` when it does.
+println(&quot;estimated maps: &quot;, size(maps_estimated), &quot; &quot;, typeof(maps_estimated))
+
+# Sensitivity maps are defined only up to one common phase per pixel, so the honest comparison is
+# of magnitudes; the estimate is zero where ESPIRiT&#39;s eigenvalue test finds no coil signal, which
+# is the black background the simulated maps do not have.
+side_by_side(
+    abs.(coil_sensitivities(nx, ny, 4)[:, :, 1]), abs.(unname(maps_estimated)[:, :, 1]);
+    titles = (&quot;|S| coil 1, simulated&quot;, &quot;|S| coil 1, estimated&quot;), size = (900, 420)
+)</code></pre><img src="f1e34fe4.svg" alt="Example block output"/><p>The estimated maps are attached to every acquisition that is reconstructed from here on.</p><pre><code class="language-julia hljs">data_radial = AcquisitionInfo(data_radial; sensitivity_maps = maps_estimated)
+acq_voronoi = AcquisitionInfo(acq_voronoi; sensitivity_maps = maps_estimated)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NonCartesianAcquisitionInfo:
+  - kspace data = Array{ComplexF32}&lt;128×96×4&gt;
+  - trajectory = Array{Float32}&lt;2×128×96&gt;
+  - dcf = Array{Float32}&lt;128×96&gt;
+  - encoding = 2D
+  - image size = 96×96
+  - sensitivity maps = ComplexF32&lt;96×96×4&gt;</code></pre><pre><code class="language-julia hljs">x_nodcf = reconstruct(data_radial)
 x_pipe = reconstruct(acq_pipe)
 x_voronoi = reconstruct(acq_voronoi)
 
@@ -186,21 +210,7 @@ println(&quot;adjoint, Voronoi  &quot;, round(aligned_nrmse(x_voronoi), digits =
 side_by_side(
     unname(x_nodcf), unname(x_pipe), unname(x_voronoi);
     titles = (&quot;no DCF&quot;, &quot;Pipe-Menon&quot;, &quot;Voronoi (clipped)&quot;), clim = :each, size = (1050, 350)
-)</code></pre><img src="677628a6.svg" alt="Example block output"/><p>The plain (no-DCF) adjoint is badly blurred by the oversampled k-space center, exactly as in §3. Both DCF methods correct for this. With the bounding-box clipping and the edge correction, <code>VoronoiDCF</code> gives a result close to <code>PipeMenonDCF</code> on this golden-angle trajectory rather than the &quot;edge samples blow up&quot; failure an unclipped Voronoi diagram would show.</p><h3 id="Calibrating-sensitivity-maps-from-non-Cartesian-samples"><a class="docs-heading-anchor" href="#Calibrating-sensitivity-maps-from-non-Cartesian-samples">Calibrating sensitivity maps from non-Cartesian samples</a><a id="Calibrating-sensitivity-maps-from-non-Cartesian-samples-1"></a><a class="docs-heading-anchor-permalink" href="#Calibrating-sensitivity-maps-from-non-Cartesian-samples" title="Permalink"></a></h3><p>Every sensitivity estimator reads a calibration window out of a Cartesian grid, which these samples are not — but <code>estimate_sensitivities</code> takes the non-Cartesian acquisition directly and does the gridding itself: a density-compensated NFFT adjoint, back to Cartesian k-space, then the estimator. It uses <code>acq.dcf</code> when the acquisition carries one (as <code>acq_pipe</code> does now) and <code>:auto</code> otherwise, so the maps do not inherit the blur the unweighted adjoint of §3 has.</p><p>The maps come back on the same centred image grid the non-Cartesian reconstruction uses, so they can be attached and used without any <code>fftshift</code> of your own. A series with a <code>:time</code> axis is averaged over that axis before calibrating (<code>average_dims</code>); see <code>10_real_data_dynamic</code> §10, which does this on a real spiral scan.</p><pre><code class="language-julia hljs">maps_estimated = estimate_sensitivities(
-    acq_pipe; method = ESPIRiT(calib_size = 24, kernel_size = 6)
-).sensitivity_maps
-# The maps come back in the same flavour as the k-space they were calibrated from: a plain array
-# here, since this tutorial&#39;s simulated data carries no dimension names, and a `NamedDimsArray`
-# with `(:x, :y, :coil)` when it does.
-println(&quot;estimated maps: &quot;, size(maps_estimated), &quot; &quot;, typeof(maps_estimated))
-
-# Sensitivity maps are defined only up to one common phase per pixel, so the honest comparison is
-# of magnitudes; the estimate is zero where ESPIRiT&#39;s eigenvalue test finds no coil signal, which
-# is the black background the simulated maps do not have.
-side_by_side(
-    abs.(unname(smaps)[:, :, 1]), abs.(unname(maps_estimated)[:, :, 1]);
-    titles = (&quot;|S| coil 1, simulated&quot;, &quot;|S| coil 1, estimated&quot;), size = (900, 420)
-)</code></pre><img src="ea3fa615.svg" alt="Example block output"/><h2 id="5.-Iterative-and-regularized-reconstruction"><a class="docs-heading-anchor" href="#5.-Iterative-and-regularized-reconstruction">5. Iterative and regularized reconstruction</a><a id="5.-Iterative-and-regularized-reconstruction-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Iterative-and-regularized-reconstruction" title="Permalink"></a></h2><p>An iterative solve does not need a DCF at all — it inverts the operator instead of approximating the inverse with a weighted adjoint — but a good DCF still makes a useful starting point, and the regularizers behave exactly as in the Cartesian case.</p><pre><code class="language-julia hljs">x_cg = reconstruct(
+)</code></pre><img src="c54ba2aa.svg" alt="Example block output"/><p>The plain (no-DCF) adjoint is badly blurred by the oversampled k-space center, exactly as in §3. Both DCF methods correct for this. With the bounding-box clipping and the edge correction, <code>VoronoiDCF</code> gives a result close to <code>PipeMenonDCF</code> on this golden-angle trajectory rather than the &quot;edge samples blow up&quot; failure an unclipped Voronoi diagram would show.</p><h2 id="5.-Iterative-and-regularized-reconstruction"><a class="docs-heading-anchor" href="#5.-Iterative-and-regularized-reconstruction">5. Iterative and regularized reconstruction</a><a id="5.-Iterative-and-regularized-reconstruction-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Iterative-and-regularized-reconstruction" title="Permalink"></a></h2><p>An iterative solve does not need a DCF at all — it inverts the operator instead of approximating the inverse with a weighted adjoint — but a good DCF still makes a useful starting point, and the regularizers behave exactly as in the Cartesian case.</p><pre><code class="language-julia hljs">x_cg = reconstruct(
     data_radial, IterativeReconstruction(L2Image(1.0f-4); algorithm = CGNR(), maxit = 20)
 )
 x_tv = reconstruct(
@@ -210,11 +220,15 @@ x_tv = reconstruct(
 println(&quot;CG-SENSE          &quot;, round(aligned_nrmse(x_cg), digits = 4))
 println(&quot;TV-regularized    &quot;, round(aligned_nrmse(x_tv), digits = 4))
 
-side_by_side(x_pipe, x_cg, x_tv; titles = (&quot;gridded adjoint&quot;, &quot;CG-SENSE&quot;, &quot;TV compressed sensing&quot;), size = (1050, 350))</code></pre><img src="887cab56.svg" alt="Example block output"/><pre><code class="language-julia hljs"># Fewer spokes: the regime where the regularizer earns its keep.
+side_by_side(x_pipe, x_cg, x_tv; titles = (&quot;gridded adjoint&quot;, &quot;CG-SENSE&quot;, &quot;TV compressed sensing&quot;), size = (1050, 350))</code></pre><img src="6cb51f81.svg" alt="Example block output"/><pre><code class="language-julia hljs"># Fewer spokes: the regime where the regularizer earns its keep.
 nspokes_us = 32
 traj_us = unname(traj)[:, :, 1:nspokes_us]
-acq_us = AcquisitionInfo(; trajectory = traj_us, image_size = (nx, ny), sensitivity_maps = smaps)
-data_us = simulate_acquisition(x_true, acq_us; keep_sensitivity_maps = true)
+acq_us = AcquisitionInfo(; trajectory = traj_us, image_size = (nx, ny), sensitivity_maps = smaps_fine)
+data_us = simulate_acquisition(area_sampled_phantom(nfine), acq_us; keep_sensitivity_maps = false)
+# The densely sampled k-space centre of a radial scan is enough to calibrate from, even at 32
+# spokes.
+maps_us = estimate_sensitivities(density_compensation(data_us); method = ESPIRiT(calib_size = 24, kernel_size = 6)).sensitivity_maps
+data_us = AcquisitionInfo(data_us; sensitivity_maps = maps_us)
 println(
     &quot;spokes: &quot;, nspokes_us, &quot;  (acceleration ≈ &quot;,
     round(ceil(π / 2 * nx) / nspokes_us, digits = 1), &quot;× relative to radial Nyquist)&quot;
@@ -229,135 +243,82 @@ println(&quot;TV            &quot;, round(aligned_nrmse(x_us_tv), digits = 4))
 side_by_side(
     x_us_adj, x_us_tv;
     titles = (&quot;$(nspokes_us) spokes, gridded&quot;, &quot;$(nspokes_us) spokes, TV&quot;), size = (700, 350)
-)</code></pre><img src="e4fd497e.svg" alt="Example block output"/><h2 id="6.-Gradient-delay-correction"><a class="docs-heading-anchor" href="#6.-Gradient-delay-correction">6. Gradient-delay correction</a><a id="6.-Gradient-delay-correction-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Gradient-delay-correction" title="Permalink"></a></h2><p>Gradient hardware delays and eddy currents shift the actual sampled k-space location along each spoke relative to its nominal position, which blurs the image and produces streak/ring artifacts. Two estimators:</p><ul><li><code>OpposingSpokes()</code> — cross-correlates spoke pairs, fitting an isotropic <code>(dx, dy)</code> shift from the peak position of the readout signal.</li><li><code>RING()</code> — fits the full anisotropic delay tensor <code>(dx, dy, dxy)</code> from the same peak-fitting approach.</li></ul><p>Both estimators work by locating the peak of <code>|k-space|</code> along each spoke relative to the nominal sample grid — the classical self-navigator approach ([1], [2] in the references below), calibrated here with an idealized point-source readout (a narrow Gaussian peak), exactly like the package&#39;s own tests. A real object&#39;s k-space is not this well-behaved, so in practice the estimate comes from a short dedicated calibration acquisition rather than from the imaging data itself — which is the workflow this section reproduces: a calibration trajectory estimates the delay, and the corrected trajectory is then applied to the imaging acquisition.</p><pre><code class="language-julia hljs">Nsamples, Nspokes = 64, 48
+)</code></pre><img src="b86ecceb.svg" alt="Example block output"/><h2 id="6.-Gradient-delay-correction"><a class="docs-heading-anchor" href="#6.-Gradient-delay-correction">6. Gradient-delay correction</a><a id="6.-Gradient-delay-correction-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Gradient-delay-correction" title="Permalink"></a></h2><p>Gradient hardware delays and eddy currents move the actually sampled k-space positions away from the nominal trajectory, which blurs the image and produces streak and ring artefacts. The usual model gives each spoke with direction <span>$\mathbf n$</span> the displacement <span>$S\mathbf n$</span>, with a symmetric 2×2 delay tensor <span>$S$</span> (Peters et al. [1]; Moussavi et al.): an isotropic delay (<span>$S \propto I$</span>) slides every spoke along itself, an anisotropic one also moves it sideways. Two estimators read <span>$S$</span> from the radial data itself:</p><ul><li><code>OpposingSpokes()</code> [5] pairs each spoke with the one pointing the opposite way. The delay moves both along their own direction, i.e. in opposite directions in k-space, so the sub-sample shift that aligns the two complex profiles is twice the delay. Needs spokes over the full circle.</li><li><code>RING()</code> [2] finds where pairs of nearly orthogonal spokes really intersect — the point where both measure the same complex value — and solves for <span>$S$</span>. Works on any ordering and from few spokes; the default.</li></ul><p>Both return <code>(dx = Sxx, dy = Syy, dxy = Sxy)</code> in trajectory units.</p><pre><code class="language-julia hljs">Nsamples, Nspokes = 64, 96
 angles = range(0, 2π; length = Nspokes + 1)[1:Nspokes]
 r = Float32.(range(-0.45, 0.45; length = Nsamples))
+dr = r[2] - r[1]
 
+# The data are simulated from the object area-sampled on a grid about 1.6 times finer than the
+# reconstruction (see the Simulation tutorial), so they do not share the reconstruction&#39;s
+# discretisation (no inverse crime); images are scored against the same object area-sampled at
+# the reconstruction size.
 nxg, nyg = 64, 64
-x_gd_true = create_shepp_logan_phantom(nxg, nyg, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+nfine_gd = 102  # ≈ 1.6 × 64
+gd_phantom(n) = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32, supersample = 4)
+x_gd_true = gd_phantom(nxg)
 
-traj_gd_true = zeros(Float32, 2, Nsamples, Nspokes)     # matches the physical sample locations
+traj_gd_nominal = zeros(Float32, 2, Nsamples, Nspokes)  # what the sequence intended
 for s in 1:Nspokes
-    traj_gd_true[1, :, s] = r .* cos(angles[s])
-    traj_gd_true[2, :, s] = r .* sin(angles[s])
+    traj_gd_nominal[1, :, s] = r .* cos(angles[s])
+    traj_gd_nominal[2, :, s] = r .* sin(angles[s])
 end
 
-delay_true = (0.02f0, -0.015f0)                          # ground truth, injected below
-traj_gd_wrong = copy(traj_gd_true)                        # the naive/nominal trajectory, biased by the delay
+S_true = Float32[1.5 0.4; 0.4 -0.8] .* dr             # delay tensor: 1.5 / -0.8 samples, 0.4 cross term
+traj_gd_actual = copy(traj_gd_nominal)                 # where the samples really are
 for s in 1:Nspokes
-    traj_gd_wrong[1, :, s] .+= delay_true[1] * cos(angles[s])
-    traj_gd_wrong[2, :, s] .+= delay_true[2] * sin(angles[s])
+    traj_gd_actual[:, :, s] .+= S_true * [cos(angles[s]), sin(angles[s])]
 end
 
-# A gradient delay slides each spoke **along its own direction**, which is exactly why plotting the
-# two sample sets on top of each other shows nothing: the shifted samples land on the same line as
-# the true ones, between them, and the two point clouds interleave rather than separate. What the
-# delay actually moves is the *point on the spoke where DC is assumed to be*, and that is what the
-# middle panel shows — one marker per spoke, the true one pinned at the origin for every spoke, the
-# biased one tracing the ellipse whose semi-axes are the two delay components. Left to right: the
-# six first spokes end to end for context; the assumed centre of every spoke; and the displacement
-# itself, spoke by spoke.
-p_full = plot(; aspect_ratio = 1, xlabel = &quot;kx&quot;, ylabel = &quot;ky&quot;, title = &quot;six spokes, full extent&quot;, legend = :outertopright)
-for sp in 1:6
-    scatter!(p_full, traj_gd_true[1, :, sp], traj_gd_true[2, :, sp]; markersize = 3, markerstrokewidth = 0, color = 1, label = sp == 1 ? &quot;true&quot; : &quot;&quot;)
-    # `:xcross` is an open marker: it is drawn by its *stroke*, so `markerstrokewidth = 0` would
-    # leave nothing but a hairline. Give it a width and a dark stroke colour of its own.
-    scatter!(p_full, traj_gd_wrong[1, :, sp], traj_gd_wrong[2, :, sp]; markersize = 4, marker = :xcross, color = :crimson, markerstrokecolor = :crimson, markerstrokewidth = 1.6, label = sp == 1 ? &quot;delay-biased&quot; : &quot;&quot;)
-end
-plot!(p_full; xlim = (-0.58, 0.58), ylim = (-0.58, 0.58))
-
-# The midpoint of a spoke&#39;s samples: the readout is symmetric about DC, so this is where each
-# trajectory places k = 0.
+# The displacement is a fraction of a sample, invisible at full scale; what it moves is the point
+# each spoke takes for k = 0 (left: the nominal centres all sit at the origin, the actual ones on a
+# small closed curve) and the spokes&#39; offset along and across themselves (right).
 centre(traj, s) = (sum(traj[1, :, s]) / Nsamples, sum(traj[2, :, s]) / Nsamples)
 p_centre = scatter(
-    [centre(traj_gd_true, s)[1] for s in 1:Nspokes], [centre(traj_gd_true, s)[2] for s in 1:Nspokes];
-    aspect_ratio = 1, markersize = 4, markerstrokewidth = 0, label = &quot;true (all at DC)&quot;,
-    xlabel = &quot;kx&quot;, ylabel = &quot;ky&quot;, title = &quot;assumed centre of each spoke&quot;, legend = :outertopright,
-    xlim = (-0.03, 0.03), ylim = (-0.03, 0.03),
+    [centre(traj_gd_actual, s)[1] for s in 1:Nspokes] ./ dr, [centre(traj_gd_actual, s)[2] for s in 1:Nspokes] ./ dr;
+    aspect_ratio = 1, markersize = 4, markerstrokewidth = 0, label = &quot;actual&quot;,
+    xlabel = &quot;kx (samples)&quot;, ylabel = &quot;ky (samples)&quot;, title = &quot;k = 0 of each spoke&quot;, legend = :outertopright,
 )
-scatter!(
-    p_centre, [centre(traj_gd_wrong, s)[1] for s in 1:Nspokes], [centre(traj_gd_wrong, s)[2] for s in 1:Nspokes];
-    markersize = 5, marker = :xcross, color = :crimson, markerstrokecolor = :crimson,
-    markerstrokewidth = 1.6, label = &quot;delay-biased&quot;,
-)
-
+scatter!(p_centre, [0.0], [0.0]; markersize = 6, marker = :xcross, color = :crimson, markerstrokecolor = :crimson, markerstrokewidth = 1.6, label = &quot;nominal&quot;)
+along_gd = [dot(S_true * [cos(θ), sin(θ)], [cos(θ), sin(θ)]) / dr for θ in angles]
+across_gd = [dot(S_true * [cos(θ), sin(θ)], [-sin(θ), cos(θ)]) / dr for θ in angles]
 p_shift = plot(
-    rad2deg.(angles), [delay_true[1] .* cos.(angles) delay_true[2] .* sin.(angles)];
-    lw = 2, label = [&quot;dkx (delay in x)&quot; &quot;dky (delay in y)&quot;], xlabel = &quot;spoke angle (deg)&quot;,
-    ylabel = &quot;trajectory displacement&quot;, title = &quot;delay-induced shift per spoke&quot;, legend = :outertopright
+    rad2deg.(angles), [along_gd across_gd]; lw = 2, label = [&quot;along the spoke&quot; &quot;across the spoke&quot;],
+    xlabel = &quot;spoke angle (deg)&quot;, ylabel = &quot;displacement (samples)&quot;, title = &quot;displacement per spoke&quot;, legend = :outertopright,
 )
-plot(p_full, p_centre, p_shift; layout = (1, 3), size = (1400, 400))</code></pre><img src="f02f11ac.svg" alt="Example block output"/><p>Samples are truly acquired at <code>traj_gd_true</code> (the object does not know about the delay); a reconstruction that (wrongly) assumes the nominal, delay-biased trajectory shows the artefact.</p><pre><code class="language-julia hljs">acq_gd_true = AcquisitionInfo(;
-    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_true), image_size = (nxg, nyg)
+plot(p_centre, p_shift; layout = (1, 2), size = (1100, 380))</code></pre><img src="6252ca7b.svg" alt="Example block output"/><p>The object is sampled where the spokes really are; a reconstruction that assumes the nominal trajectory shows the artefact.</p><pre><code class="language-julia hljs">acq_gd_actual = AcquisitionInfo(;
+    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_actual), image_size = (nxg, nyg)
 )
-data_gd = simulate_acquisition(x_gd_true, acq_gd_true; keep_sensitivity_maps = true)
+data_gd = simulate_acquisition(gd_phantom(nfine_gd), acq_gd_actual)
 
 acq_gd_naive = AcquisitionInfo(
     data_gd.kspace_data;
-    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_wrong), image_size = (nxg, nyg)
+    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_nominal), image_size = (nxg, nyg)
 )
-x_gd_naive = reconstruct(density_compensation(acq_gd_naive; method = PipeMenonDCF(maxit = 15)));</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>simulate_acquisition: the phantom has the reconstruction&#39;s size 64×64, so the data are simulated with the operator that will reconstruct them (the inverse crime), and reconstructions look better than they would on measured data. Simulate from a finer, area-sampled phantom, e.g. 101×101; pass `inverse_crime_check = false` where the consistency is intended.
-<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ Ristretto ~/work/Ristretto.jl/Ristretto.jl/src/simulation/simulate_acquisition.jl:313</span></code></pre><p>Estimate the delay from a calibration acquisition (idealized point-source signal along the same spoke angles) and correct the nominal trajectory with it.</p><pre><code class="language-julia hljs">ksp_calib = zeros(ComplexF32, Nsamples, Nspokes)
-for s in 1:Nspokes
-    shift_s = delay_true[1] * cos(angles[s]) + delay_true[2] * sin(angles[s])
-    ksp_calib[:, s] = exp.(-50.0f0 .* (r .- shift_s) .^ 2)
-end
-calib_acq = AcquisitionInfo(
-    NamedDimsArray{(:kx, :ky)}(ksp_calib);
-    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_gd_wrong), image_size = (nxg, nyg)
-)
-
-est_opposing = estimate_gradient_delays(calib_acq; method = OpposingSpokes())
-println(&quot;true delay          &quot;, delay_true)
-println(&quot;OpposingSpokes est.  &quot;, (round(est_opposing[1], digits = 4), round(est_opposing[2], digits = 4)))
-
-calib_corrected = correct_gradient_delays(calib_acq; method = OpposingSpokes())
-corrected_traj = calib_corrected.trajectory
-println(&quot;residual trajectory error vs. true: &quot;, round(norm(unname(corrected_traj) - traj_gd_true), digits = 4))
-
-acq_gd_fixed = AcquisitionInfo(data_gd.kspace_data; trajectory = corrected_traj, image_size = (nxg, nyg))
-x_gd_fixed = reconstruct(density_compensation(acq_gd_fixed; method = PipeMenonDCF(maxit = 15)))
-
-function aligned_nrmse_gd(x̂)
+x_gd_naive = reconstruct(density_compensation(acq_gd_naive; method = PipeMenonDCF(maxit = 15)));</code></pre><p>Both estimators read the delay from these imaging data, with no separate calibration scan:</p><pre><code class="language-julia hljs">tensor(d) = [d.dx d.dxy; d.dxy d.dy]
+@printf(&quot;%-15s %8s %8s %8s   (samples)\n&quot;, &quot;&quot;, &quot;Sxx&quot;, &quot;Syy&quot;, &quot;Sxy&quot;)
+@printf(&quot;%-15s %8.3f %8.3f %8.3f\n&quot;, &quot;true&quot;, S_true[1, 1] / dr, S_true[2, 2] / dr, S_true[1, 2] / dr)
+for method in (OpposingSpokes(), RING())
+    est = estimate_gradient_delays(acq_gd_naive; method)
+    @printf(&quot;%-15s %8.3f %8.3f %8.3f\n&quot;, nameof(typeof(method)), est.dx / dr, est.dy / dr, est.dxy / dr)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">                     Sxx      Syy      Sxy   (samples)
+true               1.500   -0.800    0.400
+OpposingSpokes     1.384   -0.945    0.325
+RING               1.500   -0.800    0.400</code></pre><p><code>correct_gradient_delays</code> moves each spoke by the estimated displacement <span>$S\mathbf n$</span>, including the part across the spoke that an anisotropic delay causes.</p><pre><code class="language-julia hljs">function aligned_nrmse_gd(x̂)
     a = abs.(unname(x̂))
     α = sum(a .* abs.(x_gd_true)) / sum(abs2, a)
     return norm(α .* a - abs.(x_gd_true)) / norm(abs.(x_gd_true))
 end
-println(&quot;naive (uncorrected) nrmse &quot;, round(aligned_nrmse_gd(x_gd_naive), digits = 4))
-println(&quot;corrected nrmse           &quot;, round(aligned_nrmse_gd(x_gd_fixed), digits = 4))
 
-side_by_side(x_gd_naive, x_gd_fixed; titles = (&quot;uncorrected (delay artefact)&quot;, &quot;gradient-delay corrected&quot;), size = (700, 350))</code></pre><img src="6358b1bf.svg" alt="Example block output"/><p><code>RING()</code> recovers the full anisotropic tensor <code>(dx, dy, dxy)</code> the same way, including a nonzero cross-term.</p><pre><code class="language-julia hljs">Sxx, Syy, Sxy = 0.02, -0.015, 0.005
-traj_ring_wrong = copy(traj_gd_true)
-ksp_ring = zeros(ComplexF32, Nsamples, Nspokes)
-for s in 1:Nspokes
-    θ = angles[s]
-    shift = Sxx * cos(θ)^2 + Syy * sin(θ)^2 + 2 * Sxy * cos(θ) * sin(θ)
-    traj_ring_wrong[1, :, s] .+= shift * cos(θ)
-    traj_ring_wrong[2, :, s] .+= shift * sin(θ)
-    ksp_ring[:, s] = exp.(-50.0f0 .* (r .- shift) .^ 2)
+acq_gd_fixed = correct_gradient_delays(acq_gd_naive)
+x_gd_fixed = reconstruct(density_compensation(acq_gd_fixed; method = PipeMenonDCF(maxit = 15)))
+for (name, acq, x) in ((&quot;nominal&quot;, acq_gd_naive, x_gd_naive), (&quot;corrected&quot;, acq_gd_fixed, x_gd_fixed))
+    @printf(
+        &quot;%-10s trajectory error %.4f   image nrmse %.4f\n&quot;, name,
+        norm(unname(acq.trajectory) - traj_gd_actual), aligned_nrmse_gd(x)
+    )
 end
-acq_ring = AcquisitionInfo(
-    NamedDimsArray{(:kx, :ky)}(ksp_ring);
-    trajectory = NamedDimsArray{(:coord, :kx, :ky)}(traj_ring_wrong), image_size = (nxg, nyg)
-)
-delays_ring = estimate_gradient_delays(acq_ring; method = RING())
-println(&quot;true (Sxx, Syy, Sxy) = &quot;, (Sxx, Syy, Sxy))
-println(&quot;RING estimate        = &quot;, map(v -&gt; round(v, digits = 4), delays_ring))
 
-@printf(&quot;%-6s %10s %10s %10s\n&quot;, &quot;&quot;, &quot;Sxx&quot;, &quot;Syy&quot;, &quot;Sxy&quot;)
-@printf(&quot;%-6s %10.4f %10.4f %10.4f\n&quot;, &quot;true&quot;, Sxx, Syy, Sxy)
-@printf(&quot;%-6s %10.4f %10.4f %10.4f\n&quot;, &quot;RING&quot;, delays_ring.dx, delays_ring.dy, delays_ring.dxy)
-
-# What the estimate is worth is the trajectory it produces, not the three numbers themselves:
-acq_ring_fixed = correct_gradient_delays(acq_ring; method = RING())
-@printf(
-    &quot;trajectory error vs. true: %.4f before correction, %.4f after\n&quot;,
-    norm(traj_ring_wrong - traj_gd_true), norm(unname(acq_ring_fixed.trajectory) - traj_gd_true)
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true (Sxx, Syy, Sxy) = (0.02, -0.015, 0.005)
-RING estimate        = (dx = 0.02, dy = -0.015, dxy = 0.005)
-              Sxx        Syy        Sxy
-true       0.0200    -0.0150     0.0050
-RING       0.0200    -0.0150     0.0050
-trajectory error vs. true: 0.7266 before correction, 0.0002 after</code></pre><pre><code class="language-julia hljs"># Correction is refused on Cartesian data — there is no trajectory to correct.
+side_by_side(x_gd_naive, x_gd_fixed; titles = (&quot;uncorrected (delay artefact)&quot;, &quot;gradient-delay corrected&quot;), size = (700, 350))</code></pre><img src="99f71df0.svg" alt="Example block output"/><pre><code class="language-julia hljs"># Correction is refused on Cartesian data — there is no trajectory to correct.
 try
     correct_gradient_delays(AcquisitionInfo(zeros(ComplexF32, 16, 16); is3D = false))
 catch e
@@ -386,17 +347,17 @@ println(rpad(&quot;configuration&quot;, 42), rpad(&quot;minimum time (ms)&quot;,
 for r in results
     println(rpad(r.name, 42), rpad(r.ms, 20), r.rel_err)
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">configuration                             minimum time (ms)   rel. error vs. NFFT.jl default
-NFFT.jl default (m=5, σ=2.0, polynomial)  1.56                0.0
-Ristretto default (m=4, σ=1.5, polynomial)0.82                1.3e-5
-fast (m=3, σ=1.25, tensor)                0.63                5.8e-5</code></pre><p>Both Ristretto&#39;s default and the fast operating point stay within a fraction of a percent of NFFT.jl&#39;s most accurate default, at a fraction of the cost; the ordering (accurate ≥ Ristretto default ≥ fast) is what to take away.</p><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] D. C. Peters, J. A. Derbyshire, and E. R. McVeigh, &quot;Centering the projection reconstruction trajectory: Reducing gradient delay errors,&quot; <em>Magnetic Resonance in Medicine</em>, vol. 50, no. 1, pp. 1–6, 2003, doi: <a href="https://doi.org/10.1002/mrm.10501">10.1002/mrm.10501</a> — the opposing-spokes estimator.</p><p>[2] S. Rosenzweig, H. C. M. Holme, and M. Uecker, &quot;Simple auto-calibrated gradient delay estimation from few spokes using Radial Intersections (RING),&quot; <em>Magnetic Resonance in Medicine</em>, vol. 81, no. 3, pp. 1898–1906, 2019, doi: <a href="https://doi.org/10.1002/mrm.27506">10.1002/mrm.27506</a> (<a href="https://arxiv.org/abs/1808.00453">arXiv:1808.00453</a>, open access) — the <code>RING()</code> estimator.</p><p>[3] J. I. Jackson, C. H. Meyer, D. G. Nishimura, and A. Macovski, &quot;Selection of a convolution function for Fourier inversion using gridding,&quot; <em>IEEE Transactions on Medical Imaging</em>, vol. 10, no. 3, pp. 473–478, 1991, doi: <a href="https://doi.org/10.1109/42.97598">10.1109/42.97598</a> — gridding, which the NFFT operator generalizes.</p><p>[4] J. G. Pipe and P. Menon, &quot;Sampling density compensation in MRI: Rationale and an iterative numerical solution,&quot; <em>Magnetic Resonance in Medicine</em>, vol. 41, no. 1, pp. 179–186, 1999, doi: <code>10.1002/(SICI)1522-2594(199901)41:1&lt;179::AID-MRM25&gt;3.0.CO;2-V</code> (<a href="https://doi.org/10.1002/%28SICI%291522-2594%28199901%2941:1%3C179::AID-MRM25%3E3.0.CO;2-V">doi.org</a>) — the <code>PipeMenonDCF</code> density compensation.</p><h2 id="Further-reading"><a class="docs-heading-anchor" href="#Further-reading">Further reading</a><a id="Further-reading-1"></a><a class="docs-heading-anchor-permalink" href="#Further-reading" title="Permalink"></a></h2><p>From <em>Questions and Answers in MRI</em>:</p><ul><li><a href="https://mriquestions.com/k-space-trajectories.html">k-space: trajectories</a> — the families this tutorial generates, and how the gradients draw them.</li><li><a href="https://mriquestions.com/radial-sampling.html">Radial sampling</a> — why radial is motion-robust, and what gridding and density compensation are for.</li><li><a href="https://mriquestions.com/spiralradial-artifacts.html">Spiral and radial artifacts</a> — the streaks, blurring and off-resonance swirls these trajectories fail with, including the gradient-delay artefacts §4 corrects.</li></ul><h2 id="Environment"><a class="docs-heading-anchor" href="#Environment">Environment</a><a id="Environment-1"></a><a class="docs-heading-anchor-permalink" href="#Environment" title="Permalink"></a></h2><pre><code class="language-julia hljs">print_versions()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.13.1
+NFFT.jl default (m=5, σ=2.0, polynomial)  2.21                0.0
+Ristretto default (m=4, σ=1.5, polynomial)1.11                1.3e-5
+fast (m=3, σ=1.25, tensor)                0.87                5.7e-5</code></pre><p>Both Ristretto&#39;s default and the fast operating point stay within a fraction of a percent of NFFT.jl&#39;s most accurate default, at a fraction of the cost; the ordering (accurate ≥ Ristretto default ≥ fast) is what to take away.</p><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] D. C. Peters, J. A. Derbyshire, and E. R. McVeigh, &quot;Centering the projection reconstruction trajectory: Reducing gradient delay errors,&quot; <em>Magnetic Resonance in Medicine</em>, vol. 50, no. 1, pp. 1–6, 2003, doi: <a href="https://doi.org/10.1002/mrm.10501">10.1002/mrm.10501</a> — the delay model.</p><p>[2] S. Rosenzweig, H. C. M. Holme, and M. Uecker, &quot;Simple auto-calibrated gradient delay estimation from few spokes using Radial Intersections (RING),&quot; <em>Magnetic Resonance in Medicine</em>, vol. 81, no. 3, pp. 1898–1906, 2019, doi: <a href="https://doi.org/10.1002/mrm.27506">10.1002/mrm.27506</a> (<a href="https://arxiv.org/abs/1805.04334">arXiv:1805.04334</a>, open access) — the <code>RING()</code> estimator.</p><p>[3] J. I. Jackson, C. H. Meyer, D. G. Nishimura, and A. Macovski, &quot;Selection of a convolution function for Fourier inversion using gridding,&quot; <em>IEEE Transactions on Medical Imaging</em>, vol. 10, no. 3, pp. 473–478, 1991, doi: <a href="https://doi.org/10.1109/42.97598">10.1109/42.97598</a> — gridding, which the NFFT operator generalizes.</p><p>[4] J. G. Pipe and P. Menon, &quot;Sampling density compensation in MRI: Rationale and an iterative numerical solution,&quot; <em>Magnetic Resonance in Medicine</em>, vol. 41, no. 1, pp. 179–186, 1999, doi: <code>10.1002/(SICI)1522-2594(199901)41:1&lt;179::AID-MRM25&gt;3.0.CO;2-V</code> (<a href="https://doi.org/10.1002/%28SICI%291522-2594%28199901%2941:1%3C179::AID-MRM25%3E3.0.CO;2-V">doi.org</a>) — the <code>PipeMenonDCF</code> density compensation.</p><p>[5] K. T. Block and M. Uecker, &quot;Simple method for adaptive gradient-delay compensation in radial MRI,&quot; <em>Proc. Intl. Soc. Mag. Reson. Med.</em> 19, 2816 (2011) — the <code>OpposingSpokes()</code> estimator.</p><h2 id="Further-reading"><a class="docs-heading-anchor" href="#Further-reading">Further reading</a><a id="Further-reading-1"></a><a class="docs-heading-anchor-permalink" href="#Further-reading" title="Permalink"></a></h2><p>From <em>Questions and Answers in MRI</em>:</p><ul><li><a href="https://mriquestions.com/k-space-trajectories.html">k-space: trajectories</a> — the families this tutorial generates, and how the gradients draw them.</li><li><a href="https://mriquestions.com/radial-sampling.html">Radial sampling</a> — why radial is motion-robust, and what gridding and density compensation are for.</li><li><a href="https://mriquestions.com/spiralradial-artifacts.html">Spiral and radial artifacts</a> — the streaks, blurring and off-resonance swirls these trajectories fail with, including the gradient-delay artefacts §4 corrects.</li></ul><h2 id="Environment"><a class="docs-heading-anchor" href="#Environment">Environment</a><a id="Environment-1"></a><a class="docs-heading-anchor-permalink" href="#Environment" title="Permalink"></a></h2><pre><code class="language-julia hljs">print_versions()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.13.1
 Commit 96ca370cf0e (2026-09-25 19:34 UTC)
 Build Info:
   Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 4 × AMD EPYC 9V45 96-Core Processor
+  CPU: 4 × AMD EPYC 9V74 80-Core Processor
   WORD_SIZE: 64
-  LLVM: libLLVM-20.1.8 (ORCJIT, znver5)
+  LLVM: libLLVM-20.1.8 (ORCJIT, znver4)
   GC: Built with stock GC
 Threads: 2 default, 1 interactive, 2 GC (on 4 virtual cores)
 Environment:
@@ -414,4 +375,4 @@ StructuredOptimization  not loaded
 ProximalOperators       not loaded
 ProximalAlgorithms      not loaded
 OperatorCore            not loaded
-NestedThreading           0.1.3</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../07_dynamic_and_decomposition/">« Dynamic imaging and image decomposition</a><a class="docs-footer-nextpage" href="../09_real_data_cartesian/">Real scanner data, end to end »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 14 October 2026 06:36">Wednesday 14 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+NestedThreading           0.1.3</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../07_dynamic_and_decomposition/">« Dynamic imaging and image decomposition</a><a class="docs-footer-nextpage" href="../09_real_data_cartesian/">Real scanner data, end to end »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 14 October 2026 23:39">Wednesday 14 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
