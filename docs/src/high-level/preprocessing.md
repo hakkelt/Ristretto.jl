@@ -160,7 +160,7 @@ returned as `(dx = Sxx, dy = Syy, dxy = Sxy)` in trajectory units.
   The per-pair intersections are only a start: RING then refines $S$ by Gauss–Newton on the
   intersection condition of all pairs at once. With a single coil and an object that fills the
   field of view, two profiles can also agree at spurious points, so the start matters. `init`
-  selects it: `:opposing` (the `OpposingSpokes` estimate, about ten times faster), `:grid` (a
+  selects it: `:opposing` (the `OpposingSpokes` estimate, several times faster), `:grid` (a
   coarse search of the joint condition), `:intersections` (the paper's per-pair estimate, combined
   robustly) or `:auto` (the default: `:opposing` when the spokes cover the full circle, `:grid`
   otherwise). `phase = true` also fits a per-spoke phase $\psi_x\cos\theta + \psi_y\sin\theta$

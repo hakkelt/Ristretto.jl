@@ -74,7 +74,7 @@ spurious points. `init` chooses where the refinement starts:
 - `:intersections` — the paper's per-pair intersections, combined robustly (Tukey biweight);
   reliable for multi-coil data and compact objects, but with a single coil and an object that
   fills the field of view it can start outside the basin of the true tensor;
-- `:opposing` — the [`OpposingSpokes`](@ref) estimate (full-circle orderings only); about ten
+- `:opposing` — the [`OpposingSpokes`](@ref) estimate (full-circle orderings only); several
   times faster than the other two, since it needs no interpolated search grid;
 - `:grid` — a coarse search of the joint condition over the tensor, read off the interpolated
   profiles; needs no per-pair intersection.
@@ -120,8 +120,7 @@ function correct_gradient_delays(
         method::GradientDelay = RING(),
     )
     delays = estimate_gradient_delays(acq; method)
-    # Every frame of a per-frame trajectory is corrected alike: the spokes are corrected one by one
-    # whichever frame they belong to.
+    # A per-frame trajectory is corrected spoke by spoke, whatever frame each spoke belongs to.
     traj = acq.trajectory
     raw = unname(traj)
     corr = reshape(_apply_gradient_delays(reshape(raw, size(raw, 1), size(raw, 2), :), delays), size(raw))
@@ -142,20 +141,24 @@ actually sampled ``S\\mathbf n`` away from its nominal position.
 
 The spokes must be straight with uniformly spaced samples; only the first two trajectory
 coordinates (the in-plane ones) are used. Coils and any other k-space dimension are combined.
+
+A k-space on a device (GPU) is not copied to the host: the readouts are projected onto the
+object window there, and only the projections come to the host for the search.
 """
 function estimate_gradient_delays(
         acq::NonCartesianAcquisitionInfo;
         method::GradientDelay = RING(),
     )
-    # The estimate reads the k-space alone, and the trajectory is held on the host on every storage.
-    traj, ksp = _pooled_spokes(acq.trajectory, _adapt_any(Array, acq.kspace_data))
+    # A device array stays on the device (see `_project_readouts`); the trajectory is on the host.
+    kspace = acq.kspace_data isa AbstractArray ? acq.kspace_data : _adapt_any(Array, acq.kspace_data)
+    traj, ksp = _pooled_spokes(acq.trajectory, kspace)
     @argcheck size(traj, 1) >= 2 "Trajectory must have at least 2 spatial dimensions (got $(size(traj, 1)))"
     return _estimate_delays_core(traj, ksp, method, acq.image_size[1])
 end
 
 # Gradient delays are a property of the readout hardware, the same in every frame, so the spokes
 # of a per-frame trajectory are pooled across frames into one `(coord, sample, spoke)` trajectory
-# and a matching `(sample, spoke, rest...)` k-space. A shared trajectory is returned as it is.
+# and a matching `(sample, spoke, rest...)` k-space.
 function _pooled_spokes(trajectory, kspace)
     nframe = _trajectory_frame_dims_count(trajectory, kspace)
     traj = unname(trajectory)
@@ -209,53 +212,123 @@ function _spoke_profiles(traj::AbstractArray, ksp::AbstractArray, fov::Real, ima
     # symmetric so that x and -x are both present (the opposed-spoke match needs both).
     K = min(floor(Int, fov * image_width * N * dr / 2), (N - 1) ÷ 2)
     xs = collect(-K:K)
-    W = [cispi(2 * x * (m - m0) / N) / N for x in xs, m in 1:N]
-    data = reshape(ComplexF64.(ksp), N, Nspokes, :)
-    P = similar(data, length(xs), Nspokes, size(data, 3))
-    for ch in axes(data, 3)
-        @views mul!(P[:, :, ch], W, data[:, :, ch])
-    end
+    P = _project_readouts(reshape(ksp, N, Nspokes, :), xs, m0)
     # f(u) = f₀(u - c): referenced to the nominal position instead of to sample m0.
-    P .*= [cispi(2 * x * c[s] / N) for x in xs, s in 1:Nspokes]
+    phase = [cispi(2 * x * c[s] / N) for x in xs, s in 1:Nspokes]
+    @.. P = P * phase
     return angles, dr, xs, P
+end
+
+# P[x, spoke, channel] = Σₘ data[m, spoke, channel] exp(2πi x (m - m0) / N) / N, on the host in
+# double precision.
+function _project_readouts(data::AbstractArray, xs, m0)
+    if _is_device(data)
+        return _project_readouts_device(data, xs, m0)
+    end
+    N = size(data, 1)
+    Y = similar(data, ComplexF64)
+    @.. Y = data
+    FFTW.bfft!(Y, 1)  # Y[q + 1] = Σₘ data[m] exp(2πi q (m - 1) / N)
+    bins = [mod(x, N) + 1 for x in xs]
+    shift = [cispi(-2 * x * (m0 - 1) / N) / N for x in xs]
+    P = similar(Y, length(xs), size(Y, 2), size(Y, 3))
+    Yx = @view Y[bins, :, :]
+    @.. P = Yx * shift
+    return P
+end
+
+# A matrix product rather than an FFT, since not every device array type has an FFT (JLArrays).
+function _project_readouts_device(data::AbstractArray, xs, m0)
+    N = size(data, 1)
+    T = complex(float(real(eltype(data))))
+    W = _to_storage_of(data, T[cispi(2 * x * (m - m0) / N) / N for x in xs, m in 1:N])
+    P = W * reshape(data, N, :)
+    return reshape(ComplexF64.(Array(P)), length(xs), size(data, 2), :)
 end
 
 function _estimate_delays_core(traj::AbstractArray, ksp::AbstractArray, method::OpposingSpokes, image_width::Integer)
     angles, dr, xs, P = _spoke_profiles(traj, ksp, method.fov, image_width)
-    N = size(traj, 2)
-    Nspokes = length(angles)
-    rev = reverse(eachindex(xs))  # xs is symmetric: xs[rev[i]] == -xs[i]
-    tol = deg2rad(method.tolerance)
-    δ = Float64[]
-    θ = Float64[]
-    for i in 1:Nspokes
-        j = _opposed_partner(angles, i, tol)
-        isnothing(j) && continue
-        # Spoke i sees f(n_i (a - δ)) and its partner f(n_i (a + δ)) at the actual position a,
-        # so aligning them maximises |Σₓ conj(Pᵢ[x]) Pⱼ[-x] exp(-4πi x δ / N)| over δ.
-        C = vec(sum(conj.(P[:, i, :]) .* P[rev, j, :]; dims = 2))
-        h(d) = abs(sum(C[k] * cispi(-4 * xs[k] * d / N) for k in eachindex(xs)))
-        push!(δ, _maximise_1d(h, method.max_delay))
-        push!(θ, angles[i])
-    end
-    @argcheck length(δ) >= max(3, Nspokes ÷ 2) "OpposingSpokes found an opposed partner (within $(method.tolerance)°) for only $(length(δ)) of $Nspokes spokes; the spokes must cover the full circle — use RING() otherwise"
-    S = [cos.(θ) .^ 2 sin.(θ) .^ 2 (2 .* cos.(θ) .* sin.(θ))] \ δ
+    S = _opposing_tensor(angles, xs, P, size(traj, 2), method)
     return (dx = S[1] * dr, dy = S[2] * dr, dxy = S[3] * dr)
 end
 
-# The spoke pointing most nearly opposite to spoke i, if it is within `tol` (radians) of opposed.
-function _opposed_partner(angles, i, tol)
-    j = argmax(s -> abs(cis(angles[s]) - cis(angles[i])), eachindex(angles))
-    return abs(rem2pi(angles[j] - angles[i] - π, RoundNearest)) <= tol ? j : nothing
+# The OpposingSpokes tensor, in samples, from the spoke profiles.
+function _opposing_tensor(angles, xs, P, N, method::OpposingSpokes)
+    Nspokes = length(angles)
+    rev = reverse(eachindex(xs))  # xs is symmetric: xs[rev[i]] == -xs[i]
+    partners = _opposed_partners(angles, deg2rad(method.tolerance))
+    paired = findall(!iszero, partners)
+    @argcheck length(paired) >= max(3, Nspokes ÷ 2) "OpposingSpokes found an opposed partner (within $(method.tolerance)°) for only $(length(paired)) of $Nspokes spokes; the spokes must cover the full circle — use RING() otherwise"
+    step = 1 / 16
+    grid = (-method.max_delay):step:(method.max_delay)
+    phases = [cispi(-4 * xs[k] * d / N) for k in eachindex(xs), d in grid]
+    δ = zeros(length(paired))
+    @budgeted_threads threads = length(paired) > 1 for q in eachindex(paired)
+        i = paired[q]
+        j = partners[i]
+        # Spoke i sees f(n_i (a - δ)) and its partner f(n_i (a + δ)) at the actual position a,
+        # so aligning them maximises |Σₓ conj(Pᵢ[x]) Pⱼ[-x] exp(-4πi x δ / N)| over δ.
+        C = zeros(ComplexF64, length(xs))
+        for ch in axes(P, 3), k in eachindex(xs)
+            C[k] += conj(P[k, i, ch]) * P[rev[k], j, ch]
+        end
+        h(d) = abs(sum(C[k] * cispi(-4 * xs[k] * d / N) for k in eachindex(xs)))
+        hgrid = [abs(sum(C[k] * phases[k, g] for k in eachindex(xs))) for g in eachindex(grid)]
+        δ[q] = _maximise_1d(h, grid, hgrid, step)
+    end
+    θ = angles[paired]
+    return [cos.(θ) .^ 2 sin.(θ) .^ 2 (2 .* cos.(θ) .* sin.(θ))] \ δ
+end
+
+# For every spoke, the spoke pointing most nearly opposite to it if that is within `tol` (radians)
+# of opposed, 0 otherwise.
+function _opposed_partners(angles, tol)
+    chord(i, s) = abs(cis(angles[s]) - cis(angles[i]))
+    targets = [rem2pi(a + π, RoundNearest) for a in angles]
+    nearest = _nearest_on_circle(angles, targets, 2π, 1, chord, >)
+    return [abs(rem2pi(angles[j] - angles[i] - π, RoundNearest)) <= tol ? j : 0 for (i, j) in enumerate(first.(nearest))]
 end
 
 # Whether enough spokes have an opposed partner for OpposingSpokes (same threshold as there).
-_full_circle(angles, tol) = count(i -> !isnothing(_opposed_partner(angles, i, tol)), eachindex(angles)) >= max(3, length(angles) ÷ 2)
+_full_circle(angles, tol) = count(!iszero, _opposed_partners(angles, tol)) >= max(3, length(angles) ÷ 2)
 
-# Maximum of a smooth function on [-r, r]: grid search, then golden-section refinement.
-function _maximise_1d(f, r::Real; step = 1 / 16, iters = 40)
-    grid = (-r):step:r
-    best = grid[argmax(f.(grid))]
+"""
+    _nearest_on_circle(values, targets, period, k, score, better) -> Vector{Vector{Int}}
+
+For every `i`, the `k` indices `s ≠ i` whose `values[s]` lie nearest to `targets[i]` on a circle
+of circumference `period`, ranked by `score(i, s)` (`better(a, b)` when `a` ranks first), the
+lower index first among equal scores. O(n log n): only the values around each target are scored.
+"""
+function _nearest_on_circle(values, targets, period, k, score, better)
+    n = length(values)
+    w = [mod(v, period) for v in values]
+    order = sortperm(w)  # stable: equal values keep their index order
+    sw = w[order]
+    starts = [g for g in 1:n if g == 1 || sw[g] != sw[g - 1]]  # runs of equal values
+    stops = [starts[2:end] .- 1; n]
+    ngroups = length(starts)
+    # Runs searched on either side of the target: `k`, plus a margin for rounding.
+    reach = min(k + 2, cld(ngroups, 2))
+    result = Vector{Vector{Int}}(undef, n)
+    for i in 1:n
+        g0 = searchsortedfirst(view(sw, starts), mod(targets[i], period))::Int
+        candidates = Int[]
+        for g in unique(mod1(g0 + d, ngroups) for d in (-reach):(reach - 1))
+            # k + 1 lowest indices of a run suffice (spoke i may be one of them).
+            for t in starts[g]:min(stops[g], starts[g] + k)
+                order[t] != i && push!(candidates, order[t])
+            end
+        end
+        sort!(candidates; lt = (a, b) -> better(score(i, a), score(i, b)) || (score(i, a) == score(i, b) && a < b))
+        result[i] = candidates[1:min(k, end)]
+    end
+    return result
+end
+
+# Maximum of a smooth function: the best point of `grid` (`fgrid = f.(grid)`), refined by golden
+# section.
+function _maximise_1d(f, grid, fgrid, step; iters = 40)
+    best = grid[argmax(fgrid)]
     a, b = best - step, best + step
     g = (sqrt(5) - 1) / 2
     x1, x2 = b - g * (b - a), a + g * (b - a)
@@ -287,23 +360,20 @@ function _estimate_delays_core(traj::AbstractArray, ksp::AbstractArray, method::
     Nspokes = length(angles)
     @argcheck Nspokes >= 2 "RING needs at least two spokes"
     pairs = _ring_pairs(angles, min(method.pairs, Nspokes - 1))
-    # Nominal positions (uᵢ, uⱼ) where pair p intersects for a tensor S: Q[p] * S, linear in S.
+    # Nominal positions (uᵢ, uⱼ) where pair p intersects for a tensor S: Q[p] * S, linear in S;
+    # Q[p] is stored row by row as a tuple.
     Q = map(pairs) do (i, j)
         ni = [cos(angles[i]), sin(angles[i])]
         nj = [cos(angles[j]), sin(angles[j])]
-        [ni -nj] \ _tensor_map(nj - ni)
+        Tuple(permutedims([ni -nj] \ _tensor_map(nj - ni)))
     end
     S0 = if init === :opposing
-        o = _estimate_delays_core(traj, ksp, OpposingSpokes(; fov = method.fov), image_width)
-        [o.dx, o.dy, o.dxy] ./ dr
+        _opposing_tensor(angles, xs, P, N, OpposingSpokes(; fov = method.fov))
     else
         # Every spoke's values on a fine grid of nominal positions around k = 0: F[:, s, ch].
         u = collect((-method.region):(1 / method.upsampling):(method.region))
         E = [cispi(-2 * x * v / N) for v in u, x in xs]
-        F = similar(P, length(u), Nspokes, size(P, 3))
-        for ch in axes(P, 3)
-            @views mul!(F[:, :, ch], E, P[:, :, ch])
-        end
+        F = reshape(E * reshape(P, length(xs), :), length(u), Nspokes, size(P, 3))
         if init === :intersections
             _ring_intersections(F, u, pairs, angles)
         else
@@ -314,19 +384,17 @@ function _estimate_delays_core(traj::AbstractArray, ksp::AbstractArray, method::
     return (dx = S[1] * dr, dy = S[2] * dr, dxy = S[3] * dr)
 end
 
+# (uᵢ, uⱼ) = Q S for one pair.
+_intersection(q, S) = (q[1] * S[1] + q[2] * S[2] + q[3] * S[3], q[4] * S[1] + q[5] * S[2] + q[6] * S[3])
+
 # S v as a linear map of (Sxx, Syy, Sxy).
 _tensor_map(v) = [v[1] 0 v[2]; 0 v[2] v[1]]
 
 # Each spoke with its `npairs` partners closest to orthogonal (mod π), as in the RING paper.
 function _ring_pairs(angles, npairs)
-    pairs = Tuple{Int, Int}[]
-    for i in eachindex(angles)
-        dist(s) = s == i ? Inf : abs(abs(rem(angles[s] - angles[i], π)) - π / 2)
-        for j in partialsort(eachindex(angles), 1:npairs; by = dist)
-            push!(pairs, (i, j))
-        end
-    end
-    return pairs
+    dist(i, s) = abs(abs(rem(angles[s] - angles[i], π)) - π / 2)
+    partners = _nearest_on_circle(angles, angles .+ π / 2, π, npairs, dist, <)
+    return [(i, j) for i in eachindex(angles) for j in partners[i]]
 end
 
 # The paper's estimate: for each pair, the grid positions where the two spokes agree best are
@@ -336,13 +404,16 @@ function _ring_intersections(F, u, pairs, angles)
     power = dropdims(sum(abs2, F; dims = 3); dims = 3)
     A = zeros(2 * length(pairs), 3)
     b = zeros(2 * length(pairs))
-    G = similar(F, length(u), length(u))
+    # Only Re Σ_ch Fᵢ[l] conj(Fⱼ[m]) is needed: a real product of the stacked real and imaginary
+    # parts, half the work of the complex one.
+    Fri = cat(real(F), imag(F); dims = 3)
+    G = similar(Fri, length(u), length(u))
     for (p, (i, j)) in enumerate(pairs)
         # Σ_ch |Fᵢ[l] - Fⱼ[m]|² = ‖Fᵢ[l]‖² + ‖Fⱼ[m]‖² - 2 Re Σ_ch Fᵢ[l] conj(Fⱼ[m])
-        @views mul!(G, F[:, i, :], F[:, j, :]')
+        @views mul!(G, Fri[:, i, :], Fri[:, j, :]')
         best, l, m = Inf, 0, 0
         for mm in eachindex(u), ll in eachindex(u)
-            v = power[ll, i] + power[mm, j] - 2 * real(G[ll, mm])
+            v = power[ll, i] + power[mm, j] - 2 * G[ll, mm]
             v < best && ((best, l, m) = (v, ll, mm))
         end
         # Intersection of the actual spokes: uᵢ nᵢ + S nᵢ = uⱼ nⱼ + S nⱼ.
@@ -379,37 +450,41 @@ end
 # `phase`, each pair is compared up to a common phase, which the per-spoke phase terms of the
 # refinement then explain.
 function _ring_grid(F, u, pairs, Q, region, phase; step = 0.25)
-    h = u[2] - u[1]
-    nu = length(u)
-    power = dropdims(sum(abs2, F; dims = 3); dims = 3)
-    nch = size(F, 3)
-    cost(S) = begin
-        c = 0.0
-        for (p, (i, j)) in enumerate(pairs)
-            ui, uj = Q[p] * S
-            li = round(Int, (ui - u[1]) / h) + 1
-            lj = round(Int, (uj - u[1]) / h) + 1
-            if !(1 <= li <= nu && 1 <= lj <= nu)
-                c += 2.0  # outside the window: the largest normalised mismatch
-                continue
-            end
-            g = zero(eltype(F))
-            for ch in 1:nch
-                g += F[li, i, ch] * conj(F[lj, j, ch])
-            end
-            e = power[li, i] + power[lj, j]
-            c += e > 0 ? 1 - 2 * (phase ? abs(g) : real(g)) / e : 1.0
-        end
-        c
-    end
     r = 0.8 * region
     grid = (-r):step:r
-    best, S = Inf, zeros(3)
-    for sxy in grid, syy in grid, sxx in grid
-        c = cost([sxx, syy, sxy])
-        c < best && ((best, S) = (c, [sxx, syy, sxy]))
+    # Channels first: the sum over them reads contiguous memory.
+    Fc = permutedims(F, (3, 1, 2))
+    power = dropdims(sum(abs2, F; dims = 3); dims = 3)
+    costs = zeros(length(grid), length(grid), length(grid))
+    cells = CartesianIndices(costs)
+    # Pairs in the outer loop keep the two spokes' profiles in cache; each point still sums its
+    # pairs in order.
+    blocks = collect(Iterators.partition(eachindex(costs), cld(length(costs), 8 * Threads.nthreads())))
+    @budgeted_threads for block in blocks
+        for p in eachindex(pairs), n in block
+            c = cells[n]
+            costs[n] += _ring_grid_term((grid[c[1]], grid[c[2]], grid[c[3]]), Fc, power, u, pairs[p], Q[p], phase)
+        end
     end
-    return S
+    best = argmin(costs)
+    return [grid[best[1]], grid[best[2]], grid[best[3]]]
+end
+
+# The normalised mismatch of one pair at the intersection the tensor S predicts.
+function _ring_grid_term(S, Fc, power, u, (i, j), q, phase)
+    h = u[2] - u[1]
+    nu = length(u)
+    ui, uj = _intersection(q, S)
+    li = round(Int, (ui - u[1]) / h) + 1
+    lj = round(Int, (uj - u[1]) / h) + 1
+    # Outside the window: the largest normalised mismatch.
+    (1 <= li <= nu && 1 <= lj <= nu) || return 2.0
+    g = zero(eltype(Fc))
+    @inbounds for ch in axes(Fc, 1)
+        g += Fc[ch, li, i] * conj(Fc[ch, lj, j])
+    end
+    e = power[li, i] + power[lj, j]
+    return e > 0 ? 1 - 2 * (phase ? abs(g) : real(g)) / e : 1.0
 end
 
 # Gauss–Newton on the RING condition itself: pair (i, j) intersects at nominal positions
@@ -419,29 +494,47 @@ end
 function _refine_ring(S0, pairs, Q, angles, xs, P, N, phase::Bool; iters = 30)
     nch = size(P, 3)
     ω = (-2π / N) .* xs
-    value(s, v) = [sum(P[k, s, c] * cis(ω[k] * v) for k in eachindex(xs)) for c in 1:nch]
-    slope(s, v) = [sum(im * ω[k] * P[k, s, c] * cis(ω[k] * v) for k in eachindex(xs)) for c in 1:nch]
+    Pc = permutedims(P, (1, 3, 2))  # one spoke's profiles contiguous
+    # Value (or, with `slope`, derivative) of spoke s at nominal position v, every channel.
+    function profile(s, v; slope = false)
+        e = [cis(ω[k] * v) for k in eachindex(xs)]
+        out = Vector{ComplexF64}(undef, nch)
+        @inbounds for c in 1:nch
+            acc = zero(ComplexF64)
+            for k in eachindex(xs)
+                acc += slope ? im * ω[k] * Pc[k, c, s] * e[k] : Pc[k, c, s] * e[k]
+            end
+            out[c] = acc
+        end
+        return out
+    end
     np = phase ? 5 : 3
     rot(s, x) = phase ? cis(x[4] * cos(angles[s]) + x[5] * sin(angles[s])) : one(ComplexF64)
     function residual(x)
-        r = ComplexF64[]
-        for (p, (i, j)) in enumerate(pairs)
-            ui, uj = Q[p] * x[1:3]
-            append!(r, rot(i, x) .* value(i, ui) .- rot(j, x) .* value(j, uj))
+        res = Vector{ComplexF64}(undef, length(pairs) * nch)
+        @budgeted_threads threads = length(pairs) > 1 for p in eachindex(pairs)
+            i, j = pairs[p]
+            ui, uj = _intersection(Q[p], x)
+            res[((p - 1) * nch + 1):(p * nch)] .= rot(i, x) .* profile(i, ui) .- rot(j, x) .* profile(j, uj)
         end
-        return r
+        return res
     end
     function jacobian(x, nr)
         J = zeros(ComplexF64, nr, np)
-        for (p, (i, j)) in enumerate(pairs)
-            ui, uj = Q[p] * x[1:3]
+        @budgeted_threads threads = length(pairs) > 1 for p in eachindex(pairs)
+            i, j = pairs[p]
+            q = Q[p]
+            ui, uj = _intersection(q, x)
             rows = ((p - 1) * nch + 1):(p * nch)
             gi, gj = rot(i, x), rot(j, x)
-            J[rows, 1:3] = gi .* slope(i, ui) * Q[p][1:1, :] - gj .* slope(j, uj) * Q[p][2:2, :]
+            si, sj = gi .* profile(i, ui; slope = true), gj .* profile(j, uj; slope = true)
+            for t in 1:3
+                J[rows, t] .= si .* q[t] .- sj .* q[3 + t]
+            end
             if phase
-                fi, fj = gi .* value(i, ui), gj .* value(j, uj)
-                J[rows, 4] = im .* (cos(angles[i]) .* fi .- cos(angles[j]) .* fj)
-                J[rows, 5] = im .* (sin(angles[i]) .* fi .- sin(angles[j]) .* fj)
+                fi, fj = gi .* profile(i, ui), gj .* profile(j, uj)
+                J[rows, 4] .= im .* (cos(angles[i]) .* fi .- cos(angles[j]) .* fj)
+                J[rows, 5] .= im .* (sin(angles[i]) .* fi .- sin(angles[j]) .* fj)
             end
         end
         return J
