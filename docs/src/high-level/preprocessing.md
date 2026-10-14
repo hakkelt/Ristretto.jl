@@ -167,9 +167,10 @@ returned as `(dx = Sxx, dy = Syy, dxy = Sxy)` in trajectory units.
   from B0 eddy currents (Moussavi et al. 2014), which otherwise biases RING on single-coil data;
   it is off by default because the two extra unknowns make the estimate noisier.
 
-`correct_gradient_delays` moves every spoke by the component of $S\mathbf n$ along itself (as
-`bart traj -q` does); `transverse = true` applies the full displacement, including the part across the
-spoke that an anisotropic delay causes. The spokes must be straight with uniformly spaced samples.
+`correct_gradient_delays` moves every spoke by the full displacement $S\mathbf n$, including the
+part across the spoke that an anisotropic delay causes (as `bart traj -q … -O` does; without `-O`,
+BART applies only the part along the spoke). The spokes must be straight with uniformly spaced
+samples.
 
 ```@docs
 GradientDelay

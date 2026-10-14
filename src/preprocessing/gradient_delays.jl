@@ -106,27 +106,25 @@ Base.@kwdef struct RING <: GradientDelay
 end
 
 """
-    correct_gradient_delays(acq::NonCartesianAcquisitionInfo; method = RING(), transverse = false)
+    correct_gradient_delays(acq::NonCartesianAcquisitionInfo; method = RING())
 
 Estimates the gradient delay tensor ``S`` from the k-space data (see [`estimate_gradient_delays`](@ref))
 and returns an updated `NonCartesianAcquisitionInfo` whose trajectory is moved to the actual
 sample positions ``\\mathbf k + S\\mathbf n``.
 
-By default only the component of ``S\\mathbf n`` along each spoke is applied (as `bart traj -q` does);
-`transverse = true` applies the full displacement, including the part across the spoke that an
-anisotropic delay also causes (`bart traj -q … -O`).
+The full displacement is applied, including the part across the spoke that an anisotropic delay
+causes (as `bart traj -q … -O` does; without `-O`, BART keeps only the part along the spoke).
 """
 function correct_gradient_delays(
         acq::NonCartesianAcquisitionInfo;
         method::GradientDelay = RING(),
-        transverse::Bool = false,
     )
     delays = estimate_gradient_delays(acq; method)
     # Every frame of a per-frame trajectory is corrected alike: the spokes are corrected one by one
     # whichever frame they belong to.
     traj = acq.trajectory
     raw = unname(traj)
-    corr = reshape(_apply_gradient_delays(reshape(raw, size(raw, 1), size(raw, 2), :), delays; transverse), size(raw))
+    corr = reshape(_apply_gradient_delays(reshape(raw, size(raw, 1), size(raw, 2), :), delays), size(raw))
     traj_corr = _rewrap_like(traj, corr)
     return NonCartesianAcquisitionInfo(acq; trajectory = traj_corr)
 end
@@ -469,17 +467,13 @@ function _refine_ring(S0, pairs, Q, angles, xs, P, N, phase::Bool; iters = 30)
     return x[1:3]
 end
 
-function _apply_gradient_delays(traj::AbstractArray, delays::NamedTuple; transverse::Bool = false)
+function _apply_gradient_delays(traj::AbstractArray, delays::NamedTuple)
     traj_corr = copy(traj)
     angles = _spoke_angles(traj)
     for s in axes(traj, 3)
         nx, ny = cos(angles[s]), sin(angles[s])
         dx = delays.dx * nx + delays.dxy * ny
         dy = delays.dxy * nx + delays.dy * ny
-        if !transverse
-            along = dx * nx + dy * ny
-            dx, dy = along * nx, along * ny
-        end
         traj_corr[1, :, s] .+= dx
         traj_corr[2, :, s] .+= dy
     end

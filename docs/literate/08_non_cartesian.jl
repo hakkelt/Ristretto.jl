@@ -500,24 +500,21 @@ for method in (OpposingSpokes(), RING())
     @printf("%-15s %8.3f %8.3f %8.3f\n", nameof(typeof(method)), est.dx / dr, est.dy / dr, est.dxy / dr)
 end
 
-# `correct_gradient_delays` moves each spoke by the estimated displacement. By default only the
-# part along the spoke is applied, as BART's `traj -q` does; `transverse = true` also applies the
-# part across it.
+# `correct_gradient_delays` moves each spoke by the estimated displacement ``S\mathbf n``,
+# including the part across the spoke that an anisotropic delay causes.
 
 function aligned_nrmse_gd(x̂)
     a = abs.(unname(x̂))
     α = sum(a .* abs.(x_gd_true)) / sum(abs2, a)
     return norm(α .* a - abs.(x_gd_true)) / norm(abs.(x_gd_true))
 end
-recon_gd(acq) = reconstruct(density_compensation(acq; method = PipeMenonDCF(maxit = 15)))
 
-acq_gd_along = correct_gradient_delays(acq_gd_naive)
-acq_gd_full = correct_gradient_delays(acq_gd_naive; transverse = true)
-x_gd_fixed = recon_gd(acq_gd_full)
-for (name, acq) in (("nominal", acq_gd_naive), ("along the spoke", acq_gd_along), ("full (transverse)", acq_gd_full))
+acq_gd_fixed = correct_gradient_delays(acq_gd_naive)
+x_gd_fixed = reconstruct(density_compensation(acq_gd_fixed; method = PipeMenonDCF(maxit = 15)))
+for (name, acq, x) in (("nominal", acq_gd_naive, x_gd_naive), ("corrected", acq_gd_fixed, x_gd_fixed))
     @printf(
-        "%-18s trajectory error %.4f   image nrmse %.4f\n", name,
-        norm(unname(acq.trajectory) - traj_gd_actual), aligned_nrmse_gd(recon_gd(acq))
+        "%-10s trajectory error %.4f   image nrmse %.4f\n", name,
+        norm(unname(acq.trajectory) - traj_gd_actual), aligned_nrmse_gd(x)
     )
 end
 

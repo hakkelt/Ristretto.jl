@@ -75,16 +75,9 @@ end
     @test maximum(abs, tensor(estimate_gradient_delays(acq_along; method = OpposingSpokes())) - S) < 0.01 * dr
     @test maximum(abs, tensor(estimate_gradient_delays(acq; method = OpposingSpokes())) - S) < 0.2 * dr
 
-    # Along-spoke correction (default) moves each spoke onto the line nᵀSn; the transverse one
-    # onto the actual trajectory itself.
-    along = correct_gradient_delays(acq; method = RING())
-    full = correct_gradient_delays(acq; method = RING(), transverse = true)
+    # Correction moves the spokes onto the actual trajectory, including the part across the spoke.
+    full = correct_gradient_delays(acq; method = RING())
     @test maximum(abs, unname(full.trajectory) - actual) < 0.01 * dr
-    @test maximum(abs, unname(along.trajectory) - actual) > 0.3 * dr   # the part across the spoke is left
-    for s in axes(nominal, 3)
-        nvec = (nominal[:, end, s] - nominal[:, 1, s]) / norm(nominal[:, end, s] - nominal[:, 1, s])
-        @test dot(unname(along.trajectory)[:, 65, s], nvec) ≈ dot(S * nvec, nvec) atol = 0.01 * dr
-    end
 
     # No delay: both estimate zero.
     acq0 = NonCartesianAcquisitionInfo(data(nominal); trajectory = nominal, image_size = (n, n))
