@@ -82,10 +82,22 @@ const BART_FW = get(ENV, "RISTRETTO_BENCH_BART_MEASURE", "0") == "1" ? "BART ($B
 using ThreadPinning
 # Threads go only to allowed CPUs that are not SMT siblings: a sibling shares its core with another
 # thread of the same run, which halves that core for both.
-let mask = getaffinity()
-    allowed = findall(==(1), mask) .- 1
+let
+    # The allowed CPUs come from the kernel's list, not from `getaffinity()`: that mask has one slot per
+    # ONLINE cpu, so with the SMT siblings offline (CPUs 0,2 online) it reports CPU 2 as CPU 1.
+    allowed = Int[]
+    m = match(r"Cpus_allowed_list:\s*(\S+)", read("/proc/self/status", String))
+    if m !== nothing
+        for part in split(m.captures[1], ',')
+            lo, hi = occursin('-', part) ? split(part, '-') : (part, part)
+            append!(allowed, parse(Int, lo):parse(Int, hi))
+        end
+    end
+    isempty(allowed) && (allowed = findall(==(1), getaffinity()) .- 1)
     isempty(allowed) && (allowed = collect(0:(Threads.nthreads() - 1)))
-    physical = filter(!ThreadPinning.ishyperthread, allowed)
+    # RISTRETTO_BENCH_ALLOW_SMT=1 (benchmark/local/run_comparison.sh --smt) lets a run use SMT siblings,
+    # to measure what hyperthreading buys; the run script also sets RISTRETTO_BENCH_PLACEMENT=shared so these results get a node class of their own.
+    physical = env_flag("RISTRETTO_BENCH_ALLOW_SMT") ? allowed : filter(!ThreadPinning.ishyperthread, allowed)
     length(physical) >= Threads.nthreads() || error("only $(length(physical)) physical cores among the allowed CPUs $allowed, $(Threads.nthreads()) threads requested")
     global const PINNED_CPUS = physical[1:Threads.nthreads()]
 end
