@@ -1,83 +1,14 @@
 # Regularization
 
-*Tutorial: [Regularization](../tutorials/05_regularization.md).*
-
-Regularization is essential for reconstructing high-quality images from undersampled k-space data. This page explains the available regularization methods and how to use them.
-
-## Why Regularization?
-
-When k-space is undersampled (as in compressed sensing or parallel imaging), the reconstruction problem becomes **ill-posed** - there are many possible images that could have produced the observed data. Regularization adds prior knowledge about what "good" images look like to guide the reconstruction toward a unique, high-quality solution.
-
-## Understanding the Math
-
-For those interested in the mathematical details, the reconstruction solves:
-
-```
-minimize  (1/2)‖E·x - y‖₂² + ∑ᵢ λᵢ·Rᵢ(x)
-```
-
-Where:
-- `E` is the encoding operator (Fourier + sensitivity + subsampling)
-- `x` is the image to reconstruct
-- `y` is the observed k-space data
-- `‖E·x - y‖₂²` is the data fidelity term
-- `Rᵢ(x)` are the regularization terms
-- `λᵢ` are the regularization parameters
-
-The first term ensures the reconstruction is consistent with observed data. The regularization terms encode prior knowledge about image properties.
+The reference for every regularization term: its docstring, when to use it, and the constraints
+it puts on the solver. The objective the terms enter is stated in
+[Theoretical Background](../theory.md). The tutorials show the terms at work:
+[Regularization](../tutorials/05_regularization.md) runs each spatial term on one test problem,
+[Dynamic imaging](../tutorials/07_dynamic_and_decomposition.md) the temporal and low-rank ones, and
+[Advanced reconstruction](../tutorials/11_advanced_reconstruction.md) the structured low-rank
+k-space terms.
 
 ## Available Regularization Methods
-
-```@setup imports
-using Ristretto
-using MIRTjim: jim
-using Plots
-using Random
-
-Random.seed!(0)
-```
-
-The code snippets in the following sections assume that `Ristretto` and `MIRTjim` are already imported. `MIRTjim` is a convenience wrapper around `Plots.jl` for displaying multidimensional images. Also, assume you have an `AcquisitionInfo` object `acq` representing your k-space data and acquisition settings for simulated Shepp-Logan phantom:
-
-```@example imports
-using Ristretto
-using GeometricMedicalPhantoms
-using MIRTjim: jim
-using Ristretto: get_operator
-
-# Simulate 2D acquisition
-x = create_shepp_logan_phantom(128, 128, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
-x_noisy = x + 0.02f0 * randn(ComplexF32, 128, 128)
-smaps = coil_sensitivities(128, 128, 8)
-pdf = VariableDensitySampling(PolynomialDistribution(3), 4.0, 0.05)
-pattern = create_sampling_pattern(pdf, (128, 128))
-acq_full = AcquisitionInfo(
-    is3D=false, 
-    image_size=(128, 128), 
-    subsampling=pattern, 
-    sensitivity_maps=smaps
-)
-data = simulate_acquisition(x_noisy, acq_full; inverse_crime_check = false, keep_sensitivity_maps = true)
-
-# Simulate 3D acquisition
-x3d = create_shepp_logan_phantom(64, 64, 32; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
-smaps3d = coil_sensitivities(64, 64, 32, 8)
-subsampling3d = create_sampling_pattern(
-    VariableDensitySampling(PolynomialDistribution(3), 4.0, 0.05), 
-    (64, 64, 32)
-)
-acq3d = AcquisitionInfo(
-    image_size=(64, 64, 32), 
-    sensitivity_maps=smaps3d,
-    subsampling=subsampling3d,
-)
-data3d = simulate_acquisition(x3d, acq3d; inverse_crime_check = false, keep_sensitivity_maps = true)
-
-jim(x3d; title="Shepp-Logan Phantom (3D)", size=(800,400))
-savefig("shepp_logan_phantom_3d.png"); nothing # hide
-```
-
-![shepp_logan_phantom_3d.png](shepp_logan_phantom_3d.png)
 
 ### Image Domain Regularization
 
@@ -95,18 +26,6 @@ L2Image
 - As a baseline for comparison with other methods, especially for parallel imaging
 - Fast and simple regularization (it is computationally cheap and can be optimized with Conjugate Gradient)
 
-**Example:**
-```@example imports
-img₁ = reconstruct(data, IterativeReconstruction(L2Image(1e-1)); verbosity = Silent())
-img₂ = reconstruct(data, IterativeReconstruction(L2Image(1e-6)); verbosity = Silent())
-p1 = jim(img₁; title="L2Image λ=1e-1")
-p2 = jim(img₂; title="L2Image λ=1e-6")
-jim(p1, p2; layout=(1,2), size=(800,400))
-savefig("tikhonov_regularization.png"); nothing # hide
-```
-
-![tikhonov_regularization.png](tikhonov_regularization.png)
-
 #### L1 Regularization
 
 Promotes sparse images (many pixels close to zero):
@@ -117,18 +36,6 @@ L1Image
 
 **When to use:**
 - Images that are naturally sparse (e.g., angiography) and you want to suppress small values
-
-**Example:**
-```@example imports
-img₁ = reconstruct(data, IterativeReconstruction(L1Image(1e-2)); verbosity = Silent())
-img₂ = reconstruct(data, IterativeReconstruction(L1Image(1e-5)); verbosity = Silent())
-p1 = jim(img₁; title="L1Image λ=1e-2")
-p2 = jim(img₂; title="L1Image λ=1e-5")
-jim(p1, p2; layout=(1,2), size=(800,400))
-savefig("l1image_regularization.png"); nothing # hide
-```
-
-![l1image_regularization.png](l1image_regularization.png)
 
 ### Wavelet Domain Regularization
 
@@ -145,47 +52,17 @@ L1Wavelet2D
 - Most MRI applications (anatomy has multi-scale features)
 - Standard compressed sensing reconstruction
 
-**Parameters:**
-- `λ`: Regularization strength (try 1e-3 to 1e-2)
-- `wavelet`: Wavelet type (default: Daubechies, also try Haar, etc.)
-- `levels`: Number of decomposition levels (default: 4)
+#### 3D Wavelet Sparsity
 
-**Example:**
-```@example imports
-reg = L1Wavelet2D(1e-3)
-example_img = rand(ComplexF32, 128, 128)
-op = get_operator(reg, example_img)
-transformed = op * x_noisy
-p1 = jim(transformed; title="Wavelet Coefficients")
-img = reconstruct(data, IterativeReconstruction(reg); verbosity = Silent())
-p2 = jim(img; title="L1Wavelet2D Reconstruction")
-jim(p1, p2; layout=(1,2), size=(800,400))
-savefig("l1wavelet2d_regularization.png"); nothing # hide
+For volumetric / multislice data, promotes sparsity in 3D wavelet domain:
+
+```@docs
+L1Wavelet3D
 ```
 
-![l1wavelet2d_regularization.png](l1wavelet2d_regularization.png)
-
-**Options for `L1Wavelet2D`:**
-- `wavelet`: Specify wavelet type (e.g., `WT.haar`, `WT.db4`)
-- `levels`: Number of decomposition levels (default: 4)
-
-```@example imports
-reg_haar = L1Wavelet2D(1e-2; wavelet=WT.haar)
-op_haar = get_operator(reg_haar, example_img)
-transformed_haar = op_haar * x_noisy
-img_haar = reconstruct(data, IterativeReconstruction(reg_haar); verbosity = Silent())
-p1 = jim(transformed_haar; title="Haar Coefficients")
-p2 = jim(img_haar; title="Haar Reconstruction")
-
-reg_level8 = L1Wavelet2D(1e-3; levels=8)
-op_level8 = get_operator(reg_level8, example_img)
-transformed_level8 = op_level8 * x_noisy
-img_level8 = reconstruct(data, IterativeReconstruction(reg_level8); verbosity = Silent())
-p3 = jim(transformed_level8; title="Level 8 Coefficients")
-p4 = jim(img_level8; title="Level 8 Reconstruction")
-jim(p1, p2, p3, p4; layout=(2,2), size=(800,700))
-savefig("l1wavelet2d_options.png"); nothing # hide
-```
+**When to use:**
+- 3D acquisitions or multi-slice 2D data
+- When you want to exploit 3D structure
 
 ### Contourlet Domain Regularization
 
@@ -202,50 +79,6 @@ L1Contourlet
 - Images dominated by directional edges or elongated structures (vasculature, fibrous tissue)
 - As an alternative to [`L1Wavelet2D`](@ref) when wavelet's isotropic basis under-represents oriented features
 
-**Parameters:**
-- `λ`: Regularization strength (scalar only, try 1e-3 to 1e-2)
-- `params`: `ContourletParams` controlling pyramid levels/directions (default: `J=3`, `parabolic_levels(3)`)
-
-**Example:**
-```@example imports
-reg = L1Contourlet(1e-3)
-op = get_operator(reg, example_img)
-transformed = op * x_noisy
-p1 = jim(transformed[:, :, 1]; title="Contourlet Coarse Band")
-img = reconstruct(data, IterativeReconstruction(reg); verbosity = Silent())
-p2 = jim(img; title="Contourlet Reconstruction")
-jim(p1, p2; layout=(1,2), size=(800,400))
-savefig("contourlet_regularization.png"); nothing # hide
-```
-
-![contourlet_regularization.png](contourlet_regularization.png)
-
-![l1wavelet2d_options.png](l1wavelet2d_options.png)
-
-#### 3D Wavelet Sparsity
-
-For volumetric / multislice data, promotes sparsity in 3D wavelet domain:
-
-```@docs
-L1Wavelet3D
-```
-
-**When to use:**
-- 3D acquisitions or multi-slice 2D data
-- When you want to exploit 3D structure
-
-**Example:**
-```@example imports
-reg3d = L1Wavelet3D(1e-3)
-
-op = get_operator(reg3d, rand(ComplexF32, 64, 64, 32))
-transformed = op * x3d
-jim(abs.(transformed); title="3D Wavelet Coefficients", size=(800,400))
-savefig("l1wavelet3d_coefficients.png"); nothing # hide
-```
-
-![l1wavelet3d_coefficients.png](l1wavelet3d_coefficients.png)
-
 ### Total Variation
 
 #### 2D Total Variation
@@ -260,21 +93,6 @@ TotalVariation2D
 - Images with sharp edges and flat regions
 - Brain imaging with gray/white matter boundaries
 - When you want strong edge preservation
-
-**Example:**
-```@example imports
-reg = TotalVariation2D(1e-3)
-op = get_operator(reg, example_img)
-transformed = op * x_noisy
-img = reconstruct(data, IterativeReconstruction(reg); verbosity = Silent())
-p1 = jim(transformed[:,:,1]; title="Δx Coefficients")
-p2 = jim(transformed[:,:,2]; title="Δy Coefficients")
-p3 = jim(img; title="TotalVariation2D Reconstruction")
-jim(p1, p2, p3; layout=(1, 3), size=(900,250))
-savefig("totalvariation2d_coefficients.png"); nothing # hide
-```
-
-![totalvariation2d_coefficients.png](totalvariation2d_coefficients.png)
 
 **Practical tip:** TV can create a "cartoon-like" appearance. Use lower λ values (1e-4 to 5e-3) to preserve texture.
 
@@ -303,19 +121,6 @@ AnisotropicTotalVariation3D
 **The trade-off:** the penalty is not rotation invariant. It is cheapest for horizontal and vertical
 edges, so diagonal boundaries can pick up a faint staircase texture that
 [`TotalVariation2D`](@ref) does not produce. Isotropic TV remains the default for anatomy.
-
-```@example imports
-img_aniso = reconstruct(data, IterativeReconstruction(AnisotropicTotalVariation2D(1e-3)); verbosity = Silent())
-img_iso = reconstruct(data, IterativeReconstruction(TotalVariation2D(1e-3)); verbosity = Silent())
-jim(
-    jim(img_iso; title="isotropic TV"),
-    jim(img_aniso; title="anisotropic TV");
-    layout=(1, 2), size=(600,250)
-)
-savefig("anisotropic_tv.png"); nothing # hide
-```
-
-![anisotropic_tv.png](anisotropic_tv.png)
 
 #### Second-Order Total Variation
 
@@ -787,60 +592,40 @@ img = reconstruct(
 
 ## Combining Multiple Regularizers
 
-You can combine multiple regularization terms to exploit different image properties simultaneously:
+Terms are listed one after another; the objective is their sum, and `reconstruct` picks a solver
+that can handle the combination (ADMM as soon as there is more than one non-smooth term or a
+non-tight operator):
 
 ```julia
-# Comprehensive regularization for dynamic imaging
-method = IterativeReconstruction(
-    L1Wavelet2D(5e-3),      # Spatial sparsity
-    TotalVariation2D(1e-3),  # Edge preservation
-    L1TemporalFourier(2e-2),   # Temporal smoothness
-)
-img = reconstruct(acq_dynamic, method)
+method = IterativeReconstruction(L1Wavelet2D(5e-3), TotalVariation2D(1e-3), L1TemporalFourier(2e-2))
 ```
 
-**When to combine:**
-- Wavelet + TV: Exploit both multi-scale structure and edge preservation
-- Spatial + Temporal: Regularize both space and time dimensions
-- Multiple spatial regularizers: When images have complex structure
+## Starting Values for λ
 
-## Choosing Regularization Parameters
+λ is in the units of the data: the problem is solved without rescaling the operator, so these are
+starting points for a sweep, not settings. Too noisy or aliased → increase λ; too smooth or blurry
+→ decrease it; move in factors of 2–5.
 
-The regularization parameter λ controls the trade-off between data fidelity and regularization:
-
-- **Too small (λ → 0)**: Noisy, artifacts remain
-- **Too large (λ → ∞)**: Over-smoothed, loss of detail
-- **Just right**: Balance between noise/artifact suppression and detail preservation
-
-### Practical Guidelines
-
-**Starting values by regularization type:**
-- L2Image: `1e-5` to `1e-3`
-- L1Image: `1e-4` to `1e-2`
-- L1Wavelet: `1e-3` to `1e-2`
-- TotalVariation: `1e-4` to `5e-3`
-- AnisotropicTotalVariation: `1e-4` to `5e-3`, the same range as the isotropic term
-- SecondOrderTotalVariation: `1e-4` to `1e-2` (roughly 2× the first-order λ when the two are combined)
-- TotalGeneralizedVariation2D/3D: `1e-4` to `5e-3`, i.e. the same range as `TotalVariation2D`; leave `ratio` at `2.0`
-- EdgePreservingRoughness: `1e-4` to `5e-3` for λ; `δ` from the gradient magnitudes of a preliminary reconstruction
-- L1TemporalFourier: `1e-2` to `1e-1`
-- TemporalTotalVariation: `1e-2` to `1e-1`
-- LowRank: `1e-2` to `1`
-- LocallyLowRank: `1e-2` to `5e-1`
-- MultiScaleLowRank: `1e-2` to `5e-1`, as for LocallyLowRank
-- StructuredLowRank, `λ` form: `1e-2` to `1e-1`, relative to the k-space scale; `max_rank` form: no λ, set the rank from the singular-value spectrum of `𝓗 k` on the zero-filled data
-- L0Image/L0Wavelet2D/L0Wavelet3D, `threshold` form: `1e-4` to `1e-2`, but note the `sqrt(2γλ)` threshold — retune rather than reusing an ℓ₁ λ
-- L0Image/L0Wavelet2D/L0Wavelet3D, `count` form: no λ; set the coefficient budget from the expected sparsity
-- PlugAndPlay: `strength` `1e-2` to `1e-1`, in the units of the image intensity
-- JointSparsity: `1e-3` to `1e-2`
-- ReferencePrior: `1e-3` to `1e-1`
-- NonNegative / BoxConstraint: no parameter
-
-**Adjustment strategy:**
-1. Start with the suggested value
-2. If too noisy/aliased → increase λ
-3. If too smooth/blurry → decrease λ
-4. Typical range: adjust by factors of 2-5
+| Regularizer | Typical starting value |
+|---|---|
+| `L2Image` | `1e-5` … `1e-3` |
+| `L1Image` | `1e-4` … `1e-2` |
+| `L1Wavelet2D`, `L1Wavelet3D`, `L1Contourlet` | `1e-3` … `1e-2` |
+| `TotalVariation2D/3D`, `AnisotropicTotalVariation2D/3D` | `1e-4` … `5e-3` |
+| `SecondOrderTotalVariation2D/3D` | `1e-4` … `1e-2`; about 2× the first-order λ when the two are combined |
+| `TotalGeneralizedVariation2D/3D` | as `TotalVariation2D`; leave `ratio` at `2.0` |
+| `EdgePreservingRoughness2D/3D` | `1e-4` … `5e-3`; `δ` from the gradient magnitudes of a preliminary reconstruction |
+| `L1TemporalFourier`, `TemporalTotalVariation` | `1e-2` … `1e-1` |
+| `LowRank` | `1e-2` … `1` |
+| `LocallyLowRank`, `MultiScaleLowRank` | `1e-2` … `5e-1` |
+| `StructuredLowRank`, `λ` form | `1e-2` … `1e-1`, relative to the k-space scale |
+| `StructuredLowRank`, `max_rank` form | no λ; read the rank off the singular values of `𝓗 k` on the zero-filled data |
+| `L0Image`, `L0Wavelet2D/3D`, `threshold` form | `1e-4` … `1e-2`; the threshold is `sqrt(2γλ)`, so retune rather than reuse an ℓ₁ λ |
+| `L0Image`, `L0Wavelet2D/3D`, `count` form | no λ; the coefficient budget from the expected sparsity |
+| `PlugAndPlay` | `strength` `1e-2` … `1e-1`, in image intensity units |
+| `JointSparsity` | `1e-3` … `1e-2` |
+| `ReferencePrior` | `1e-3` … `1e-1` |
+| `NonNegative`, `BoxConstraint` | no parameter |
 
 ## Choosing a Regularizer
 

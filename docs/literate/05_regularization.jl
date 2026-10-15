@@ -4,9 +4,9 @@
 #
 # $$ \min_x \tfrac12\|\mathcal{A}x - y\|_2^2 + \sum_i \lambda_i R_i(x) $$
 #
-# See `docs/src/high-level/regularization.md` for the full reference list and a "Choosing a
-# regularizer" table. Temporal and low-rank terms have a tutorial of their own
-# (`07_dynamic_and_decomposition.md`) because they need a dynamic series.
+# The [Regularization reference](https://hakkelt.github.io/Ristretto.jl/dev/high-level/regularization/)
+# has the full list and a "Choosing a regularizer" table. Temporal and low-rank terms have a
+# tutorial of their own (`07_dynamic_and_decomposition.md`) because they need a dynamic series.
 #
 # **Contents**
 # 1. The common test problem
@@ -851,21 +851,8 @@ jim(
 # Because the problem solved is $\tfrac12\|\mathcal{A}x-y\|^2 + \lambda R(x)$ with no operator
 # rescaling, λ is in the data's own units and the reconstructed image comes back in those units.
 #
-# | Regularizer | Typical λ |
-# |---|---|
-# | `L2Image` | 1e-5 … 1e-3 |
-# | `L1Image` | 1e-4 … 1e-2 |
-# | `L1Wavelet2D/3D`, `L1Contourlet` | 1e-3 … 1e-2 |
-# | `TotalVariation2D/3D` | 1e-4 … 5e-3 |
-# | `AnisotropicTotalVariation2D/3D` | 1e-4 … 5e-3, the same range as the isotropic term |
-# | `SecondOrderTotalVariation2D` | ≈ 2× the first-order λ |
-# | `TotalGeneralizedVariation2D` | as `TotalVariation2D`; leave `ratio = 2.0` |
-# | `EdgePreservingRoughness2D` | 1e-4 … 5e-3, `δ` from the data |
-# | `L0Image`, `L0Wavelet2D`, `L0Wavelet3D` (`threshold` form) | 1e-4 … 1e-2 (threshold is `sqrt(2γλ)` — retune, don't reuse an ℓ₁ λ) |
-# | `JointSparsity` | 1e-3 … 1e-2 |
-# | `ReferencePrior` | 1e-3 … 1e-1 |
-# | `L1TemporalFourier`, `TemporalTotalVariation` | 1e-2 … 1e-1 |
-# | `LowRank`, `LocallyLowRank`, `MultiScaleLowRank` | 1e-2 … 5e-1 |
+# The [Regularization reference](https://hakkelt.github.io/Ristretto.jl/dev/high-level/regularization/#Starting-Values-for-λ)
+# lists a typical starting λ for every term.
 #
 # Too noisy or aliased → increase λ; too smooth → decrease it; move in factors of 2–5.
 
