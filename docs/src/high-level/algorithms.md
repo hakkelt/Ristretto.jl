@@ -1,8 +1,9 @@
 # Optimization Algorithms
 
-*Tutorial: [Algorithms and configuration](../tutorials/06_algorithms_and_configuration.md).*
-
-Ristretto supports multiple iterative optimization algorithms for solving MRI reconstruction problems. This guide helps you choose and configure the right algorithm for your needs.
+The reference for the solvers `IterativeReconstruction` runs: how one is chosen, what each solves,
+its parameters, and how iterations are counted and stopped.
+[Algorithms and configuration](../tutorials/06_algorithms_and_configuration.md) compares them on
+one problem.
 
 ## Quick Algorithm Selection
 
@@ -47,33 +48,6 @@ All algorithms from this library share a common interface with the following par
 
 ## Default Algorithms
 
-```@setup imports
-using Ristretto
-using GeometricMedicalPhantoms
-using MIRTjim: jim
-using Plots
-using Random
-
-Random.seed!(0)
-
-x = create_shepp_logan_phantom(128, 128, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32);
-x_noisy = x + 0.02f0 * randn(ComplexF32, 128, 128);
-smaps = coil_sensitivities(128, 128, 8);
-acq_full = AcquisitionInfo(
-    image_size=(128, 128)
-)
-data_full = simulate_acquisition(x_noisy, acq_full; inverse_crime_check = false, keep_sensitivity_maps = true)
-
-pdf = VariableDensitySampling(PolynomialDistribution(3), 4.0, 0.05)
-pattern = create_sampling_pattern(pdf, (128, 128))
-acq = AcquisitionInfo(
-    image_size=(128, 128),
-    subsampling=pattern,
-    sensitivity_maps=smaps
-)
-data = simulate_acquisition(x_noisy, acq; inverse_crime_check = false, keep_sensitivity_maps = true)
-```
-
 ### Conjugate Gradient Normal Residual (CGNR)
 
 This algorithm solves linear systems of the form
@@ -112,11 +86,8 @@ as `x`. If `λ` is zero, the problem reduces to a least-squares problem:
 - ❌ Can't handle L1, TV, or other non-smooth terms
 
 **Example:**
-```@example imports
-reconstruct(data, IterativeReconstruction(L2Image(1e-4); algorithm = CGNR(), maxit = 2); verbosity = Silent()) # hide
-GC.gc() # hide
+```julia
 img = reconstruct(data, IterativeReconstruction(L2Image(1e-4); algorithm = CGNR(), maxit = 20));
-nothing # hide
 ```
 
 #### Preconditioning
@@ -133,7 +104,7 @@ anything else that implements `ldiv!` can be passed directly with `P_is_inverse 
 The natural choice for SENSE is the diagonal image-domain approximation of `𝒜ᴴ𝒜`, the coil coverage
 `Σ_c |S_c|² + λ`:
 
-```@example imports
+```julia
 using Ristretto.AbstractOperators: DiagOp
 coverage = real(sum(abs2, unname(smaps); dims = 3)[:, :, 1])
 P⁻¹ = DiagOp(ComplexF32.(1 ./ (coverage .+ 1.0f-4)))
@@ -144,7 +115,6 @@ img_pc = reconstruct(
     );
     verbosity = Silent(),
 );
-nothing # hide
 ```
 
 ### Fast Iterative Shrinkage-Thresholding Algorithm (FISTA)
@@ -190,11 +160,8 @@ where `f` is smooth.
 - ❌ Can be sensitive to step size
 
 **Example:**
-```@example imports
-reconstruct(data, IterativeReconstruction(L1Wavelet2D(5e-3); algorithm = FISTA(), maxit = 2); verbosity = Silent()) # hide
-GC.gc() # hide
+```julia
 img = reconstruct(data, IterativeReconstruction(L1Wavelet2D(5e-3); algorithm = FISTA(), maxit = 100));
-nothing # hide
 ```
 
 ### Optimized Gradient Method (POGM)
@@ -212,7 +179,7 @@ convergence rate twice as tight as FISTA's is wanted.
 **Properties:**
 - Accelerated gradient method with a provably optimal worst-case rate among first-order methods
 - Adaptive restart avoids the oscillation fixed-momentum methods show near convergence
-- Not in `DEFAULT_ALGORITHMS`; select it explicitly with `algorithm = POGM()`
+- The default for a single non-smooth term; `algorithm = FISTA()` selects FISTA instead
 
 **Parameters:** the same `mf`, `Lf`, `gamma`, `adaptive`, `minimum_gamma`, `reduce_gamma`,
 `increase_gamma` as FISTA.
@@ -232,11 +199,8 @@ convergence rate twice as tight as FISTA's is wanted.
 - ❌ Requires Lipschitz constant (usually auto-estimated)
 
 **Example:**
-```@example imports
-reconstruct(data, IterativeReconstruction(L1Wavelet2D(5e-3); algorithm = POGM(), maxit = 2); verbosity = Silent()) # hide
-GC.gc() # hide
+```julia
 img = reconstruct(data, IterativeReconstruction(L1Wavelet2D(5e-3); algorithm = POGM(), maxit = 100));
-nothing # hide
 ```
 
 ### Alternating Direction Method of Multipliers (ADMM)
@@ -299,13 +263,10 @@ for their specific update rules and references.
 - ❌ No convergence guarantees in general
 
 **Example:**
-```@example imports
+```julia
 # Multiple regularizers
 reg = (L1Wavelet2D(5e-3), TotalVariation2D(1e-3))
-reconstruct(data, IterativeReconstruction(reg...; algorithm = ADMM(), maxit = 2); verbosity = Silent()) # hide
-GC.gc() # hide
 img = reconstruct(data, IterativeReconstruction(reg...; algorithm = ADMM(), maxit = 50));
-nothing # hide
 ```
 
 ### Douglas-Rachford Splitting (`DouglasRachford`)
@@ -431,26 +392,10 @@ Polak-Ribière+, `LBFGS` keeps the last `memory` correction pairs.
 img = reconstruct(acq, IterativeReconstruction(EdgePreservingRoughness2D(1e-2; δ = 0.01); algorithm = LBFGS(), maxit = 50))
 ```
 
-## Tuning Algorithm Parameters
+## Iterations and Tolerance
 
-### Maximum Iterations
-
-**How many iterations do you need?**
-
-Typical ranges:
-- CG/CGNR: 10-50 iterations
-- FISTA: 50-200 iterations
-- ADMM: 20-100 iterations
-
-**Strategy:**
-```julia
-# Start with more iterations to see convergence behavior
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = FISTA(), maxit = 200); verbosity = Verbose())
-# Check output to see when convergence plateaus
-
-# Then use fewer iterations in production
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = FISTA(), maxit = 80))
-```
+Typical iteration counts: CG/CGNR 10–50, FISTA/POGM 50–200, ADMM 20–100. Run once with
+`verbosity = Verbose()` and a generous `maxit` to see where the objective plateaus.
 
 `maxit` and `reltol` on `IterativeReconstruction` take precedence over `maxit` and `tol` on the
 algorithm object. To let the algorithm's own values through instead, set the method's to
@@ -462,18 +407,7 @@ img = reconstruct(acq, IterativeReconstruction(reg; algorithm = FISTA(maxit = 20
 
 ### Convergence Tolerance
 
-Controls early stopping:
-
-```julia
-# Stricter convergence
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = FISTA(), maxit = 200, reltol = 1e-6))
-
-# Looser convergence (faster but less accurate)
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = FISTA(), maxit = 200, reltol = 1e-3))
-
-# Disable early stopping
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = FISTA(), maxit = 100, reltol = 0))
-```
+`reltol` controls early stopping; `reltol = 0` disables it.
 
 Ristretto's tolerance is **relative**, which is why it is called `reltol`: the absolute threshold handed
 to the solver is `max(10*eps, reltol * maximum(abs, x₀))`. `ProximalAlgorithms`' own `tol`, on the
@@ -481,28 +415,8 @@ algorithm object, is absolute.
 
 **Practical tip:** Default `reltol=1e-4` is usually good. Tighten to 1e-5 or 1e-6 if you need higher accuracy.
 
-### Verbosity and Monitoring
-
-Track convergence:
-
-```julia
-# Show progress every iteration
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = algorithm); verbosity = Verbose(; freq = 1))
-
-# Show progress every 10 iterations
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = algorithm); verbosity = Verbose(; freq = 10))
-
-# A progress bar instead of the log
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = algorithm); verbosity = ProgressBar())
-
-# No output — the default, so this is what a plain `reconstruct` call does
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = algorithm); verbosity = Silent())
-```
-
-**What to look for:**
-- Objective value decreasing
-- Changes becoming smaller
-- Reasonable convergence rate
+`verbosity` (`Silent`, `ProgressBar`, `Verbose(; freq)`) is a run setting, described in
+[Image Reconstruction](reconstruction.md#Output).
 
 ### Convergence Curves: `on_iteration` and `IterationTrace`
 
@@ -577,56 +491,12 @@ reconstruction has no iterations to observe. Passing it to `reconstruct` raises 
 IterationTrace
 ```
 
-## Advanced Usage
+## Candidate Algorithms
 
-### Auto-Selecting Multiple Algorithms
-
-Try multiple algorithms automatically:
-
-```julia
-# Provide tuple of candidate algorithms to try
-algorithms = (CG(maxit=20), FISTA(maxit=100), ADMM(maxit=50))
-img = reconstruct(acq, IterativeReconstruction(reg; algorithm = algorithms))
-
-# Package automatically selects best for problem
-# - CG tried first for smooth problems
-# - FISTA for single regularizer
-# - ADMM for multiple regularizers
-```
-
-### Custom Stopping Criteria
+`algorithm` also takes a tuple of candidates; `reconstruct` uses the first one that can solve the
+problem, by the rules of the decision tree at the top of this page. `DEFAULT_ALGORITHMS` is such a
+tuple:
 
 ```julia
-using Ristretto.ProximalAlgorithms
-
-# Custom stopping function
-function my_stop(iter, state)
-    # Stop if objective doesn't change much
-    if iter > 1
-        rel_change = abs(state.objective - prev_obj) / abs(prev_obj)
-        return rel_change < 1e-5
-    end
-    prev_obj = state.objective
-    return false
-end
-
-# Use with low-level interface
-# (requires working directly with ProximalAlgorithms.jl)
+IterativeReconstruction(reg; algorithm = (CGNR(), FISTA(), ADMM()))
 ```
-
-### Warm Starting
-
-Use previous solution as initialization:
-
-```julia
-# First reconstruction
-img1 = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(5e-3)))
-
-# Use as initialization for refined reconstruction
-img2 = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(3e-3)); x₀=img1)
-```
-
-**When useful:**
-- Parameter sweeps
-- Iterative refinement
-- Multi-stage reconstruction
