@@ -9,17 +9,23 @@
     the registered releases have it. Documentation of the bundled version:
     [AbstractOperators.jl (fork)](https://hakkelt.github.io/AbstractOperators.jl/dev/).
 
+```@setup abstractops
+mask = rand(64, 64) .< 0.4
+smap = rand(ComplexF32, 64, 64)
+```
+
 Every operator Ristretto builds is an `AbstractOperator`: a matrix-free linear (or nonlinear)
 map that works on multi-dimensional arrays without flattening them, supports `*`, `'`, `+`,
 scaling and composition like a matrix, and stores only its parameters. The encoding operator,
 for instance, is a composition of a sensitivity map operator, a DFT and a `GetIndex`:
 
-```julia
+```@example abstractops
 using Ristretto.AbstractOperators, Ristretto.FFTWOperators
 
 ℱ = DFT(ComplexF32, (64, 64))
 𝒫 = GetIndex(zeros(ComplexF32, 64, 64), (mask,))
 𝒜 = 𝒫 * ℱ * DiagOp(smap)       # forward: 𝒜 * x, adjoint: 𝒜' * y
+nothing # hide
 ```
 
 [The low-level interface](../tutorials/12_low_level_interface.md) takes these operators apart,

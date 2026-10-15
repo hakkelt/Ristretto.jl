@@ -24,13 +24,30 @@ drop_components
 
 ## Basic Usage
 
+```@setup decomposition
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+using Random
+Random.seed!(0)
+n, nc, nt = 64, 8, 8
+phantom = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+smaps = coil_sensitivities(n, n, nc)
+pattern = create_sampling_pattern(VariableDensitySampling(PolynomialDistribution(3), 3.0, 0.08), (n, n))
+simulate(x, acq) = add_noise(simulate_acquisition(x, acq; inverse_crime_check = false, keep_sensitivity_maps = true); snr_db = 30)
+acq = simulate(phantom, AcquisitionInfo(; image_size = (n, n), subsampling = pattern, sensitivity_maps = smaps))
+series = cat((phantom .* (1 .+ 0.3f0 .* Float32(sin(2π * t / nt)) .* (abs.(phantom) .> 0.9f0)) for t in 1:nt)...; dims = 3)
+acq_dynamic = simulate(series, AcquisitionInfo(; image_size = (n, n),
+    subsampling = [(:, circshift(pattern[2], 2t)) for t in 1:nt], sensitivity_maps = smaps))
+```
+
 Declare each component with a name and one or more regularizations, then pass
 the components to `IterativeReconstruction`:
 
-```julia
+```@example decomposition
 img = reconstruct(acq, IterativeReconstruction(
     Component(:smooth, L2Image(0.01)),
     Component(:sparse, L1Image(0.05)); maxit = 30))
+nothing # hide
 ```
 
 The result is a [`ReconImage`](@ref) whose array is the sum of the components,
@@ -58,7 +75,7 @@ MRI (Otazo, Candès & Sodickson, *Magn Reson Med* 2015): a low-rank component
 `L` carrying the temporally correlated background, plus a sparse component `S`
 carrying the dynamic foreground.
 
-```julia
+```@example decomposition
 img = reconstruct(
     acq_dynamic,
     IterativeReconstruction(
@@ -67,6 +84,7 @@ img = reconstruct(
 
 background = img.lowrank   # e.g. static anatomy
 dynamics   = img.sparse    # e.g. contrast uptake, motion
+nothing # hide
 ```
 
 Common choices for the sparse component are [`TemporalTotalVariation`](@ref)
@@ -115,7 +133,7 @@ regularization API. Component names must also be unique.
 A `Component` can combine several regularizations, exactly like the plain
 regularization API:
 
-```julia
+```@example decomposition
 IterativeReconstruction(
     Component(:structured, L1Wavelet2D(0.01), TotalVariation2D(0.005)),
     Component(:sparse, L1Image(0.05)))
@@ -137,9 +155,11 @@ reconstruction and the remaining components start at zero — the standard
 L+S/RPCA warm start. Override this with `x₀` as a `Tuple` (component order) or
 `NamedTuple` (by component name):
 
-```julia
+```@example decomposition
+method = IterativeReconstruction(Component(:smooth, L2Image(0.01)), Component(:sparse, L1Image(0.05)); maxit = 30) # hide
 x̂ = reconstruct(acq)
 img = reconstruct(acq, method; x₀ = (smooth = x̂, sparse = zero(x̂)))
+nothing # hide
 ```
 
 ## Solver Applicability

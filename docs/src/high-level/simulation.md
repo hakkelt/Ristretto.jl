@@ -99,6 +99,11 @@ sparkling_trajectory
 The spoke ordering and the spiral growth law are chosen with a type rather than a symbol, so each
 carries its own parameters and a typo is a `MethodError` instead of a runtime `ArgumentError`:
 
+```@setup simulation
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+```
+
 ```@docs
 LinearOrdering
 GoldenAngle
@@ -107,10 +112,11 @@ Archimedean
 VariableDensity
 ```
 
-```julia
+```@example simulation
+phantom_image = create_shepp_logan_phantom(256, 256, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32) # hide
 traj = radial_trajectory(128, 96; ordering = GoldenAngle())
 acq_radial = AcquisitionInfo(; trajectory = traj, image_size = (256, 256))
-data_radial = simulate_acquisition(phantom, acq_radial)
+data_radial = simulate_acquisition(phantom_image, acq_radial)
 ```
 
 ## Simulate Acquisition
@@ -176,7 +182,7 @@ reconstruction grid. Neither the fine phantom (a different size) nor a point-sam
 the reconstruction's size will do: against the latter every edge counts as error, which is the
 3–5 dB pessimism above.
 
-```julia
+```@example simulation
 phantom(n) = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32, supersample = 4)
 acq = AcquisitionInfo(is3D = false, image_size = (128, 128), sensitivity_maps = coil_sensitivities(202, 202, 8))
 data = simulate_acquisition(phantom(202), acq)   # 128² k-space, no sensitivity maps
@@ -210,7 +216,9 @@ They can be displayed rather than trusted:
 snr_masks
 ```
 
-```julia
+```@example simulation
+acq = data # hide
+image = truth # hide
 noisy_acq = add_noise(acq; snr_db = 20)       # k-space noise, relative to the data RMS
 noisy_acq = add_noise(acq; noise_std = 0.02)  # or an absolute standard deviation
 noisy_image = add_noise(image; snr = 20)      # image noise at a clinical SNR

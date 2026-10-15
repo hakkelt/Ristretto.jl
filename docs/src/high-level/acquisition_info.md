@@ -54,10 +54,19 @@ keywords for:
 The presence of `:kz` makes the acquisition 3D; without it, it is 2D and `is3D` need not be given.
 `reconstruct` returns an image carrying the image-side names of the same dimensions.
 
+```@setup acqinfo
+using Ristretto
+using NamedDims
+ksp = rand(ComplexF32, 64, 64, 8)
+ksp_named = NamedDimsArray{(:kx, :ky, :coil)}(ksp)
+smaps = NamedDimsArray{(:x, :y, :coil)}(coil_sensitivities(64, 64, 4))
+measured_ksp = NamedDimsArray{(:sample, :spoke, :coil)}(rand(ComplexF32, 64, 32, 4))
+```
+
 A per-batch-element pattern is the usual way to describe a dynamic acquisition whose lines shift
 from frame to frame, which makes the aliasing incoherent along time:
 
-```julia
+```@example acqinfo
 base = falses(64); base[1:3:64] .= true
 acq = AcquisitionInfo(nothing; is3D = false, image_size = (64, 64),
     subsampling = [(:, circshift(base, t - 1)) for t in 1:8])
@@ -73,7 +82,7 @@ a variable-density dynamic acquisition, rather than a shifted mask of fixed size
 is held one frame at a time in a [`PartitionedKSpace`](@ref) instead. `simulate_acquisition`
 produces one automatically:
 
-```julia
+```@example acqinfo
 counts = [copy(base) for _ in 1:4]
 counts[2][2] = true                 # one extra line in frame 2
 acq_ragged = AcquisitionInfo(nothing; is3D = false, image_size = (64, 64),
@@ -108,7 +117,7 @@ K-space is assumed to have DC at the centre (`N ÷ 2 + 1`) and the image origin 
 `shifted_image_dims` the axes whose image is centred in the field of view, as on a scanner; both
 take indices or, for named arrays, dimension names:
 
-```julia
+```@example acqinfo
 AcquisitionInfo(ksp; is3D = false, shifted_kspace_dims = (1, 2))
 AcquisitionInfo(ksp_named; shifted_image_dims = (:x, :y))
 ```
@@ -189,7 +198,7 @@ anything else you pass. It is optional and may be incomplete; with no `header` k
 acquisition gets an empty one. The images `reconstruct` returns carry a copy of it (see
 [`ReconImage`](@ref)), and the [export functions](export.md) write it.
 
-```julia
+```@example acqinfo
 acq = AcquisitionInfo(ksp; is3D = false, header = (; fov = (240, 180), TE = 4.2, protocol = "t1_se"))
 settag!(acq, :subject, "s01")
 Ristretto.header(acq).TE    # 4.2
@@ -253,7 +262,7 @@ Passing a `trajectory` dispatches `AcquisitionInfo` to the non-Cartesian variant
 data is required to set up the acquisition — this is the normal way to prepare a trajectory for
 [`simulate_acquisition`](@ref), with no placeholder array to invent:
 
-```julia
+```@example acqinfo
 traj = NamedDimsArray{(:coord, :sample, :spoke)}(rand(Float32, 2, 64, 32) .- 0.5f0)
 acq_nc = AcquisitionInfo(; trajectory = traj, image_size = (64, 64))              # for simulation
 acq_nc = AcquisitionInfo(; trajectory = traj, image_size = (64, 64), sensitivity_maps = smaps)
@@ -265,7 +274,7 @@ is `public` (documented, stable, dispatchable) but **not exported** — `Acquisi
 the advertised, non-expert-facing constructor. Code that needs the concrete type explicitly
 (e.g. for a type annotation or `isa` check) imports it or qualifies it:
 
-```julia
+```@example acqinfo
 using Ristretto: NonCartesianAcquisitionInfo
 # or: Ristretto.NonCartesianAcquisitionInfo
 ```
@@ -282,7 +291,7 @@ as trailing trajectory axes that match the trailing k-space axes. A trajectory
 is encoded with `trajectory[:, :, :, t]` alone. A trajectory without the frame axis is shared by
 every frame, as before.
 
-```julia
+```@example acqinfo
 traj_t = NamedDimsArray{(:coord, :sample, :spoke, :time)}(rand(Float32, 2, 64, 32, 4) .- 0.5f0)
 acq_t = AcquisitionInfo(; trajectory = traj_t, image_size = (64, 64))
 # simulated k-space: (:sample, :spoke, :time)
@@ -316,7 +325,8 @@ compensation on their own.
 
 You can compute the DCF directly using `density_compensation`:
 
-```julia
+```@example acqinfo
+acq = acq_nc # hide
 # Compute iterative Pipe-Menon DCF (default)
 acq_dcf = density_compensation(acq; method = PipeMenonDCF(maxit = 20))
 

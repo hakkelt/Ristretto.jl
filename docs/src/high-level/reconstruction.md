@@ -20,11 +20,30 @@ ReconstructionConfig
 
 ## The result: `ReconImage`
 
+```@setup recon
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+using Random
+Random.seed!(0)
+n, nc, nt = 64, 8, 8
+phantom = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+smaps = coil_sensitivities(n, n, nc)
+pattern = create_sampling_pattern(VariableDensitySampling(PolynomialDistribution(3), 3.0, 0.08), (n, n))
+simulate(x, acq) = add_noise(simulate_acquisition(x, acq; inverse_crime_check = false, keep_sensitivity_maps = true); snr_db = 30)
+acq = simulate(phantom, AcquisitionInfo(; image_size = (n, n), subsampling = pattern, sensitivity_maps = smaps))
+using NamedDims
+ksp_ms = NamedDimsArray{(:kx, :ky, :coil, :z)}(rand(ComplexF32, n, n, nc, 4))
+maps_ms = NamedDimsArray{(:x, :y, :coil, :z)}(rand(ComplexF32, n, n, nc, 4))
+acq_ms = AcquisitionInfo(ksp_ms; sensitivity_maps = maps_ms, header = (; fov = (220, 220), slice_thickness = 5))
+```
+
 `reconstruct` returns a [`ReconImage`](@ref): the image (a `NamedDimsArray` inside when the
 k-space was named) with a copy of the acquisition's [`Header`](@ref). It behaves as the array it
 holds, and keyword indexing returns a `ReconImage` whose geometry describes the part selected:
 
-```julia
+```@example recon
+acq_cartesian = acq # hide
+acq = acq_ms # hide
 img = reconstruct(acq)                  # acq: named (:kx, :ky, :z) k-space with a header
 Ristretto.header(img[z = 2]).offset    # moved by one slice spacing
 Ristretto.header(img[x = 17:48]).fov   # the field of view of the crop
@@ -51,11 +70,13 @@ one question: *does it mean anything without knowing the method?*
 Passing `maxit`, `reltol` or `algorithm` to `reconstruct` throws rather than being silently
 ignored, which is what happened before this split.
 
-```julia
+```@example recon
+acq = acq_cartesian # hide
 method = IterativeReconstruction(L1Wavelet2D(5e-3); maxit = 50, reltol = 1e-5)   # method parameters
 reconstruct(acq, method; scaling = QuantileScaling(), verbosity = Silent())      # run settings as keywords
 config = ReconstructionConfig(; scaling = QuantileScaling())                      # or reusable
 reconstruct(acq, method; config, verbosity = Verbose())                          # keywords override it
+nothing # hide
 ```
 
 ### Important Configuration Options
@@ -152,9 +173,10 @@ combination gets. Additive models (a low-rank background plus a sparse foregroun
 `x₀` starts the solver from a given image, in the data's units: a direct reconstruction, or the
 result of a neighbouring λ in a parameter sweep.
 
-```julia
+```@example recon
 x_l1 = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(5e-3)))
 x = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(3e-3)); x₀ = x_l1)
+nothing # hide
 ```
 
 ## Advanced Method Options

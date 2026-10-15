@@ -20,9 +20,13 @@ graph TD
 
 ### Direct Reconstruction
 
+```@setup methods
+using Ristretto
+```
+
 `DirectReconstruction` performs non-iterative reconstruction (such as adjoint sensitivity combination $\mathcal{A}^* y$ or gridding).
 
-```julia
+```@example methods
 DirectReconstruction(; coil_combination = AdjointSensitivity())
 ```
 

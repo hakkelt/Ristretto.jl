@@ -5,13 +5,28 @@ its parameters, and how iterations are counted and stopped.
 [Algorithms and configuration](../tutorials/06_algorithms_and_configuration.md) compares them on
 one problem.
 
+```@setup algorithms
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+using Random
+Random.seed!(0)
+x = create_shepp_logan_phantom(128, 128, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+smaps = coil_sensitivities(128, 128, 8)
+pattern = create_sampling_pattern(VariableDensitySampling(PolynomialDistribution(3), 4.0, 0.05), (128, 128))
+acq = AcquisitionInfo(; image_size = (128, 128), subsampling = pattern, sensitivity_maps = smaps)
+data = acq = add_noise(simulate_acquisition(x, acq; inverse_crime_check = false, keep_sensitivity_maps = true); snr_db = 30)
+reference = x
+regularization = reg = L1Wavelet2D(5e-3)
+```
+
 ## Quick Algorithm Selection
 
 **Not sure which to use?** Let `reconstruct()` choose automatically:
 
-```julia
+```@example algorithms
 img = reconstruct(acq, IterativeReconstruction(regularization))
 # Automatically selects appropriate algorithm from DEFAULT_ALGORITHMS
+nothing # hide
 ```
 
 **How does it decide?** Here's a decision tree:
@@ -86,8 +101,9 @@ as `x`. If `λ` is zero, the problem reduces to a least-squares problem:
 - ❌ Can't handle L1, TV, or other non-smooth terms
 
 **Example:**
-```julia
+```@example algorithms
 img = reconstruct(data, IterativeReconstruction(L2Image(1e-4); algorithm = CGNR(), maxit = 20));
+nothing # hide
 ```
 
 #### Preconditioning
@@ -104,7 +120,7 @@ anything else that implements `ldiv!` can be passed directly with `P_is_inverse 
 The natural choice for SENSE is the diagonal image-domain approximation of `𝒜ᴴ𝒜`, the coil coverage
 `Σ_c |S_c|² + λ`:
 
-```julia
+```@example algorithms
 using Ristretto.AbstractOperators: DiagOp
 coverage = real(sum(abs2, unname(smaps); dims = 3)[:, :, 1])
 P⁻¹ = DiagOp(ComplexF32.(1 ./ (coverage .+ 1.0f-4)))
@@ -115,6 +131,7 @@ img_pc = reconstruct(
     );
     verbosity = Silent(),
 );
+nothing # hide
 ```
 
 ### Fast Iterative Shrinkage-Thresholding Algorithm (FISTA)
@@ -160,8 +177,9 @@ where `f` is smooth.
 - ❌ Can be sensitive to step size
 
 **Example:**
-```julia
+```@example algorithms
 img = reconstruct(data, IterativeReconstruction(L1Wavelet2D(5e-3); algorithm = FISTA(), maxit = 100));
+nothing # hide
 ```
 
 ### Optimized Gradient Method (POGM)
@@ -199,8 +217,9 @@ convergence rate twice as tight as FISTA's is wanted.
 - ❌ Requires Lipschitz constant (usually auto-estimated)
 
 **Example:**
-```julia
+```@example algorithms
 img = reconstruct(data, IterativeReconstruction(L1Wavelet2D(5e-3); algorithm = POGM(), maxit = 100));
+nothing # hide
 ```
 
 ### Alternating Direction Method of Multipliers (ADMM)
@@ -263,10 +282,11 @@ for their specific update rules and references.
 - ❌ No convergence guarantees in general
 
 **Example:**
-```julia
+```@example algorithms
 # Multiple regularizers
-reg = (L1Wavelet2D(5e-3), TotalVariation2D(1e-3))
-img = reconstruct(data, IterativeReconstruction(reg...; algorithm = ADMM(), maxit = 50));
+regs = (L1Wavelet2D(5e-3), TotalVariation2D(1e-3))
+img = reconstruct(data, IterativeReconstruction(regs...; algorithm = ADMM(), maxit = 50));
+nothing # hide
 ```
 
 ### Douglas-Rachford Splitting (`DouglasRachford`)
@@ -334,8 +354,9 @@ every block, the large-norm data block dictates it, and the data dual barely mov
 - ❌ Needs more iterations than ADMM; count operator applications, not iterations, when comparing
   the two
 
-```julia
+```@example algorithms
 img = reconstruct(acq, IterativeReconstruction(TotalVariation2D(1e-2); algorithm = PDHG(), maxit = 500))
+nothing # hide
 ```
 
 ### Vũ-Condat (`VuCondat`)
@@ -356,8 +377,9 @@ as `beta_f`, which caps the primal step at about ``2/\|\mathcal{A}\|^2``.
   given.
 - `maxit`, `tol`.
 
-```julia
+```@example algorithms
 img = reconstruct(acq, IterativeReconstruction(TotalVariation2D(1e-2); algorithm = VuCondat(), maxit = 500))
+nothing # hide
 ```
 
 ### Nonlinear Conjugate Gradient and L-BFGS (`NCG`, `LBFGS`)
@@ -388,8 +410,9 @@ Polak-Ribière+, `LBFGS` keeps the last `memory` correction pairs.
 **Cons:**
 - ❌ Smooth terms only: a non-smooth regularizer or a constraint needs a proximal method
 
-```julia
+```@example algorithms
 img = reconstruct(acq, IterativeReconstruction(EdgePreservingRoughness2D(1e-2; δ = 0.01); algorithm = LBFGS(), maxit = 50))
+nothing # hide
 ```
 
 ## Iterations and Tolerance
@@ -401,8 +424,9 @@ Typical iteration counts: CG/CGNR 10–50, FISTA/POGM 50–200, ADMM 20–100. R
 algorithm object. To let the algorithm's own values through instead, set the method's to
 `nothing`:
 
-```julia
+```@example algorithms
 img = reconstruct(acq, IterativeReconstruction(reg; algorithm = FISTA(maxit = 200), maxit = nothing))
+nothing # hide
 ```
 
 ### Convergence Tolerance
@@ -424,7 +448,7 @@ algorithm object, is absolute.
 takes a callback that the solver invokes once per iteration with a single `NamedTuple`, so a
 single `reconstruct` call is enough to plot error against iteration *and* against wall-clock time:
 
-```julia
+```@example algorithms
 using Ristretto
 
 nrmse(x, ref) = sqrt(sum(abs2, x .- ref) / sum(abs2, ref))
@@ -469,8 +493,9 @@ ADMM the comparable curve is `[m.primal_residual for m in trace.metrics]`. Test
 
 A plain function works just as well when you only need a side effect:
 
-```julia
-reconstruct(acq, IterativeReconstruction(reg; on_iteration = info -> @info "iteration" info.iteration))
+```@example algorithms
+reconstruct(acq, IterativeReconstruction(reg; maxit = 3, on_iteration = info -> @info "iteration" info.iteration))
+nothing # hide
 ```
 
 Two things to know:
@@ -497,6 +522,6 @@ IterationTrace
 problem, by the rules of the decision tree at the top of this page. `DEFAULT_ALGORITHMS` is such a
 tuple:
 
-```julia
+```@example algorithms
 IterativeReconstruction(reg; algorithm = (CGNR(), FISTA(), ADMM()))
 ```

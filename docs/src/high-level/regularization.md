@@ -8,6 +8,29 @@ it puts on the solver. The objective the terms enter is stated in
 [Advanced reconstruction](../tutorials/11_advanced_reconstruction.md) the structured low-rank
 k-space terms.
 
+```@setup reg
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+using Random
+Random.seed!(0)
+n, nc, nt = 64, 8, 8
+phantom = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+smaps = coil_sensitivities(n, n, nc)
+pattern = create_sampling_pattern(VariableDensitySampling(PolynomialDistribution(3), 3.0, 0.08), (n, n))
+simulate(x, acq) = add_noise(simulate_acquisition(x, acq; inverse_crime_check = false, keep_sensitivity_maps = true); snr_db = 30)
+acq = simulate(phantom, AcquisitionInfo(; image_size = (n, n), subsampling = pattern, sensitivity_maps = smaps))
+acq_reference = acq
+# a dynamic series: the phantom with one ellipse's intensity varying over the frames
+series = cat((phantom .* (1 .+ 0.3f0 .* Float32(sin(2π * t / nt)) .* (abs.(phantom) .> 0.9f0)) for t in 1:nt)...; dims = 3)
+acq_dynamic = simulate(series, AcquisitionInfo(; image_size = (n, n),
+    subsampling = [(:, circshift(pattern[2], 2t)) for t in 1:nt], sensitivity_maps = smaps))
+echoes = cat((phantom .* w for w in (1.0f0, 0.7f0, 0.45f0))...; dims = 3)
+acq_multiecho = simulate(echoes, AcquisitionInfo(; image_size = (n, n), subsampling = pattern, sensitivity_maps = smaps))
+acq_calibrationless = AcquisitionInfo(simulate(phantom, AcquisitionInfo(; image_size = (n, n),
+    subsampling = create_sampling_pattern(UniformRandomSampling(2.0, 0.0), (n, n)), sensitivity_maps = smaps));
+    sensitivity_maps = nothing)
+```
+
 ## Available Regularization Methods
 
 ### Image Domain Regularization
@@ -136,9 +159,10 @@ SecondOrderTotalVariation3D
 - Almost always in combination with a first-order term rather than alone, since a jump is penalized through its (large) second derivative and is therefore blurred
 
 **Example:**
-```julia
+```@example reg
 # first-order TV for the edges, second-order for the ramps
 img = reconstruct(acq, IterativeReconstruction(TotalVariation2D(1e-3), SecondOrderTotalVariation2D(2e-3)))
+nothing # hide
 ```
 
 **Practical tip:** If you find yourself tuning the balance between first- and second-order TV, use
@@ -160,8 +184,9 @@ TotalGeneralizedVariation3D
   symmetrized gradient run over all three spatial dimensions instead of treating slices independently
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq, IterativeReconstruction(TotalGeneralizedVariation2D(1e-3); algorithm = ADMM(), maxit = 500))
+nothing # hide
 ```
 
 **Practical tip:** TGV requires `ADMM` — the auxiliary field is coupled to the image through `∇x − w`, which
@@ -175,7 +200,7 @@ The infimal convolution of first- and second-order TV needs no regularization ty
 image decomposition into a piecewise-constant "cartoon" part and a piecewise-linear "ramp" part, which the
 [Image Decomposition](image_decomposition.md) machinery already expresses.
 
-```julia
+```@example reg
 components = (
     Component(:cartoon, TotalVariation2D(1e-3)),
     Component(:ramp, SecondOrderTotalVariation2D(1e-3)),
@@ -183,6 +208,7 @@ components = (
 img = reconstruct(acq, IterativeReconstruction(components...; algorithm = ADMM(), maxit = 500))
 img.cartoon   # the edges, shorthand for img.components.cartoon
 img.ramp      # the smooth background, shorthand for img.components.ramp
+nothing # hide
 ```
 
 Compared to [`TotalGeneralizedVariation2D`](@ref) this is the older and slightly weaker model — the two parts
@@ -204,8 +230,9 @@ EdgePreservingRoughness3D
 - Statistical / model-based reconstruction, where this is the classical choice of potential function
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq, IterativeReconstruction(EdgePreservingRoughness2D(1e-3; δ = 0.01)))
+nothing # hide
 ```
 
 **Practical tip:** `δ` is an absolute intensity, so it must be set relative to the image scale. A workable
@@ -230,8 +257,9 @@ L1TemporalFourier
 - When motion is periodic or smoothly varying
 
 **Example:**
-```julia
-img = reconstruct(acq, IterativeReconstruction(L1TemporalFourier(1e-2, time_dim=4)))
+```@example reg
+img = reconstruct(acq_dynamic, IterativeReconstruction(L1TemporalFourier(1e-2; time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** This works best when temporal changes are smooth or periodic. For irregular motion, consider temporal total variation or low-rank methods instead.
@@ -250,8 +278,9 @@ TemporalTotalVariation
 - As the sparse part of an L+S model (see [Image Decomposition](image_decomposition.md))
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq_dynamic, IterativeReconstruction(TemporalTotalVariation(2e-2; time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** Like spatial TV, this term uses a non-tight operator, so reconstruction falls back to ADMM. It is the temporal counterpart of [`TotalVariation2D`](@ref) and is often combined with it (`(TotalVariation2D(1e-3), TemporalTotalVariation(2e-2))`) — the "spatiotemporal TV" of the golden-angle radial sparse parallel (GRASP) literature.
@@ -274,9 +303,10 @@ RankLimit
 - When images share common features across time
 
 **Example:**
-```julia
+```@example reg
 # Dynamic series with low-rank structure
-img = reconstruct(acq_dynamic, IterativeReconstruction(LowRank(1e-1)))
+img = reconstruct(acq_dynamic, IterativeReconstruction(LowRank(1e-1; time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** Low-rank methods can be computationally expensive. Use for datasets where temporal correlations are strong.
@@ -294,8 +324,9 @@ LocallyLowRank
 - Quantitative parameter mapping (T1/T2 relaxometry, MR fingerprinting), where each voxel neighbourhood follows a low-dimensional signal model
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq_dynamic, IterativeReconstruction(LocallyLowRank(5e-2; block_size = 8, time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** `block_size` trades locality against cost and stability: 4-8 voxels for strongly varying dynamics, 12-16 when the temporal signal is smooth over larger regions. Each iteration performs one SVD of a `(∏ block_size) × n_frames` matrix per block. A single fixed block grid can leave visible block boundaries at large λ; pass `shift = :random` to redraw the grid before every proximal step, which averages them out (see below).
@@ -315,8 +346,9 @@ tiling remains a permutation of the voxels and the prox stays exact — but only
 divisible by the block edge, which is checked. Because the objective is no longer the same function at every
 iteration, the line-search algorithms (`PANOC`, `PANOCplus`, `ZeroFPR`) must not be used with it.
 
-```julia
+```@example reg
 img = reconstruct(acq_dynamic, IterativeReconstruction(LocallyLowRank(5e-2; block_size = 8, time_dim = 3, shift = :random); algorithm = FISTA()))
+nothing # hide
 ```
 
 #### Multi-Scale Low Rank
@@ -332,8 +364,9 @@ MultiScaleLowRank
 - As a less sensitive alternative to tuning `block_size` for [`LocallyLowRank`](@ref)
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq_dynamic, IterativeReconstruction(MultiScaleLowRank(5e-2; block_sizes = (4, 8, 16), time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** The term uses the *proximal average* of the per-scale penalties, which approximates their
@@ -341,7 +374,7 @@ sum; the objective value it reports is the weighted average of the per-scale pen
 multi-scale model of Ong & Lustig — one separate image component per scale — build it from components instead,
 which also gives you the separated scales:
 
-```julia
+```@example reg
 components = Tuple(
     Component(Symbol(:scale, b), LocallyLowRank(5e-2; block_size = b, time_dim = 3)) for b in (4, 8, 16)
 )
@@ -352,7 +385,7 @@ Cost grows linearly with the number of scales, so two or three are usually enoug
 `λ` may also be a vector with one entry per scale, giving coarse and fine scales independent
 thresholds instead of the single value applied everywhere:
 
-```julia
+```@example reg
 MultiScaleLowRank([2e-2, 5e-2, 1e-1]; block_sizes = (4, 8, 16), time_dim = 3)
 ```
 
@@ -385,7 +418,8 @@ StructuredLowRank
 - `window` is the sliding-window size over the k-space encoding dimensions, typically `(5, 5)` or `(6, 6)` in 2D and `(4, 4, 4)` in 3D.
 
 **Example:**
-```julia
+```@example reg
+acq = acq_calibrationless # hide
 # calibrationless: acq holds multi-coil k-space, no sensitivity_maps
 rec = reconstruct(
     acq,
@@ -396,6 +430,8 @@ rec = reconstruct(
         maxit = 100,
     ),
 )
+acq = acq_reference # hide
+nothing # hide
 ```
 
 !!! warning "The `max_rank` form is non-convex"
@@ -424,7 +460,7 @@ LORAKS' original point: no coils, no calibration, no phase estimate. On a 32×32
 partial-Fourier problem (62 % of `ky` from one side) they cut the NRMSE from 0.182 zero-filled to
 0.123 (`:s`) and 0.132 (`:g`).
 
-```julia
+```@example reg
 StructuredLowRank(; λ = 0.02, window = (5, 5), structure = :s)
 ```
 
@@ -443,7 +479,7 @@ are combined by a proximal average, as [`MultiScaleLowRank`](@ref) combines its 
 first entry of a built-in model is the approximation band — the plain unweighted term — because a
 difference weight vanishes at DC and the detail bands alone constrain nothing there.
 
-```julia
+```@example reg
 StructuredLowRank(; λ = 0.03, window = (6, 6), weights = :tv)
 ```
 
@@ -471,10 +507,11 @@ L0Wavelet3D
 - The `count` form when the sparsity level is known a priori and is easier to specify than a penalty weight — the same argument that makes [`RankLimit`](@ref) preferable to [`LowRank`](@ref) in some settings
 
 **Example:**
-```julia
+```@example reg
 # ℓ₀ penalty on wavelet coefficients, warm-started from an ℓ₁ solution
 x_l1 = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(1e-3)))
 img = reconstruct(acq, IterativeReconstruction(L0Wavelet2D(threshold = 1e-3)); x₀ = x_l1)
+nothing # hide
 ```
 
 **Practical tip:** Both terms are non-convex, so the solvers only guarantee a stationary point and the result
@@ -527,9 +564,10 @@ JointSparsity
 - Preferable to independent `L1Image`/`L1Wavelet2D` on each contrast, because the joint norm couples them
 
 **Example:**
-```julia
+```@example reg
 # echoes stored along dimension 3, sharing the same support
 img = reconstruct(acq_multiecho, IterativeReconstruction(JointSparsity(1e-2; dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** Joint sparsity is most effective on a sparsifying transform of the images. Combining `JointSparsity` with a wavelet regularizer per contrast (`(JointSparsity(1e-2; dim = 3), L1Wavelet2D(1e-3))`) is a common compromise.
@@ -548,9 +586,10 @@ ReferencePrior
 - Interventional / real-time imaging with a fully sampled baseline
 
 **Example:**
-```julia
+```@example reg
 x_ref = reconstruct(acq_reference, IterativeReconstruction(L1Wavelet2D(1e-3)))
 img = reconstruct(acq, IterativeReconstruction(ReferencePrior(1e-2, x_ref), L1Wavelet2D(1e-3)))
+nothing # hide
 ```
 
 **Practical tip:** The reference must be in the same units as the reconstruction; when data scaling is enabled the reference is rescaled automatically. A wrong reference biases the result toward it, so combine it with an ordinary sparsity term (as in the PICCS convex combination) rather than using it alone.
@@ -580,14 +619,12 @@ RegularizedLeastSquares.jl (used by MRIReco.jl) has `PositiveRegularization` and
 `RealRegularization`, which take the real part the way `complex_handling = :real` does.
 
 **Example:**
-```julia
-# real-valued image (e.g. a magnitude reconstruction)
-img = reconstruct(acq_real, IterativeReconstruction(TotalVariation2D(1e-3), NonNegative()))
-
-# complex image, projected onto the real non-negative orthant each iteration
+```@example reg
+# MRI images are complex: project onto the real non-negative orthant each iteration
 img = reconstruct(
     acq, IterativeReconstruction(TotalVariation2D(1e-3), NonNegative(; complex_handling = :real))
 )
+nothing # hide
 ```
 
 ## Combining Multiple Regularizers
@@ -596,7 +633,7 @@ Terms are listed one after another; the objective is their sum, and `reconstruct
 that can handle the combination (ADMM as soon as there is more than one non-smooth term or a
 non-tight operator):
 
-```julia
+```@example reg
 method = IterativeReconstruction(L1Wavelet2D(5e-3), TotalVariation2D(1e-3), L1TemporalFourier(2e-2))
 ```
 

@@ -40,13 +40,26 @@ Ristretto.get_subsampling_operator
 
 ## Encoding Operators
 
+```@setup operators
+using Ristretto
+using Ristretto: get_encoding_operator
+n, nc = 64, 8
+ky = falses(n); ky[1:2:n] .= true
+mask = (:, ky)
+sensitivity_maps = coil_sensitivities(n, n, nc)
+ksp = rand(ComplexF32, n, count(ky), nc)
+acq = AcquisitionInfo(ksp; is3D = false, sensitivity_maps, image_size = (n, n), subsampling = mask)
+x = rand(ComplexF32, n, n)
+```
+
 `get_encoding_operator` builds ``\mathcal{A}`` from an `AcquisitionInfo`, or from k-space data
 with the same keywords `AcquisitionInfo` takes:
 
-```julia
+```@example operators
 𝒜 = get_encoding_operator(acq)
 𝒜 = get_encoding_operator(ksp, false; sensitivity_maps, image_size = (64, 64), subsampling = mask)
 x̂ = 𝒜' * (𝒜 * x)
+nothing # hide
 ```
 
 Keywords: `sensitivity_maps`, `image_size` (required with a subsampling pattern), `subsampling`,
