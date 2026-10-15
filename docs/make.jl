@@ -90,23 +90,62 @@ end
 
 # What every executed page depends on besides its own script: the package and the vendored
 # dependencies, the resolved environment, this file (it shapes the page), the helper module,
-# the Julia version and the thread count (the timings print it).
-function common_inputs_hash()
-    ctx = SHA.SHA256_CTX()
+# the Julia version and the thread count (the timings print it). One hash per input, so a page
+# that is executed again can say which inputs changed.
+function common_inputs()
     files = String[joinpath(ROOT, f) for f in ("Project.toml", "Manifest.toml")]
     append!(files, (joinpath(@__DIR__, f) for f in ("Project.toml", "make.jl")))
     push!(files, UTILS)
     for dir in ("src", "ext", "deps"), (root, _, fs) in walkdir(joinpath(ROOT, dir)), f in sort(fs)
         push!(files, joinpath(root, f))
     end
-    for f in files
-        isfile(f) || continue
-        SHA.update!(ctx, codeunits(relpath(f, ROOT)))
-        SHA.update!(ctx, read(f))
-    end
+    inputs = Pair{String, String}[relpath(f, ROOT) => source_hash(f) for f in files if isfile(f)]
     versions = sort!(["$(d.name) $(d.version) $(d.tree_hash)" for d in values(Pkg.dependencies())])
-    SHA.update!(ctx, codeunits(join(versions, '\n') * "\n$VERSION $(Threads.nthreads())"))
+    push!(inputs, "packages" => bytes2hex(SHA.sha256(join(versions, '\n'))))
+    push!(inputs, "julia" => "$(VERSION)_threads=$(Threads.nthreads())")
+    return inputs
+end
+
+# Julia source is hashed by what it parses to, without comments, docstrings, line numbers or
+# formatting, none of which reaches a page: editing a docstring does not execute the tutorials
+# again. A file that does not parse is hashed as it is.
+function source_hash(path)
+    endswith(path, ".jl") || return bytes2hex(SHA.sha256(read(path)))
+    ex = try
+        Meta.parseall(read(path, String); filename = path)
+    catch
+        return bytes2hex(SHA.sha256(read(path)))
+    end
+    ctx = SHA.SHA256_CTX()
+    hash_source!(ctx, ex)
     return bytes2hex(SHA.digest!(ctx))
+end
+
+hash_source!(ctx, ::LineNumberNode) = nothing
+hash_source!(ctx, x::QuoteNode) = (SHA.update!(ctx, codeunits("quote ")); hash_source!(ctx, x.value))
+hash_source!(ctx, x) = SHA.update!(ctx, codeunits(repr(x) * " "))
+function hash_source!(ctx, ex::Expr)
+    # `"doc" f(x) = ...` parses to `Core.@doc(line, "doc", f(x) = ...)`
+    if Meta.isexpr(ex, :macrocall) && ex.args[1] == GlobalRef(Core, Symbol("@doc")) && length(ex.args) == 4
+        return hash_source!(ctx, ex.args[4])
+    end
+    SHA.update!(ctx, codeunits("($(ex.head) "))
+    foreach(a -> hash_source!(ctx, a), ex.args)
+    SHA.update!(ctx, codeunits(") "))
+    return
+end
+
+stamp_lines(inputs) = ["$h $name" for (name, h) in inputs]
+
+# The inputs a stamp lists that are new, gone or different now.
+function changed_inputs(stamp, inputs)
+    old = Dict(
+        let (h, name) = split(l, ' '; limit = 2)
+            name => h
+        end for l in readlines(stamp)[2:end] if !isempty(l)
+    )
+    new = Dict(name => h for (name, h) in inputs)
+    return sort!([name for name in union(keys(old), keys(new)) if get(old, name, "") != get(new, name, "")])
 end
 
 # The pages of tutorials that no longer exist would still be rendered.
@@ -139,17 +178,24 @@ function build_tutorials()
     remove_orphaned_pages()
     cp(UTILS, joinpath(TUTORIAL_DIR, "NotebookUtils.jl"); force = true)
     use_cache = get(ENV, "RISTRETTO_DOCS_CACHE", "on") != "off"
-    common = common_inputs_hash()
+    common = common_inputs()
     pages = Pair{String, String}[]
     for file in selected_tutorials()
         name = splitext(file)[1]
         path = joinpath(LITERATE_DIR, file)
-        key = bytes2hex(SHA.sha256(common * bytes2hex(SHA.sha256(read(path)))))
+        # The script itself is hashed as written: its comments are the page's prose.
+        inputs = [common; relpath(path, ROOT) => bytes2hex(SHA.sha256(read(path)))]
+        key = bytes2hex(SHA.sha256(join(stamp_lines(inputs), '\n')))
         stamp = joinpath(TUTORIAL_DIR, name * ".stamp")
         page = joinpath(TUTORIAL_DIR, name * ".md")
-        if use_cache && isfile(page) && isfile(stamp) && readchomp(stamp) == key
+        if use_cache && isfile(page) && isfile(stamp) && readline(stamp) == key
             @info "Tutorial $name: unchanged, page kept"
         else
+            if isfile(stamp)
+                changed = changed_inputs(stamp, inputs)
+                shown = join(first(changed, 10), ", ") * (length(changed) > 10 ? ", …" : "")
+                @info "Tutorial $name: inputs changed ($(length(changed))): $shown"
+            end
             rm(stamp; force = true)
             for f in readdir(TUTORIAL_DIR)
                 startswith(f, name * "-") && rm(joinpath(TUTORIAL_DIR, f))
@@ -158,7 +204,7 @@ function build_tutorials()
                 path, TUTORIAL_DIR; documenter = true, execute = true, credit = false,
                 preprocess = c -> page_source(c, name), postprocess = md -> extract_images(documenter_math(md), name),
             )
-            write(stamp, key)
+            write(stamp, join([key; stamp_lines(inputs)], '\n') * '\n')
             @info "Tutorial $name executed in $(round(Int, t)) s"
         end
         Literate.notebook(path, TUTORIAL_DIR; execute = false, credit = false)

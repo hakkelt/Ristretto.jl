@@ -15,6 +15,10 @@ jobs:
     permissions:
       contents: write
       statuses: write
+      # julia-actions/cache deletes the depot caches this branch saved before. Without it they
+      # pile up past the repository's 10 GB, and GitHub then evicts the least recently used
+      # entries, the tutorial pages below included.
+      actions: write
 
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +52,8 @@ jobs:
           key: mritestdata-${{ runner.os }}-v1
       # Executed tutorial pages, each with a stamp of what it was executed from (docs/make.jl);
       # a page whose inputs did not change is not executed again. A cache entry cannot be
-      # updated, so every run saves a new one and restores the newest.
+      # updated, so every run saves a new one and restores the newest. GitHub drops an entry no
+      # run has read for 7 days; cache-keepalive.yml reads master's twice a week.
       - uses: actions/cache/restore@v4
         with:
           path: docs/src/tutorials
