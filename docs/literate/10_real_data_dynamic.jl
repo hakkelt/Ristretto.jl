@@ -866,26 +866,27 @@ end
 # sampling pattern changed. Four things are worth taking away from them, and one is a caveat
 # about this tutorial itself.
 #
-# **The sampling pattern decides the ranking, not the regularizer.** Interleaving makes the
-# *zero-filled* image markedly worse: the aliasing is no longer a single coherent ghost but
-# noise-like structure that moves frame to frame. It makes both per-frame methods worse for the
-# same reason — they see each frame alone,
-# and each frame is now harder. Every temporal and low-rank model gets *better*, because what it
-# lost in per-frame conditioning it gained in something to exploit along time. That crossing is
-# the whole argument for time-varying sampling, and it is visible here as a table rather than as
-# an assertion.
+# **The sampling pattern decides the ranking, not the regularizer.** Interleaving leaves the
+# *zero-filled* error about where it was, but changes its character: the aliasing is no longer a
+# single coherent ghost but noise-like structure that moves frame to frame. That makes both
+# per-frame methods a third to a half worse — they see each frame alone, and each frame is now
+# harder. The temporal and low-rank models lose far less, at most a sixth and `TemporalTotalVariation`
+# nothing, because what each frame lost in conditioning they recover along time; the per-frame
+# wavelet falls from fourth place to sixth. That shift is the whole argument for time-varying
+# sampling, and it is visible here as a table rather than as an assertion.
 #
 # **Global error hides all of this.** Compare the two columns of the summary tables: global error
 # is dominated by the static chest wall, which every method reconstructs well, and it compresses
-# the spread between methods to a few thousandths. The dynamic-region column is where the models
+# the spread between the temporal models to a few thousandths. The dynamic-region column is where the models
 # actually differ. Reporting only a whole-image NRMSE would have made this comparison look like a
 # tie.
 #
-# **The best method is not the most expensive one.** `LocallyLowRank` wins the fixed pattern and
-# comes within a few per cent of the winner on the interleaved one, for a fifth to a quarter of
+# **The best method is not the most expensive one.** `LocallyLowRank` wins on both patterns, for
+# a fifth to a quarter of
 # the time `TemporalTotalVariation` takes (section 8). `L+S`, the most elaborate model here, costs
-# up to half again as much as `LowRank` alone, ties
-# `TemporalTotalVariation` on the fixed pattern and is beaten by both on the interleaved one. Against all of them, per-frame `L1Wavelet2D` runs in seconds on a multi-core machine and lands some 15%
+# up to half again as much as `LowRank` alone, trails `TemporalTotalVariation` on the fixed
+# pattern and is beaten by both on the interleaved one. Against all of them, per-frame
+# `L1Wavelet2D` runs in seconds on a multi-core machine and lands some 20%
 # behind the winner on the fixed pattern and some 60% behind on the interleaved one: a real gap
 # where the sampling gives the temporal models something to exploit, and a small one where it
 # does not. If a hundred slices have to
@@ -903,9 +904,9 @@ end
 #
 # Swept properly (λ_L and λ_S independently, off to one side), the best pair leaves `S` non-zero
 # on a few per cent of the voxels and `L` holding ~99.7% of the energy — a decomposition that is
-# actually a decomposition — and it buys very little: a modest gain over `LowRank` alone on the
-# fixed pattern (0.0641 against 0.0709) and nothing at all on the interleaved one (0.0744 against
-# 0.0741), for up to half again the runtime of `LowRank`. That is the honest result, and it is not a
+# actually a decomposition — and it buys very little: a gain of 4–5% over `LowRank` alone (0.0705
+# against 0.0732 on the fixed pattern, 0.0724 against 0.0762 on the interleaved one), for up to
+# half again the runtime of `LowRank`. That is the honest result, and it is not a
 # paradox: at R ≈ 2.6 with a single slice the low-rank model already explains most of the cine,
 # and giving the fit a second, sparser way to explain the same data mostly lets it put residual
 # noise there instead. L+S earns its second term at higher acceleration and

@@ -92,7 +92,7 @@ for (name, m) in pairs(masks)
     )
 end
 
-# The left-ventricular blood pool shrinks from 124 pixels to 69 and back over the sixteen
+# The left-ventricular blood pool varies between 99 pixels and 48 over the sixteen
 # frames — that contraction is the moving structure every temporal method below is judged on.
 
 plot(
