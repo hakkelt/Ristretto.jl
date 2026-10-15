@@ -357,36 +357,39 @@ end
 # Every method below is a different penalty on a different transform, so its λ lives on a
 # different scale — nothing about "λ = 0.02" is comparable between `L1Wavelet2D` and `LowRank`.
 # Comparing methods at a shared λ, or at whatever λ each one was first written with, mostly
-# measures how lucky those choices were. So: a four-point log-spaced sweep per method, per
-# pattern, and each method is reported at the λ that minimizes its **dynamic** error.
+# measures how lucky those choices were. So: a short log-spaced sweep per method, per pattern,
+# and each method is reported at the λ that minimizes its **dynamic** error.
 #
-# Four points is coarse: the best λ is accurate to a factor of ~3, which is enough to stop a
+# Three or four points is coarse: the best λ is accurate to a factor of ~3, which is enough to stop a
 # method being shown at a grossly wrong setting but not enough to split hairs between two methods
 # that land within a percent of each other. The brackets below are not arbitrary — they are the
 # third iteration. The first pass used one shared decade per family, and five of the seven methods
 # came back with their optimum sitting on an *end point* of their own grid, which means the search
 # never bracketed the minimum and the number it reported was a bound, not an optimum. Each grid was
 # recentred on that result; two of them (`L2Image` and `L1TemporalFourier`) came back on an end
-# point a second time and had to be moved again. Every grid below now has its minimum strictly
-# inside it — you can check that yourself in the sweep numbers printed by the next cell.
+# point a second time and had to be moved again. Then each grid was cut to the three points around
+# its optimum, except for the two whose optimum lies between two grid points: on the fixed pattern
+# `TemporalTotalVariation` scores the same at 3e-3 and 1e-2, and L+S has its best λ at 0.3 on one
+# pattern and at 0.6 on the other. Every grid below has its minimum strictly inside it — you can
+# check that yourself in the sweep numbers printed by the next cell.
 # **Always check it**: an optimum at the edge of your sweep is not a result.
 #
-# This cell is the expensive one — fifty-six reconstructions, around twenty-five minutes on a
-# shared node with four threads. Everything after it is cheap except the timing table.
+# This cell is the expensive one — forty-six reconstructions, around eight minutes with two
+# threads. Everything after it is cheap.
 
 sweeps = (
     "L2Image (per frame)" =>
-        (Float32[2.0e-2, 8.0e-2, 3.0e-1, 1.0], λ -> IterativeReconstruction(L2Image(λ); maxit = 20)),
+        (Float32[2.0e-2, 8.0e-2, 3.0e-1], λ -> IterativeReconstruction(L2Image(λ); maxit = 20)),
     "L1Wavelet2D (per frame)" =>
-        (Float32[3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(L1Wavelet2D(λ); maxit = 30)),
+        (Float32[1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(L1Wavelet2D(λ); maxit = 30)),
     "L1TemporalFourier" =>
-        (Float32[1.0e-4, 3.0e-4, 1.0e-3, 3.0e-3], λ -> IterativeReconstruction(L1TemporalFourier(λ; time_dim = :time); maxit = 30)),
+        (Float32[3.0e-4, 1.0e-3, 3.0e-3], λ -> IterativeReconstruction(L1TemporalFourier(λ; time_dim = :time); maxit = 30)),
     "TemporalTotalVariation" =>
         (Float32[3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(TemporalTotalVariation(λ; time_dim = :time); maxit = 30)),
     "LowRank" =>
-        (Float32[3.0e-2, 1.0e-1, 3.0e-1, 1.0], λ -> IterativeReconstruction(LowRank(λ; time_dim = :time); maxit = 30)),
+        (Float32[1.0e-1, 3.0e-1, 1.0], λ -> IterativeReconstruction(LowRank(λ; time_dim = :time); maxit = 30)),
     "LocallyLowRank" =>
-        (Float32[3.0e-3, 1.0e-2, 3.0e-2, 1.0e-1], λ -> IterativeReconstruction(LocallyLowRank(λ; block_size = 8, time_dim = :time); maxit = 30)),
+        (Float32[1.0e-2, 3.0e-2, 1.0e-1], λ -> IterativeReconstruction(LocallyLowRank(λ; block_size = 8, time_dim = :time); maxit = 30)),
     ## L+S has two knobs, not one. Sweeping both would be sixteen reconstructions per pattern, so
     ## the sparse weight is held at a value swept separately (a two-parameter grid, off to one
     ## side, over λ_L ∈ [1e-2, 2] × λ_S ∈ [1e-4, 3e-2]) and only λ_L is swept here. Tying the two
