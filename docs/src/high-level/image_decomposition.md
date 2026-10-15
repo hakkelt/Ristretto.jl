@@ -1,7 +1,5 @@
 # Image Decomposition
 
-*Tutorial: [Dynamic imaging and decomposition](../tutorials/07_dynamic_and_decomposition.md).*
-
 Image decomposition models the reconstructed image as a sum of additive
 components, each with its own regularizer — the canonical example being
 low-rank + sparse (L+S) decomposition of dynamic MRI. This is a different
@@ -11,7 +9,9 @@ two can be combined (see [Interaction with Task Splitting](@ref
 image-decomposition-task-splitting) below).
 
 See [Theoretical Background](../theory.md#Additive-Image-Decomposition) for the
-underlying optimization model.
+underlying optimization model, and
+[Dynamic imaging and decomposition](../tutorials/07_dynamic_and_decomposition.md) for an L+S
+reconstruction of a dynamic phantom.
 
 ## API Reference
 
@@ -24,47 +24,19 @@ drop_components
 
 ## Basic Usage
 
-```@setup imgdecomp
-using Ristretto
-using Random
-Random.seed!(123)
-```
-
 Declare each component with a name and one or more regularizations, then pass
 the components to `IterativeReconstruction`:
 
-```@example imgdecomp
-using Ristretto
-
-ksp = rand(ComplexF32, 64, 64, 4)
-acq = AcquisitionInfo(ksp; is3D = false)
-
-img = reconstruct(
-    acq,
-    IterativeReconstruction(
-        Component(:smooth, L2Image(0.01)),
-        Component(:sparse, L1Image(0.05)); maxit = 30); verbosity = Silent())
-
-println(typeof(img))
-println("Components: ", keys(components(img)))
+```julia
+img = reconstruct(acq, IterativeReconstruction(
+    Component(:smooth, L2Image(0.01)),
+    Component(:sparse, L1Image(0.05)); maxit = 30))
 ```
 
 The result is a [`ReconImage`](@ref) whose array is the sum of the components,
-which it also holds:
-
-```@example imgdecomp
-using LinearAlgebra
-
-sum(values(components(img))) ≈ total_image(img)
-```
-
-Individual components stay accessible via `.components`, or, more concisely,
-directly as a property — `img.smooth` is shorthand for `img.components.smooth`:
-
-```@example imgdecomp
-img.components.smooth isa AbstractArray
-img.smooth isa AbstractArray
-```
+which it also holds: `sum(values(components(img))) ≈ total_image(img)`. Individual components
+are reachable via `.components`, or directly as a property — `img.smooth` is shorthand for
+`img.components.smooth`.
 
 The components are plain arrays shaped like the image, which the image's
 [`header`](@ref Ristretto.header) describes. Keyword indexing selects the same part of
@@ -74,36 +46,10 @@ their memory can be released. The image's own properties (`data`, `header`,
 `components`) always resolve first, so a component cannot be named after one of
 them — `reconstruct` (via `Component`/`check_components`) and the `ReconImage`
 constructor both reject that collision, since such a component would otherwise
-be unreachable through dot access:
-
-```@example imgdecomp
-try
-    ReconImage(zeros(2, 2); components = (header = zeros(2, 2),))
-catch e
-    println(e)
-end
-```
-
-`propertynames(img)` lists both the image's own properties and every component name, and
-accessing an unknown property raises an `ArgumentError` naming the available
-ones:
-
-```@example imgdecomp
-println(propertynames(img))
-try
-    img.nonexistent
-catch e
-    println(e)
-end
-```
-
-To get a plain array of the sum, without the header and the components, use
-`Array`:
-
-```@example imgdecomp
-x = Array(img)
-println(typeof(x))
-```
+be unreachable through dot access. `propertynames(img)` lists both the image's own
+properties and every component name, and accessing an unknown property raises an
+`ArgumentError` naming the available ones. `Array(img)` is a plain array of the sum, without the
+header and the components.
 
 ## Low-Rank + Sparse (L+S)
 
@@ -129,15 +75,8 @@ original k-t SPARSE transform) or [`L1Image`](@ref); the low-rank component is
 [`LowRank`](@ref), or [`LocallyLowRank`](@ref) when the dynamics vary across
 the field of view.
 
-!!! note "Solvable combinations"
-    - **L+S dynamic MRI**: `LowRank` (or `LocallyLowRank`) + `TemporalTotalVariation`
-      (or `L1TemporalFourier` or `L1Image`) cleanly separates background from motion/contrast.
-    - **Infimal convolution TV**: `Component(:cartoon, TotalVariation2D(λ))` +
-      `Component(:ramp, SecondOrderTotalVariation2D(λ))` splits the image into a
-      piecewise-constant and a piecewise-linear part.
-    - **Multi-scale low rank**: one [`LocallyLowRank`](@ref) component per block
-      size gives the exact model of Ong & Lustig, with the scales separated;
-      [`MultiScaleLowRank`](@ref) is the single-image approximation of the same idea.
+The infimal convolution of first- and second-order TV, and the multi-scale low-rank model, are
+components too; see [below](#What-Additive-Components-Are-Not).
 
 ## What Additive Components Are Not
 
@@ -169,30 +108,17 @@ additive splittings:
 
 Image decomposition requires **at least two** components — a single component
 is rejected, since a one-component reconstruction is just the plain
-regularization API:
-
-```@example imgdecomp
-try
-    reconstruct(acq, IterativeReconstruction(Component(:only, L1Image(0.05))); verbosity = Silent())
-catch e
-    println(e)
-end
-```
-
-Component names must also be unique.
+regularization API. Component names must also be unique.
 
 ## Multiple Regularizations per Component
 
 A `Component` can combine several regularizations, exactly like the plain
 regularization API:
 
-```@example imgdecomp
-img_multi = reconstruct(
-    acq,
-    IterativeReconstruction(
-        Component(:structured, L1Wavelet2D(0.01), TotalVariation2D(0.005)),
-        Component(:sparse, L1Image(0.05)); maxit = 20); verbosity = Silent())
-nothing # hide
+```julia
+IterativeReconstruction(
+    Component(:structured, L1Wavelet2D(0.01), TotalVariation2D(0.005)),
+    Component(:sparse, L1Image(0.05)))
 ```
 
 ## Choosing λ per Component
@@ -211,14 +137,9 @@ reconstruction and the remaining components start at zero — the standard
 L+S/RPCA warm start. Override this with `x₀` as a `Tuple` (component order) or
 `NamedTuple` (by component name):
 
-```@example imgdecomp
-x̂ = reconstruct(acq; verbosity = Silent())
-img_warm = reconstruct(
-    acq,
-    IterativeReconstruction(
-        Component(:smooth, L2Image(0.01)),
-        Component(:sparse, L1Image(0.05)); maxit = 30); x₀ = (smooth = x̂, sparse = zero(x̂)), verbosity = Silent())
-nothing # hide
+```julia
+x̂ = reconstruct(acq)
+img = reconstruct(acq, method; x₀ = (smooth = x̂, sparse = zero(x̂)))
 ```
 
 ## Solver Applicability
@@ -254,18 +175,5 @@ Image decomposition composes with [Task Splitting](task_splitting.md):
 if the data has batch dimensions (e.g. slices) that none of the components'
 regularizations couple, `reconstruct` still splits the task over those
 dimensions automatically, solving each slice's image-decomposition problem
-independently and stacking both the total image and each component:
-
-```@example imgdecomp
-nx, ny, nslices, nc = 32, 32, 3, 2
-ksp_ms = rand(ComplexF32, nx, ny, nc, nslices)
-acq_ms = AcquisitionInfo(ksp_ms; is3D = false)
-
-img_ms = reconstruct(
-    acq_ms,
-    IterativeReconstruction(
-        Component(:smooth, L2Image(0.01)),
-        Component(:sparse, L1Image(0.05)); maxit = 10); verbosity = Silent())
-println(size(img_ms))
-println(size(img_ms.smooth))
-```
+independently and stacking both the total image and each component: on a
+`(kx, ky, coil, slice)` acquisition, `img` and `img.smooth` are both `(x, y, slice)`.
