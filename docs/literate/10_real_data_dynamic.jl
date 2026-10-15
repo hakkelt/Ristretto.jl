@@ -15,10 +15,10 @@
 # > *OCMR (v1.0) — Open-Access Multi-Coil k-Space Dataset for Cardiovascular Magnetic Resonance
 # > Imaging*, arXiv:2008.03410 (2020). The first run downloads ~200 MB.
 #
-# > **Runtime.** This is by far the slowest tutorial in the set: **twenty minutes to forty** end to
-# > end (measured: 21 min with `JULIA_NUM_THREADS=8` on a compute node, 39 min with four threads on
-# > a shared one),
-# > most of it in the λ sweep of section 6 (fifty-six reconstructions of a 256 × 208 × 19 cine)
+# > **Runtime.** This is by far the slowest tutorial in the set: about **ten to fifteen minutes** end
+# > to end (measured without the timing table of section 8: 12 min with two threads, 8 min with
+# > four; the table adds one to three minutes),
+# > most of it in the λ sweep of section 6 (forty-six reconstructions of a 256 × 208 × 19 cine)
 # > and the rest in the timing table of section 8. Drop entries from `sweeps`, or lower `maxit`,
 # > if you want it faster — the conclusions in section 11 survive a coarser sweep, they just stop
 # > being defensible to the decimal place.
@@ -525,23 +525,40 @@ end
 # timings vary with whatever else the machine is doing, and the minimum is the least contaminated
 # estimate of the work actually done. (`BenchmarkTools.@benchmark` does all of this properly and would be the right tool if
 # these were microseconds; at tens of seconds per sample its statistics are unaffordable here.)
+#
+# The times depend on the machine, on the thread count and, through the iteration count, on each
+# method's λ. This page shows a table measured once at several thread counts, at the λ the sweep
+# above picked for the interleaved pattern; the notebook measures them on your machine.
 
-function best_of(f, n = 2)
-    f()                                        # warm-up: compile everything
-    return minimum(@elapsed(f()) for _ in 1:n)
-end
+#nb function best_of(f, n = 2)
+#nb     f()                                        # warm-up: compile everything
+#nb     return minimum(@elapsed(f()) for _ in 1:n)
+#nb end
+#nb for (label, r) in best_interleaved
+#nb     (_, build) = sweeps[findfirst(((l, _),) -> l == label, sweeps)][2]
+#nb     t = best_of(() -> reconstruct(acq_interleaved, build(r.λ)))
+#nb     @printf("%-24s %6.2f s  (best of 2, after warm-up)\n", label, t)
+#nb end
 
-for (label, r) in best_interleaved
-    (_, build) = sweeps[findfirst(((l, _),) -> l == label, sweeps)][2]
-    t = best_of(() -> reconstruct(acq_interleaved, build(r.λ)))
-    @printf("%-24s %6.2f s  (best of 2, after warm-up)\n", label, t)
-end
-
+#md # Measured on 2026-10-15 on one AMD EPYC 7763 node with Julia 1.13.1, best of two after a
+#md # warm-up, at λ = 0.08, 0.003, 0.001, 0.003, 0.3, 0.03 and 0.6 in the order of the rows:
+#md #
+#md # | method | 1 thread | 4 threads | 16 threads |
+#md # |---|---:|---:|---:|
+#md # | L2Image (per frame) | 5.49 s | 1.53 s | 0.82 s |
+#md # | L1Wavelet2D (per frame) | 11.31 s | 3.15 s | 1.54 s |
+#md # | L1TemporalFourier | 4.58 s | 2.11 s | 1.86 s |
+#md # | TemporalTotalVariation | 25.80 s | 8.76 s | 8.50 s |
+#md # | LowRank | 4.12 s | 5.15 s | 4.37 s |
+#md # | LocallyLowRank | 5.85 s | 2.12 s | 1.57 s |
+#md # | L+S (LowRank+L1Image) | 5.56 s | 6.21 s | 6.47 s |
+#md #
 # The per-frame methods are the fast ones for a structural reason, not an implementation one: a
 # purely spatial regularizer leaves `:time` a batch dimension, so `reconstruct` splits the
 # problem into `nframes` independent solves and runs them in parallel (tutorial 7, section 5).
-# A temporal or low-rank penalty couples the frames, so there is one large problem instead —
-# see how the number changes with `JULIA_NUM_THREADS`.
+# A temporal or low-rank penalty couples the frames, so there is one large problem instead, and
+# how much it gains from threads depends on its operators: `LocallyLowRank` works on independent
+# blocks and still scales, while `LowRank` and L+S gain nothing from threads on this problem.
 
 # ## 9. The temporal profile
 #
@@ -865,10 +882,10 @@ end
 # tie.
 #
 # **The best method is not the most expensive one.** `LocallyLowRank` wins the fixed pattern and
-# comes within a few per cent of the winner on the interleaved one, for a fraction of the time
-# `TemporalTotalVariation` takes (section 8 — read the numbers your own machine printed, not the
-# ones in this sentence). `L+S`, the most elaborate model here, is the slowest, ties
-# `TemporalTotalVariation` on the fixed pattern and is beaten by both on the interleaved one. Against all of them, per-frame `L1Wavelet2D` runs in a few seconds and lands some 15%
+# comes within a few per cent of the winner on the interleaved one, for a fifth to a quarter of
+# the time `TemporalTotalVariation` takes (section 8). `L+S`, the most elaborate model here, costs
+# up to half again as much as `LowRank` alone, ties
+# `TemporalTotalVariation` on the fixed pattern and is beaten by both on the interleaved one. Against all of them, per-frame `L1Wavelet2D` runs in seconds on a multi-core machine and lands some 15%
 # behind the winner on the fixed pattern and some 60% behind on the interleaved one: a real gap
 # where the sampling gives the temporal models something to exploit, and a small one where it
 # does not. If a hundred slices have to
@@ -888,7 +905,7 @@ end
 # on a few per cent of the voxels and `L` holding ~99.7% of the energy — a decomposition that is
 # actually a decomposition — and it buys very little: a modest gain over `LowRank` alone on the
 # fixed pattern (0.0641 against 0.0709) and nothing at all on the interleaved one (0.0744 against
-# 0.0741), for the longest runtime in the table. That is the honest result, and it is not a
+# 0.0741), for up to half again the runtime of `LowRank`. That is the honest result, and it is not a
 # paradox: at R ≈ 2.6 with a single slice the low-rank model already explains most of the cine,
 # and giving the fit a second, sparser way to explain the same data mostly lets it put residual
 # noise there instead. L+S earns its second term at higher acceleration and

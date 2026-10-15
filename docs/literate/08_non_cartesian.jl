@@ -558,7 +558,7 @@ y_reference = 𝒜_reference * x_true
 results = map(configs) do (name, c)
     𝒜 = get_encoding_operator(data_radial; m = c.m, sigma = c.sigma, precompute = c.precompute)
     y = 𝒜 * x_true
-    best_ms = 1000 * @belapsed $𝒜 * $x_true
+    best_ms = 1000 * @belapsed $𝒜 * $x_true seconds = 0.5
     rel_err = norm(y - y_reference) / norm(y_reference)
     (name = name, ms = round(best_ms, digits = 2), rel_err = round(rel_err, digits = 6))
 end

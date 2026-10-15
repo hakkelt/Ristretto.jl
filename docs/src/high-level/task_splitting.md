@@ -34,8 +34,14 @@ acquisition. A custom regularizer joins this mechanism by implementing `get_affe
 | Keyword | Effect |
 |---|---|
 | `disable_task_splitting = true` | solve the whole stack as one problem |
-| `task_executor = MultiThreadingExecutor()` | run the tasks on Julia's threads (the default) |
-| `task_executor = SequentialExecutor()` | run the tasks one after another |
+| `task_executor = MultiThreadingExecutor()` | run the tasks on Julia's threads |
+| `task_executor = SequentialExecutor()` | run the tasks one after another, each free to thread internally |
+
+Left unset, `task_executor` runs the tasks on threads when a task is too small to thread by itself
+or there are at least as many tasks as threads, and one after another otherwise. Forcing
+`SequentialExecutor()` on small tasks leaves the threads idle: a 128² slice is below every
+operator's threading threshold, so on 16 threads 32 such slices took 7.3 s one after another,
+3.0 s unsplit and 0.73 s in parallel.
 
 Both are run settings: they go to `reconstruct` or to a `ReconstructionConfig`. Data in GPU
 memory are not split unless `disable_task_splitting = false` is given explicitly (see
