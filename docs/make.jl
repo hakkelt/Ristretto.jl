@@ -1,5 +1,8 @@
 using Documenter
 using Literate
+using Base64: base64decode
+using Pkg: Pkg
+using SHA: SHA
 include(joinpath(@__DIR__, "benchmark_tables.jl"))  # BenchmarkTables, for related_packages.md
 using Ristretto
 using Ristretto.ProximalAlgorithms
@@ -26,9 +29,14 @@ using Ristretto: with_serial_blas, serial_blas_threshold_bytes,
 # Tutorials: each Literate script in docs/literate/ becomes an executed page under
 # src/tutorials/ and a notebook (not executed) to download next to it. RISTRETTO_DOCS_TUTORIALS
 # selects some of them by number ("01,09"), for a quick local build; "none" skips them.
+#
+# Literate executes the scripts, not Documenter, so an executed page can be kept: next to each
+# page a stamp records the hash of everything its output depends on, and a page whose stamp
+# still matches is not executed again. RISTRETTO_DOCS_CACHE=off executes every page anyway.
 const LITERATE_DIR = joinpath(@__DIR__, "literate")
 const TUTORIAL_DIR = joinpath(@__DIR__, "src", "tutorials")
 const UTILS = joinpath(LITERATE_DIR, "NotebookUtils.jl")
+const ROOT = dirname(@__DIR__)
 
 function selected_tutorials()
     all = sort(filter(f -> occursin(r"^\d\d_.*\.jl$", f), readdir(LITERATE_DIR)))
@@ -40,8 +48,13 @@ function selected_tutorials()
 end
 
 # The page loads the helper module from its source; the notebook expects it next to itself.
+# Code marked `#nb` (a timing measurement, whose page shows a snapshot instead) runs in the
+# notebook only; the page shows it as a plain code block that is not executed.
 function page_source(content, name)
     content = replace(content, "include(\"NotebookUtils.jl\")" => "include($(repr(UTILS))) #hide")
+    content = replace(
+        content, r"(?m)(^#nb (?!# ).*\n)+" => s -> "# ```julia\n" * replace(s, r"(?m)^#nb " => "# ") * "# ```\n"
+    )
     download = "#md # *Download this tutorial as a [Jupyter notebook]($(name).ipynb) (with " *
         "[`NotebookUtils.jl`](NotebookUtils.jl) next to it).*\n#md #\n"
     first_line, rest = split(content, '\n'; limit = 2)
@@ -75,16 +88,79 @@ function _math_prose(text)
     return replace(text, r"\$([^$]+?)\$"s => s -> "``" * replace(s[2:(end - 1)], r"\s*\n\s*" => " ") * "``")
 end
 
+# What every executed page depends on besides its own script: the package and the vendored
+# dependencies, the resolved environment, this file (it shapes the page), the helper module,
+# the Julia version and the thread count (the timings print it).
+function common_inputs_hash()
+    ctx = SHA.SHA256_CTX()
+    files = String[joinpath(ROOT, f) for f in ("Project.toml", "Manifest.toml")]
+    append!(files, (joinpath(@__DIR__, f) for f in ("Project.toml", "make.jl")))
+    push!(files, UTILS)
+    for dir in ("src", "ext", "deps"), (root, _, fs) in walkdir(joinpath(ROOT, dir)), f in sort(fs)
+        push!(files, joinpath(root, f))
+    end
+    for f in files
+        isfile(f) || continue
+        SHA.update!(ctx, codeunits(relpath(f, ROOT)))
+        SHA.update!(ctx, read(f))
+    end
+    versions = sort!(["$(d.name) $(d.version) $(d.tree_hash)" for d in values(Pkg.dependencies())])
+    SHA.update!(ctx, codeunits(join(versions, '\n') * "\n$VERSION $(Threads.nthreads())"))
+    return bytes2hex(SHA.digest!(ctx))
+end
+
+# The pages of tutorials that no longer exist would still be rendered.
+function remove_orphaned_pages()
+    names = Set(splitext(f)[1] for f in readdir(LITERATE_DIR))
+    for f in readdir(TUTORIAL_DIR)
+        m = match(r"^(\d\d_[^.]*?)(-(img)?\d+)?\.(md|png|gif|jpeg|svg|stamp|ipynb)$", f)
+        isnothing(m) || m[1] in names || rm(joinpath(TUTORIAL_DIR, f))
+    end
+    return
+end
+
+# Literate inlines a result that can show itself as HTML, which plots and animations can, as a
+# base64 data URI; written to files instead, they keep the page under Documenter's size limit.
+function extract_images(md, name)
+    n = Ref(0)
+    pattern = r"```@raw html\n<img src=\"data:image/(png|gif|jpeg|svg\+xml);base64,([A-Za-z0-9+/=]+)\" />\n```"
+    return replace(
+        md, pattern => function (block)
+            m = match(pattern, block)
+            file = "$(name)-img$(n[] += 1).$(m[1] == "svg+xml" ? "svg" : m[1])"
+            write(joinpath(TUTORIAL_DIR, file), base64decode(m[2]))
+            return "![]($file)"
+        end
+    )
+end
+
 function build_tutorials()
     mkpath(TUTORIAL_DIR)
+    remove_orphaned_pages()
     cp(UTILS, joinpath(TUTORIAL_DIR, "NotebookUtils.jl"); force = true)
+    use_cache = get(ENV, "RISTRETTO_DOCS_CACHE", "on") != "off"
+    common = common_inputs_hash()
     pages = Pair{String, String}[]
     for file in selected_tutorials()
         name = splitext(file)[1]
         path = joinpath(LITERATE_DIR, file)
-        Literate.markdown(
-            path, TUTORIAL_DIR; documenter = true, credit = false, preprocess = c -> page_source(c, name), postprocess = documenter_math,
-        )
+        key = bytes2hex(SHA.sha256(common * bytes2hex(SHA.sha256(read(path)))))
+        stamp = joinpath(TUTORIAL_DIR, name * ".stamp")
+        page = joinpath(TUTORIAL_DIR, name * ".md")
+        if use_cache && isfile(page) && isfile(stamp) && readchomp(stamp) == key
+            @info "Tutorial $name: unchanged, page kept"
+        else
+            rm(stamp; force = true)
+            for f in readdir(TUTORIAL_DIR)
+                startswith(f, name * "-") && rm(joinpath(TUTORIAL_DIR, f))
+            end
+            t = @elapsed Literate.markdown(
+                path, TUTORIAL_DIR; documenter = true, execute = true, credit = false,
+                preprocess = c -> page_source(c, name), postprocess = md -> extract_images(documenter_math(md), name),
+            )
+            write(stamp, key)
+            @info "Tutorial $name executed in $(round(Int, t)) s"
+        end
         Literate.notebook(path, TUTORIAL_DIR; execute = false, credit = false)
         title = replace(match(r"^# # (.*)$"m, read(path, String))[1], r"^\d+ — " => "")
         push!(pages, title => joinpath("tutorials", name * ".md"))
