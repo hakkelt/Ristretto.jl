@@ -611,6 +611,13 @@ end
 # - [Spiral and radial artifacts](https://mriquestions.com/spiralradial-artifacts.html) — the
 #   streaks, blurring and off-resonance swirls these trajectories fail with, including the
 #   gradient-delay artefacts §4 corrects.
+#
+# Lectures and tutorials elsewhere:
+#
+# - Stanford EE369C lecture notes on [non-uniform reconstruction](https://web.stanford.edu/class/ee369c/Lectures/L3_Gridding_Intro.pdf),
+#   [gridding and density estimation](https://web.stanford.edu/class/ee369c/Lectures/L4_Gridding_and_Density.pdf) and
+#   [gridding kernel design](https://web.stanford.edu/class/ee369c/Lectures/L5_Gridding_Kernel.pdf) — the NFFT and the density
+#   compensation of §3–4, and the kernel-width/oversampling trade-off of §7.
 
 # ## Environment
 

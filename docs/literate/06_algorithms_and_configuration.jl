@@ -1005,6 +1005,16 @@ end
 #   reconstruction as the third ingredient, next to incoherent sampling and sparsity.
 # - [Parallel imaging: noise](https://mriquestions.com/noise-in-pi.html) — the g-factor, and why
 #   convergence to the least-squares solution is not the same as a good image.
+#
+# Lectures and tutorials elsewhere:
+#
+# - J. A. Fessler, [*Optimization methods for MR image reconstruction*](https://arxiv.org/abs/1903.03510),
+#   IEEE Signal Processing Magazine 2020 — CG, proximal gradient, POGM and ADMM, derived for the
+#   MRI problems this tutorial solves.
+# - L. Vandenberghe's ECE236C slides on the [proximal gradient method](https://www.seas.ucla.edu/~vandenbe/236C/lectures/proxgrad.pdf),
+#   [FISTA](https://www.seas.ucla.edu/~vandenbe/236C/lectures/fista.pdf), [Douglas–Rachford splitting and ADMM](https://www.seas.ucla.edu/~vandenbe/236C/lectures/dr.pdf),
+#   [primal-dual methods](https://www.seas.ucla.edu/~vandenbe/236C/lectures/pdprox.pdf), [conjugate gradients](https://www.seas.ucla.edu/~vandenbe/236C/lectures/cg.pdf) and
+#   [quasi-Newton methods](https://www.seas.ucla.edu/~vandenbe/236C/lectures/qnewton.pdf) — the solvers of §2, one deck each.
 
 # ## Environment
 

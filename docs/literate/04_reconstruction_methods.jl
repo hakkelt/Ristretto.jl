@@ -391,6 +391,12 @@ println("GRAPPA is applicable to the R = 2 + ACS acquisition")
 # - [Partial Fourier](https://mriquestions.com/partial-fourier.html) and
 #   [phase conjugate symmetry](https://mriquestions.com/phase-symmetry.html) — the physics §2
 #   exploits, and the vendor names (half scan, fractional NEX).
+#
+# Lectures and tutorials elsewhere:
+#
+# - Stanford EE369C lecture notes on [SENSE](https://web.stanford.edu/class/ee369c/Lectures/L8_PI_SENSE.pdf),
+#   [SMASH and GRAPPA](https://web.stanford.edu/class/ee369c/Lectures/L9_PI_SMASH.pdf) and [GRAPPA calibration, SPIRiT and coil
+#   compression](https://web.stanford.edu/class/ee369c/Lectures/L10_PI_SPIRiT.pdf) — the derivations behind §3.
 
 # ## Environment
 

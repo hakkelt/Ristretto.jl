@@ -644,6 +644,12 @@ side_by_side(
 # - [Parallel imaging](https://mriquestions.com/what-is-pi.html) and
 #   [PI: artifacts](https://mriquestions.com/artifacts-in-pi.html) — what an under-calibrated
 #   sensitivity map does to a real reconstruction.
+#
+# Lectures and tutorials elsewhere:
+#
+# - M. S. Hansen, P. Kellman, [*Image reconstruction: an overview for clinicians*](https://pmc.ncbi.nlm.nih.gov/articles/PMC4276738/),
+#   J. Magn. Reson. Imaging 2015 — noise prewhitening, coil combination and SNR units, the
+#   preprocessing chain of §3, in the order a scanner applies it.
 
 # ## Environment
 

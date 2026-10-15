@@ -391,6 +391,11 @@ end
 #   and the temporal-resolution budget it works under.
 # - [Compressed sensing](https://mriquestions.com/compressed-sensing.html) — why a different
 #   sampling pattern per frame is what makes these priors work.
+#
+# Lectures and tutorials elsewhere:
+#
+# - Stanford EE369C lecture notes on [low-rank methods](https://web.stanford.edu/class/ee369c/Lectures/L18_Low_Rank.pdf) — the
+#   Casorati matrix and why dynamic series are low rank.
 
 # ## Environment
 

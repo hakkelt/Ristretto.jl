@@ -880,6 +880,13 @@ jim(sweep...; layout = grid_layout(length(sweep)), size = (1000, 660))
 #   periphery costs detail rather than contrast, which is what every λ here trades against.
 # - [Parallel imaging: noise](https://mriquestions.com/noise-in-pi.html) — the noise amplification
 #   these penalties are suppressing.
+#
+# Lectures and tutorials elsewhere:
+#
+# - Lustig's [compressed sensing MRI resources](https://people.eecs.berkeley.edu/~mlustig/CS.html) —
+#   a hands-on exercise on undersampled k-space, workshop slides with code, and the two papers
+#   (*Sparse MRI*, *Compressed Sensing MRI*) that introduced the ℓ₁-wavelet and TV formulation
+#   used here.
 
 # ## Environment
 
