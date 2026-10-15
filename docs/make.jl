@@ -113,7 +113,6 @@ makedocs(;
             "Export" => "high-level/export.md",
             "Regularization" => "high-level/regularization.md",
             "Optimization Algorithms" => "high-level/algorithms.md",
-            "Named Dimensions" => "high-level/nameddims.md",
             "Task Splitting" => "high-level/task_splitting.md",
             "Image Decomposition" => "high-level/image_decomposition.md",
             "Noise & Analysis" => "high-level/analysis.md",
