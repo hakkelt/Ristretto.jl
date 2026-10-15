@@ -639,30 +639,40 @@ method = IterativeReconstruction(L1Wavelet2D(5e-3), TotalVariation2D(1e-3), L1Te
 
 ## Starting Values for λ
 
-λ is in the units of the data: the problem is solved without rescaling the operator, so these are
-starting points for a sweep, not settings. Too noisy or aliased → increase λ; too smooth or blurry
-→ decrease it; move in factors of 2–5.
+The default [`QuantileScaling`](@ref) divides the data by the 99th percentile of the zero-filled
+image, so λ is relative to an image whose bright tissue is about 1, whatever the scanner's units.
+The ranges below are the λ whose error was within 5 % of the best on each of these test cases,
+joined: a Shepp-Logan phantom simulated off-grid (128², 8 coils, 4× variable density, 30 dB),
+tutorial 9's real 0.3 T brain slice (3× variable density), tutorial 7's torso cine (its fixed ky
+lines, and a variant with the lines shifted from frame to frame), a 64³ phantom for
+`L1Wavelet3D` and `TotalVariation3D`, and the sweeps on real OCMR
+cine data printed in tutorial 10. The start value is near the middle of the cases' optima. They
+are starting points for a sweep, not settings: too noisy or aliased → increase λ; too smooth or
+blurry → decrease it; move in factors of 2–3.
 
-| Regularizer | Typical starting value |
-|---|---|
-| `L2Image` | `1e-5` … `1e-3` |
-| `L1Image` | `1e-4` … `1e-2` |
-| `L1Wavelet2D`, `L1Wavelet3D`, `L1Contourlet` | `1e-3` … `1e-2` |
-| `TotalVariation2D/3D`, `AnisotropicTotalVariation2D/3D` | `1e-4` … `5e-3` |
-| `SecondOrderTotalVariation2D/3D` | `1e-4` … `1e-2`; about 2× the first-order λ when the two are combined |
-| `TotalGeneralizedVariation2D/3D` | as `TotalVariation2D`; leave `ratio` at `2.0` |
-| `EdgePreservingRoughness2D/3D` | `1e-4` … `5e-3`; `δ` from the gradient magnitudes of a preliminary reconstruction |
-| `L1TemporalFourier`, `TemporalTotalVariation` | `1e-2` … `1e-1` |
-| `LowRank` | `1e-2` … `1` |
-| `LocallyLowRank`, `MultiScaleLowRank` | `1e-2` … `5e-1` |
-| `StructuredLowRank`, `λ` form | `1e-2` … `1e-1`, relative to the k-space scale |
-| `StructuredLowRank`, `max_rank` form | no λ; read the rank off the singular values of `𝓗 k` on the zero-filled data |
-| `L0Image`, `L0Wavelet2D/3D`, `threshold` form | `1e-4` … `1e-2`; the threshold is `sqrt(2γλ)`, so retune rather than reuse an ℓ₁ λ |
-| `L0Image`, `L0Wavelet2D/3D`, `count` form | no λ; the coefficient budget from the expected sparsity |
-| `PlugAndPlay` | `strength` `1e-2` … `1e-1`, in image intensity units |
-| `JointSparsity` | `1e-3` … `1e-2` |
-| `ReferencePrior` | `1e-3` … `1e-1` |
-| `NonNegative`, `BoxConstraint` | no parameter |
+| Regularizer | Start | Range | Notes |
+|---|---|---|---|
+| `L2Image` | `1e-1` | `1e-2` … `3e-1` | on the phantom anything below `3e-2` is equally good; on the brain slice and OCMR the optimum is `8e-2` … `2e-1` |
+| `L1Image` | `3e-3` | `1e-3` … `1e-2` | only for images sparse in themselves; on the brain slice it hardly changes the error |
+| `L1Wavelet2D`, `L1Wavelet3D` | `5e-3` | `2e-3` … `3e-2` | |
+| `L1Contourlet` | `1e-3` | `1.5e-4` … `7e-3` | the phantom's optimum is 15× below the brain's |
+| `TotalVariation2D/3D`, `AnisotropicTotalVariation2D/3D` | `7e-3` | `1.5e-3` … `1.5e-2` | |
+| `SecondOrderTotalVariation2D/3D` | `5e-3` | `1e-3` … `1.5e-2` | |
+| `TotalGeneralizedVariation2D/3D` | `5e-3` | `1e-3` … `1.5e-2` | `ratio` left at `2.0` |
+| `EdgePreservingRoughness2D/3D` | `5e-3` | `1e-3` … `1.5e-2` | `δ` at the 15th percentile of the gradient magnitudes of an unregularized reconstruction |
+| `L1TemporalFourier` | `1e-3` | `3e-4` … `2e-3` | |
+| `TemporalTotalVariation` | `4e-3` | `3e-3` … `1e-2` | |
+| `LowRank` | `2e-1` | `1e-1` … `3e-1` | on OCMR the optimum is `3e-1` with fixed and with interleaved lines; on tutorial 7's synthetic cine with the same lines in every frame no λ beat the unregularized solve |
+| `LocallyLowRank` | `2e-2` | `5e-3` … `3e-2` | `block_size = 8` |
+| `MultiScaleLowRank` | `2e-2` | `5e-3` … `5e-2` | `block_sizes = (4, 8, 16)` |
+| `StructuredLowRank`, `λ` form | `1e-2` | `2e-3` … `1` | measured only on tutorial 11's calibrationless phantom, where the error is flat above `2e-3` and rises steeply below it |
+| `StructuredLowRank`, `max_rank` form | — | — | no λ; read the rank off the singular values of `𝓗 k` on the zero-filled data |
+| `L0Image`, `L0Wavelet2D/3D`, `threshold` form | `3e-3` | `3e-4` … `3e-2` | the good range of each case is narrow (a factor of 1.5) and its place differs 15–20× between the phantom and the brain; sweep finely, and retune rather than reuse an ℓ₁ λ |
+| `L0Image`, `L0Wavelet2D/3D`, `count` form | — | — | no λ; the coefficient budget from the expected sparsity |
+| `JointSparsity` | `1e-2` | `1e-2` … `1.5e-2` | measured only on tutorial 5's three-echo phantom |
+| `ReferencePrior` | `5e-3` | `2e-3` … `1.5e-2` | next to `L1Wavelet2D(3e-3)`, with a prior that differs from the image in one region |
+| `PlugAndPlay` | — | — | depends on the denoiser; `strength` is in image intensity units. A soft-threshold denoiser at `strength = sqrt(λ)` is `L1Image(λ)` (tutorial 5) |
+| `NonNegative`, `BoxConstraint` | — | — | no parameter |
 
 ## Choosing a Regularizer
 
