@@ -646,7 +646,9 @@ joined: a Shepp-Logan phantom simulated off-grid (128², 8 coils, 4× variable d
 tutorial 9's real 0.3 T brain slice (3× variable density), tutorial 7's torso cine (its fixed ky
 lines, and a variant with the lines shifted from frame to frame), a 64³ phantom for
 `L1Wavelet3D` and `TotalVariation3D`, and the sweeps on real OCMR
-cine data printed in tutorial 10. The start value is near the middle of the cases' optima. They
+cine data printed in tutorial 10. The start value is near the middle of the cases' optima. Data
+simulated on the reconstruction grid with little noise, as in tutorial 5, want λ at the bottom of
+the range or below it. They
 are starting points for a sweep, not settings: too noisy or aliased → increase λ; too smooth or
 blurry → decrease it; move in factors of 2–3.
 

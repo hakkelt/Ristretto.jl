@@ -379,17 +379,17 @@ end
 
 sweeps = (
     "L2Image (per frame)" =>
-        (Float32[2.0e-2, 8.0e-2, 3.0e-1], λ -> IterativeReconstruction(L2Image(λ); maxit = 20)),
+        ([2.0e-2, 8.0e-2, 3.0e-1], λ -> IterativeReconstruction(L2Image(λ); maxit = 20)),
     "L1Wavelet2D (per frame)" =>
-        (Float32[1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(L1Wavelet2D(λ); maxit = 30)),
+        ([1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(L1Wavelet2D(λ); maxit = 30)),
     "L1TemporalFourier" =>
-        (Float32[3.0e-4, 1.0e-3, 3.0e-3], λ -> IterativeReconstruction(L1TemporalFourier(λ; time_dim = :time); maxit = 30)),
+        ([3.0e-4, 1.0e-3, 3.0e-3], λ -> IterativeReconstruction(L1TemporalFourier(λ; time_dim = :time); maxit = 30)),
     "TemporalTotalVariation" =>
-        (Float32[3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(TemporalTotalVariation(λ; time_dim = :time); maxit = 30)),
+        ([3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(TemporalTotalVariation(λ; time_dim = :time); maxit = 30)),
     "LowRank" =>
-        (Float32[1.0e-1, 3.0e-1, 1.0], λ -> IterativeReconstruction(LowRank(λ; time_dim = :time); maxit = 30)),
+        ([1.0e-1, 3.0e-1, 1.0], λ -> IterativeReconstruction(LowRank(λ; time_dim = :time); maxit = 30)),
     "LocallyLowRank" =>
-        (Float32[1.0e-2, 3.0e-2, 1.0e-1], λ -> IterativeReconstruction(LocallyLowRank(λ; block_size = 8, time_dim = :time); maxit = 30)),
+        ([1.0e-2, 3.0e-2, 1.0e-1], λ -> IterativeReconstruction(LocallyLowRank(λ; block_size = 8, time_dim = :time); maxit = 30)),
     ## L+S has two knobs, not one. Sweeping both would be sixteen reconstructions per pattern, so
     ## the sparse weight is held at a value swept separately (a two-parameter grid, off to one
     ## side, over λ_L ∈ [1e-2, 2] × λ_S ∈ [1e-4, 3e-2]) and only λ_L is swept here. Tying the two
@@ -405,7 +405,7 @@ sweeps = (
     ## looking low-rank.
     "L+S (LowRank+L1Image)" =>
         (
-        Float32[1.0e-1, 3.0e-1, 6.0e-1, 1.0],
+        [1.0e-1, 3.0e-1, 6.0e-1, 1.0],
         λ -> IterativeReconstruction(
             Component(:lowrank, LowRank(λ; time_dim = :time)),
             Component(:sparse, L1Image(3.0f-3));
@@ -797,11 +797,11 @@ end
 #-
 sweeps_sp = (
     "L1Wavelet2D (per frame)" =>
-        (Float32[1.0e-2, 3.0e-2, 1.0e-1], λ -> IterativeReconstruction(L1Wavelet2D(λ); maxit = 40)),
+        ([1.0e-2, 3.0e-2, 1.0e-1], λ -> IterativeReconstruction(L1Wavelet2D(λ); maxit = 40)),
     "L1TemporalFourier" =>
-        (Float32[1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(L1TemporalFourier(λ; time_dim = :time); maxit = 40)),
+        ([1.0e-3, 3.0e-3, 1.0e-2], λ -> IterativeReconstruction(L1TemporalFourier(λ; time_dim = :time); maxit = 40)),
     "LowRank" =>
-        (Float32[3.0e-1, 1.0, 3.0], λ -> IterativeReconstruction(LowRank(λ; time_dim = :time); maxit = 40)),
+        ([3.0e-1, 1.0, 3.0], λ -> IterativeReconstruction(LowRank(λ; time_dim = :time); maxit = 40)),
 )
 
 x_sp_adjoint = reconstruct(acq_spiral_us)

@@ -848,15 +848,22 @@ jim(
 
 # ### Starting values for λ
 #
-# Because the problem solved is $\tfrac12\|\mathcal{A}x-y\|^2 + \lambda R(x)$ with no operator
-# rescaling, λ is in the data's own units and the reconstructed image comes back in those units.
+# The default `QuantileScaling` divides the data by the 99th percentile of the direct
+# reconstruction before the solve and multiplies the image back afterwards, so λ acts on an image
+# whose bright tissue is about 1, whatever the scanner's units, and the reconstructed image comes
+# back in the data's own units.
 #
 # The [Regularization reference](https://hakkelt.github.io/Ristretto.jl/dev/high-level/regularization/#Starting-Values-for-λ)
-# lists a typical starting λ for every term.
+# lists a measured starting λ and range for every term. The λ in this tutorial sit at or below
+# the bottom of those ranges, and that is right for this phantom: it is simulated on the
+# reconstruction grid (the inverse crime, tutorial 03 §6) with little noise, so there is little
+# noise and no model error for a penalty to suppress. On this data the total-variation terms do
+# best at about `1e-3`, and `TotalVariation2D` at the table's `7e-3` has about four times the
+# error. Measured or off-grid data put the optimum higher.
 #
-# Too noisy or aliased → increase λ; too smooth → decrease it; move in factors of 2–5.
+# Too noisy or aliased → increase λ; too smooth → decrease it; move in factors of 2–3.
 
-λs = Float32[8.0e-4, 2.0e-3, 5.0e-3, 1.2e-2]
+λs = [8.0e-4, 2.0e-3, 5.0e-3, 1.2e-2]
 sweep = map(λs) do λ
     x̂ = reconstruct(data, IterativeReconstruction(L1Wavelet2D(λ); maxit = 40))
     jim(x̂; title = "λ = $λ\nNRMSE $(round(nrmse1(x̂), digits = 3))")

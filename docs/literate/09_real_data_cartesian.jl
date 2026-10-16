@@ -480,7 +480,7 @@ jim(
 ## A λ sweep on the real data — the same exercise as on the phantom, with a real noise floor. This
 ## is where the λ used above comes from; the minimum is shallow, and everything past it trades
 ## noise for blur faster than it removes aliasing.
-λs = Float32[1.0e-3, 3.0e-3, 6.0e-3, 1.0e-2, 2.0e-2, 5.0e-2]
+λs = [1.0e-3, 3.0e-3, 6.0e-3, 1.0e-2, 2.0e-2, 5.0e-2]
 errs = map(λs) do λ
     rel_err(reconstruct(acq_us, IterativeReconstruction(L1Wavelet2D(λ); maxit = 60)))
 end
