@@ -89,19 +89,21 @@ function _math_prose(text)
 end
 
 # What every executed page depends on besides its own script: the package and the vendored
-# dependencies, the resolved environment, this file (it shapes the page), the helper module,
-# the Julia version and the thread count (the timings print it). One hash per input, so a page
-# that is executed again can say which inputs changed.
+# dependencies, the version of every resolved package, this file (it shapes the page), the helper
+# module, the Julia version and the thread count (the timings print it). One hash per input, so a
+# page that is executed again can say which inputs changed. The manifest itself is not hashed: the
+# documentation build rewrites it, and its versions are already listed one package at a time.
 function common_inputs()
-    files = String[joinpath(ROOT, f) for f in ("Project.toml", "Manifest.toml")]
+    files = String[joinpath(ROOT, "Project.toml")]
     append!(files, (joinpath(@__DIR__, f) for f in ("Project.toml", "make.jl")))
     push!(files, UTILS)
     for dir in ("src", "ext", "deps"), (root, _, fs) in walkdir(joinpath(ROOT, dir)), f in sort(fs)
         push!(files, joinpath(root, f))
     end
     inputs = Pair{String, String}[relpath(f, ROOT) => source_hash(f) for f in files if isfile(f)]
-    versions = sort!(["$(d.name) $(d.version) $(d.tree_hash)" for d in values(Pkg.dependencies())])
-    push!(inputs, "packages" => bytes2hex(SHA.sha256(join(versions, '\n'))))
+    for d in sort!(collect(values(Pkg.dependencies())); by = d -> d.name)
+        push!(inputs, "package $(d.name)" => "$(d.version)_$(something(d.tree_hash, "dev"))")
+    end
     push!(inputs, "julia" => "$(VERSION)_threads=$(Threads.nthreads())")
     return inputs
 end
