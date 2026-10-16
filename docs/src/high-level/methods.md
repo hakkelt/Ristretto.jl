@@ -20,9 +20,13 @@ graph TD
 
 ### Direct Reconstruction
 
+```@setup methods
+using Ristretto
+```
+
 `DirectReconstruction` performs non-iterative reconstruction (such as adjoint sensitivity combination $\mathcal{A}^* y$ or gridding).
 
-```julia
+```@example methods
 DirectReconstruction(; coil_combination = AdjointSensitivity())
 ```
 
@@ -100,8 +104,10 @@ that ignores it makes the iterates oscillate. The problem solved is
 \tfrac{1}{2}\|\mathcal{A}x - y\|_2^2 + \mathcal{R}(x)
 ```
 
-so `λ` weights the regularizer against the data term directly, in the data's own units, and the
-reconstructed image comes back in those units too.
+so `λ` weights the regularizer against the data term directly. The data are divided by the
+default [`QuantileScaling`](@ref) first, so `λ` acts on an image whose bright tissue is about 1
+(see [Scaling](reconstruction.md#Scaling)); the reconstructed image comes back in the data's own
+units.
 
 !!! note "Why the encoding operator is not rescaled to unit norm"
     A common alternative is to normalize the operator and solve

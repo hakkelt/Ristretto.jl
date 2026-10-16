@@ -60,11 +60,13 @@ function slice_subsampling(subsampling::AbstractArray, kspace_data, kspace_batch
     fourier_dims = _get_subsampled_dims_count(subsampling)
     nonfourier = _ksp_trailing_size(kspace_data, fourier_dims + 1)
     n = ndims(subsampling)
-    start = findfirst(
-        s -> nonfourier[s:(s + n - 1)] == size(subsampling),
-        1:(length(nonfourier) - n + 1),
-    )
-    isnothing(start) && return subsampling
+    starts = filter(s -> nonfourier[s:(s + n - 1)] == size(subsampling), 1:(length(nonfourier) - n + 1))
+    isempty(starts) && return subsampling
+    # The size alone is ambiguous when another axis has the same length (8 coils and 8 frames):
+    # the specs belong to batch elements, so an alignment that spans a batch dimension wins.
+    spans_batch(s) = any(j -> fourier_dims + s - 1 + j in kspace_batch_dims, 1:n)
+    i = findfirst(spans_batch, starts)
+    start = isnothing(i) ? first(starts) : starts[i]
     slicer = ntuple(n) do j
         kspace_dim = fourier_dims + start - 1 + j
         position = findfirst(==(kspace_dim), kspace_batch_dims)
