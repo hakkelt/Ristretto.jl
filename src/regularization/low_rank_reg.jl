@@ -107,54 +107,10 @@ the `(space, time)` slices -- one matrix per batch index, as the docstring promi
 `f` of the whole array, which neither the nuclear norm nor the rank ball defines.
 """
 function _per_casorati(f, op)
-    return length(size(op, 1)) == 2 ? f : CasoratiStack(f)
-end
-
-"""
-    CasoratiStack(f)
-
-`∑ₖ f(X[:, :, k...])`: the matrix function `f` applied to every `(space, time)` slice of a
-`(space, time, batch...)` array. Its prox thresholds the slices one after another, each copied
-into a dense matrix first. That copy is the point of the type: a `SlicedSeparableSum` would hand
-`f` views, and `NuclearNorm`/`IndBallRank` route a view through their host fallback, which then
-trips over the buffers they preallocated for the view type. The factorization of each slice is
-threaded by `f` itself.
-"""
-struct CasoratiStack{F, B}
-    f::F
-    buf::B          # `nothing`, or `(; X, Y)`: one dense slice in, one out
-end
-CasoratiStack(f) = CasoratiStack(f, nothing)
-
-for trait in (:is_convex, :is_proximable, :is_set_indicator, :is_positively_homogeneous)
-    @eval ProximalCore.$trait(::Type{<:CasoratiStack{F}}) where {F} = ProximalCore.$trait(F)
-end
-
-_slice_prototype(X) = similar(X, size(X, 1), size(X, 2))
-function ProximalOperators.preallocate(g::CasoratiStack, X::AbstractArray)
-    S = _slice_prototype(X)
-    return CasoratiStack(ProximalOperators.preallocate(g.f, S), (; X = S, Y = similar(S)))
-end
-_slice_buffers(g::CasoratiStack{<:Any, Nothing}, X) = (S = _slice_prototype(X); (; X = S, Y = similar(S)))
-_slice_buffers(g::CasoratiStack, X) = g.buf
-
-function (g::CasoratiStack)(X::AbstractArray)
-    b = _slice_buffers(g, X)
-    return sum(CartesianIndices(size(X)[3:end])) do I
-        copyto!(b.X, view(X, :, :, Tuple(I)...))
-        g.f(b.X)
-    end
-end
-
-function ProximalCore.prox!(Y, g::CasoratiStack, X, gamma)
-    b = _slice_buffers(g, X)
-    value = zero(real(eltype(X)))
-    for I in CartesianIndices(size(X)[3:end])
-        copyto!(b.X, view(X, :, :, Tuple(I)...))
-        value += prox!(b.Y, g.f, b.X, gamma)
-        copyto!(view(Y, :, :, Tuple(I)...), b.Y)
-    end
-    return value
+    sz = size(op, 1)
+    length(sz) == 2 && return f
+    slices = Tuple((:, :, Tuple(I)...) for I in CartesianIndices(sz[3:end]))
+    return ProximalOperators.SlicedSeparableSum(f, slices)
 end
 
 function get_affected_dims(reg::Union{LowRank, RankLimit}, ::Nothing, image_dims)
