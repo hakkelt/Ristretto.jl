@@ -1,6 +1,7 @@
 using LinearAlgebra
 using Random
 using ProximalOperators
+import ProximalCore
 using Test
 
 @testset "IndBallL1" begin

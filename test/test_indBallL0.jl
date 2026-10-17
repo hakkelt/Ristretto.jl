@@ -1,5 +1,6 @@
 using LinearAlgebra
 using ProximalOperators
+import ProximalCore
 using Test
 
 @testset "IndBallL0" begin

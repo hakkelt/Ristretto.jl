@@ -24,4 +24,14 @@ end
 
 LinearAlgebra.norm(x::DevicePartition) = sqrt(sum(xi -> LinearAlgebra.norm(xi)^2, x.x))
 
+# Any other `p`, as solvers' stopping criteria ask for `Inf`: the `p`-norm of the blocks' `p`-norms.
+function LinearAlgebra.norm(x::DevicePartition, p::Real)
+    p == 2 && return LinearAlgebra.norm(x)
+    norms = map(xi -> LinearAlgebra.norm(xi, p), x.x)
+    isinf(p) && return p > 0 ? maximum(norms) : minimum(norms)
+    iszero(p) && return sum(norms)
+    s = sum(n -> n^oftype(n, p), norms)
+    return s^inv(oftype(s, p))
+end
+
 end # module

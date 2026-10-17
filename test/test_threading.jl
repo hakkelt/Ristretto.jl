@@ -202,6 +202,22 @@ end
     @test supports_threading(gt)
     @test is_threaded(gs, x) == false
 
+    # slices whose functions were preallocated for them: the threaded path must hand each
+    # one the `SubArray` it was prepared for. Under `Polyester.@batch` they arrived as
+    # `PtrArray`s, which failed the signature check (and sent `NuclearNorm` to the host).
+    let m = 4096, t = 8, k = 4
+        idxm = Tuple((:, :, i) for i in 1:k)
+        X = randn(m, t, k)
+        for f in (NuclearNorm(0.5), IndBallRank(2))
+            pt = preallocate(SlicedSeparableSum(f, idxm), X)
+            ps = preallocate(SlicedSeparableSum(f, idxm; threaded = false), X)
+            Yt = similar(X); Ys = similar(X)
+            @test prox!(Yt, pt, X, 0.7) ≈ prox!(Ys, ps, X, 0.7)
+            @test Yt ≈ Ys
+            @test pt(Yt) ≈ ps(Ys)
+        end
+    end
+
     # a SeparableSum below the block-count floor never spawns, however large the blocks
     two = SeparableSum(NormL1(0.3), NormL1(0.4))
     xs2 = (randn(1 << 18), randn(1 << 18))

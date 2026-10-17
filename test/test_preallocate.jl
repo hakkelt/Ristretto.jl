@@ -184,3 +184,19 @@ end
         end
     end
 end
+
+@testset "host round-trip of a preallocated operator" begin
+    # The fallback copies its input to an `Array`, which never matches the signature of an
+    # operator preallocated for anything else; it must prepare its own operator for the copy.
+    X = randn(ComplexF64, 30, 8, 2)
+    xv = view(X, :, :, 1)
+    for f in (NuclearNorm(0.4), IndBallRank(2))
+        fp = preallocate(f, xv)
+        Y = similar(X); Yr = similar(xv)
+        v = ProximalOperators.host_prox!(view(Y, :, :, 1), fp, xv, 0.6)
+        vr = prox!(Yr, f, copy(xv), 0.6)
+        @test v ≈ vr
+        @test view(Y, :, :, 1) ≈ Yr
+        @test ProximalOperators.host_call(fp, xv) ≈ f(copy(xv))
+    end
+end

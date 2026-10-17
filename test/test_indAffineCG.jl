@@ -1,4 +1,5 @@
 using ProximalOperators
+import ProximalCore
 using LinearAlgebra
 using Test
 

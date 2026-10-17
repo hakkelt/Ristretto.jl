@@ -275,6 +275,9 @@ using RecursiveArrayTools: ArrayPartition
     x, y = ArrayPartition(map(JLArray, xh.x)...), ArrayPartition(map(JLArray, yh.x)...)
     @test dot(x, y) ≈ dot(xh, yh)
     @test norm(x) ≈ norm(xh)
+    for p in (1, 2, 3, 0, Inf, -Inf)
+        @test norm(x, p) ≈ norm(xh, p)
+    end
     @test all(Array.(axpy!(2.0f0, x, copy(y)).x) .≈ collect(axpy!(2.0f0, xh, copy(yh)).x))
     @test all(Array.(axpby!(2.0f0, x, 0.5f0, copy(y)).x) .≈ collect(axpby!(2.0f0, xh, 0.5f0, copy(yh)).x))
 end

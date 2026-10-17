@@ -17,6 +17,8 @@ makedocs(
     checkdocs=:none,
 )
 
+# A fork deploys to its own GitHub Pages; its workflow names the branch to deploy as `dev`.
 deploydocs(
-    repo   = "github.com/JuliaFirstOrder/ProximalOperators.jl.git",
+    repo = "github.com/" * get(ENV, "GITHUB_REPOSITORY", "JuliaFirstOrder/ProximalOperators.jl") * ".git",
+    devbranch = get(ENV, "DOCUMENTER_DEVBRANCH", "master"),
 )
