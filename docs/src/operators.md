@@ -80,6 +80,8 @@ fftshift_op
 ifftshift_op
 alternate_sign
 alternate_sign!
+ShearletOp
+SurfaceletOp
 ```
 
 ## Convolution
