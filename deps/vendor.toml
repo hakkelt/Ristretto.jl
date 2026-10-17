@@ -434,6 +434,14 @@ branch = "docs/fork-pages"
 parent = "unified-threading"
 pr = "hakkelt/AbstractOperators.jl#55"
 
+# The DFT normal operators built an untyped (Float64) identity, so a complex DFT's AᴴA reported
+# the wrong domain and ADMM refused it. The code predates every branch here (it is in upstream
+# master), so no existing branch owns it.
+[[AbstractOperators.stack]]
+branch = "fix/dft-normal-op-eltype"
+parent = "unified-threading"
+pr = "hakkelt/AbstractOperators.jl#56"
+
 [ProximalOperators]
 fork = "https://github.com/hakkelt/ProximalOperators.jl.git"
 upstream = "https://github.com/JuliaFirstOrder/ProximalOperators.jl.git"
