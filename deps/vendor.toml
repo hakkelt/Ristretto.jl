@@ -442,6 +442,13 @@ branch = "fix/dft-normal-op-eltype"
 parent = "unified-threading"
 pr = "hakkelt/AbstractOperators.jl#56"
 
+# Band-limited shearlet and surfacelet frames (`ShearletOp`, `SurfaceletOp` in FFTWOperators), for
+# Ristretto's `L1Shearlet` and `L1Surfacelet`. New operators that no existing branch owns.
+[[AbstractOperators.stack]]
+branch = "add-directional-frame-operators"
+parent = "unified-threading"
+pr = "hakkelt/AbstractOperators.jl#57"
+
 [ProximalOperators]
 fork = "https://github.com/hakkelt/ProximalOperators.jl.git"
 upstream = "https://github.com/JuliaFirstOrder/ProximalOperators.jl.git"
