@@ -58,7 +58,7 @@ index 87f606d..9b33d58 100644
  
  # GPU constructor for DFT with real input — avoids FFTW-specific `flags`/`timelimit`/`num_threads` kwargs
 diff --git a/deps/AbstractOperators/FFTWOperators/src/FFTWOperators.jl b/deps/AbstractOperators/FFTWOperators/src/FFTWOperators.jl
-index fd2546a..f21a74b 100644
+index dd25238..df079ee 100644
 --- a/deps/AbstractOperators/FFTWOperators/src/FFTWOperators.jl
 +++ b/deps/AbstractOperators/FFTWOperators/src/FFTWOperators.jl
 @@ -1,19 +1,21 @@
