@@ -187,6 +187,26 @@ end
     @test x == x0
 end
 
+@testitem "DFT normal operators" tags = [:fftw, :DFT] begin
+    using AbstractOperators, FFTWOperators
+    using AbstractOperators: get_normal_op, domain_type, codomain_type
+
+    # The normal operators act on (and keep) the domain's element type. They used to be a bare
+    # `Eye(size)`, a Float64 operator that rejected the complex image of a complex DFT (and the
+    # complex codomain of a real one), so ADMM's `BᴴB` failed on `L1TemporalFourier`.
+    n, m = 4, 7
+    for (T, x) in ((ComplexF64, randn(ComplexF64, n, m)), (Float64, randn(n, m)))
+        op = DFT(T, n, m)
+        N = get_normal_op(op)
+        @test domain_type(N) == T
+        @test N * x ≈ op' * (op * x)
+        y = op * x
+        Nc = get_normal_op(op')
+        @test domain_type(Nc) == codomain_type(op)
+        @test Nc * y ≈ op * (op' * y)
+    end
+end
+
 @testitem "DFT ORTHO normalization" tags = [:fftw, :DFT] setup = [TestUtils] begin
     using AbstractOperators, FFTW, LinearAlgebra, Random, FFTWOperators
     Random.seed!(0)

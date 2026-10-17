@@ -1,7 +1,7 @@
 name: Documenter
 on:
   push:
-    branches: master
+    branches: [master, integration]
     tags: [v*]
   pull_request:
 
@@ -19,7 +19,27 @@ jobs:
           version: '1'
           show-versioninfo: true               # this causes versioninfo to be printed to the action log
       - uses: julia-actions/cache@v2           # cache using https://github.com/julia-actions/cache
+      # `integration` needs versions of the sibling forks that are not registered yet.
+      - name: Use the sibling forks' integration branches
+        if: github.ref_name == 'integration'
+        shell: julia --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.Registry.add("General")
+          forks = [
+                ("OperatorCore", "OperatorCore.jl", nothing),
+          ]
+          own = Pkg.TOML.parsefile("Project.toml")["name"]
+          for env in (".", "docs")
+              Pkg.activate(env)
+              env == "docs" && own in keys(Pkg.project().dependencies) && Pkg.rm(own)
+              deps = keys(Pkg.project().dependencies)
+              foreach(f -> f[1] in deps && Pkg.compat(f[1], nothing), forks)
+              Pkg.add([PackageSpec(; url = "https://github.com/hakkelt/" * repo, rev = "integration", subdir) for (_, repo, subdir) in forks])
+          end
       - uses: julia-actions/julia-buildpkg@v1  # if package requires Pkg.build()
       - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_DEVBRANCH: ${{ github.ref_name == 'integration' && 'integration' || 'master' }}
+          DOCUMENTER_WARNONLY: ${{ github.ref_name == 'integration' && 'missing_docs,cross_references,doctest' || '' }}
