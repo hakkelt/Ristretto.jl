@@ -92,7 +92,7 @@ function _sum_slices(g, strategy::Strategy, ks)
                     v
                 end
             end
-            sum(fetch, tasks; init = 0.0)
+            sum(t -> fetch(t)::Float64, tasks; init = 0.0)
         end
     end
     v = 0.0
