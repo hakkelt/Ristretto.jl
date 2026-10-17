@@ -138,6 +138,7 @@ include("RDFT.jl")
 include("IRDFT.jl")
 include("DCT.jl")
 include("Shift.jl")
+include("DirectionalFrames.jl")
 include("combination_rules.jl")
 
 end # module FFTWOperators
