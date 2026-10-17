@@ -220,6 +220,55 @@ savefig("contourlet_regularization.png"); nothing # hide
 
 ![contourlet_regularization.png](contourlet_regularization.png)
 
+#### Shearlet Sparsity
+
+Promotes sparsity in a band-limited shearlet frame: dyadic scales, each split into orientations
+equispaced in shear, with the direction count doubling every second scale (parabolic scaling).
+Like contourlets, shearlets represent edges and curves with few coefficients; their Fourier-domain
+construction makes the frame exactly tight (`𝒮ᴴ𝒮 = I`).
+
+```@docs
+L1Shearlet
+```
+
+**Parameters:**
+- `λ`: Regularization strength (scalar only)
+- `directions`: orientations per scale, coarse to fine (default `(8, 8, 16)`)
+
+The frame is `1 + sum(directions)` times redundant, so the term is solved with ADMM, not FISTA.
+
+```@example imports
+reg = L1Shearlet(1e-3)
+op = get_operator(reg, example_img)
+transformed = op * x_noisy
+p1 = jim(abs.(transformed[:, :, 2 + 8]); title="Shearlet band (scale 2, direction 1)")
+img = reconstruct(data, IterativeReconstruction(reg); verbosity = Silent())
+p2 = jim(img; title="Shearlet Reconstruction")
+jim(p1, p2; layout=(1,2), size=(800,400))
+savefig("shearlet_regularization.png"); nothing # hide
+```
+
+![shearlet_regularization.png](shearlet_regularization.png)
+
+#### Surfacelet Sparsity
+
+The 3D counterpart: the surfacelet frequency tiling of Lu and Do (dyadic scales, three hourglass
+pyramids per scale, `2^l × 2^l` directional subbands per pyramid), applied by FFT without
+subsampling. Use it on volumes, or on an image series whose third dimension is time.
+
+```@docs
+L1Surfacelet
+```
+
+**Parameters:**
+- `λ`: Regularization strength (scalar only)
+- `levels`: directional level per scale, coarse to fine (default `(1, 1, 1)`, 12 directions per
+  scale). The redundancy is `1 + sum(3 .* 4 .^ levels)`, so keep the levels low for large volumes.
+
+```julia
+reg = L1Surfacelet(1e-3; levels = (0, 1, 1))
+```
+
 ![l1wavelet2d_options.png](l1wavelet2d_options.png)
 
 #### 3D Wavelet Sparsity
