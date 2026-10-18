@@ -44,8 +44,8 @@ end
 
     # DiagOp/Scale store FastBroadcast's singleton flag; everything else uses Bool. The
     # bridge must round-trip both ways or the trait and the kernel disagree.
-    @test _fbthread(true) === FastBroadcast.True()
-    @test _fbthread(false) === FastBroadcast.False()
+    @test _fbthread(true) === FastBroadcast.Threaded()
+    @test _fbthread(false) === FastBroadcast.Serial()
     @test _fbbool(_fbthread(true)) == true
     @test _fbbool(_fbthread(false)) == false
 
@@ -57,7 +57,7 @@ end
             typeof(DiagOp(randn(512))).parameters[1],
             typeof(Scale(2.0, Eye(512))).parameters[1],
         )
-        @test Th isa Union{FastBroadcast.True, FastBroadcast.False}
+        @test Th isa Union{FastBroadcast.Threaded, FastBroadcast.Serial}
         @test _fbbool(Th) isa Bool
     end
 end

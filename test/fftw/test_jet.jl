@@ -84,3 +84,12 @@ end
     using JET, FFTWOperators
     JET.test_package(FFTWOperators; target_modules = (FFTWOperators,))
 end
+
+@testitem "@test_opt ShearletOp/SurfaceletOp mul!" tags = [:jet, :ShearletOp, :SurfaceletOp] begin
+    using JET, FFTWOperators, LinearAlgebra, AbstractOperators
+    for (op, x) in ((ShearletOp(Float64, (16, 16)), randn(16, 16)), (SurfaceletOp(ComplexF64, (8, 8, 8)), randn(ComplexF64, 8, 8, 8)))
+        y = op * x
+        @test_opt target_modules = (FFTWOperators,) mul!(y, op, x)
+        @test_opt target_modules = (FFTWOperators,) mul!(x, AdjointOperator(op), y)
+    end
+end
