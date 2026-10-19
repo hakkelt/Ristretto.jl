@@ -12,8 +12,6 @@ import ..AbstractOperators:
     fun_name, is_thread_safe, _normalize_array_type
 import ..OperatorCore: is_invertible
 
-_threading_policy(threaded::Bool) = threaded ? Enabled() : Disabled()
-
 # ── Shared coefficient <-> ArrayPartition flattening (in-place, allocation-free) ──
 
 function _flatten!(y::ArrayPartition, coeffs)
@@ -52,7 +50,7 @@ end
 # defined once here, mirroring FFTWOperators' DCT/IDCT `CosineTransform` supertype. Each
 # concrete type keeps its own constructor, dispatch barrier, `mul!` pair, and `fun_name`
 # because those call different Contourlets.jl functions (ct_* vs nsct_*).
-abstract type ContourletTransform{T, P <: ContourletParams, W, C, Sz <: Tuple, CT <: Tuple, TP <: ThreadingPolicy, AT <: AbstractArray, DB <: AbstractMatrix} <: LinearOperator end
+abstract type ContourletTransform{T, P <: ContourletParams, W, C, Sz <: Tuple, CT <: Tuple, TP <: Bool, AT <: AbstractArray, DB <: AbstractMatrix} <: LinearOperator end
 
 size(L::ContourletTransform) = (L.codomain_size, L.dim_in)
 
@@ -122,7 +120,7 @@ julia> maximum(abs, x_rec .- ones(64, 64)) < 1.0e-8
 true
 ```
 """
-struct ContourletOp{T, P <: ContourletParams, W, C, Sz <: Tuple, CT <: Tuple, TP <: ThreadingPolicy, AT <: AbstractArray, DB <: AbstractMatrix} <: ContourletTransform{T, P, W, C, Sz, CT, TP, AT, DB}
+struct ContourletOp{T, P <: ContourletParams, W, C, Sz <: Tuple, CT <: Tuple, TP <: Bool, AT <: AbstractArray, DB <: AbstractMatrix} <: ContourletTransform{T, P, W, C, Sz, CT, TP, AT, DB}
     params::P
     dim_in::NTuple{2, Int}
     band_sizes::Vector{NTuple{2, Int}}
@@ -145,7 +143,7 @@ function ContourletOp(
     Td = promote_type(eltype(params), T)
     workspace = make_workspace(params, dim_in; T = Td)
     AT = _normalize_array_type(array_type, Td)
-    return _make_contourlet_op(Td, params, dim_in, workspace, _threading_policy(threaded), AT)
+    return _make_contourlet_op(Td, params, dim_in, workspace, threaded, AT)
 end
 
 # Dispatch barrier: make_workspace's return type depends on a runtime filter-mode
@@ -157,7 +155,7 @@ end
 # is itself unstable; if that gets fixed upstream this barrier becomes unnecessary.
 @noinline function _make_contourlet_op(
         T::Type, params::P, dim_in::NTuple{2, Int}, workspace::W, threading::TP, ::Type{AT}
-    ) where {P <: ContourletParams, W, TP <: ThreadingPolicy, AT <: AbstractArray}
+    ) where {P <: ContourletParams, W, TP <: Bool, AT <: AbstractArray}
     coeffs = similar_coefficients(params, dim_in; Td = T)
     band_sizes = _band_sizes(coeffs)
     codomain_size = Tuple(band_sizes)
@@ -179,7 +177,7 @@ end
 function mul!(y::ArrayPartition, L::ContourletOp{T}, x::AbstractMatrix{T}) where {T}
     AbstractOperators.check(y, L, x)
     copyto!(L.dom_buf, x)
-    ct_forward!(L.coeffs, L.dom_buf, L.params; workspace = L.workspace, threading = L.threading)
+    ct_forward!(L.coeffs, L.dom_buf, L.params; workspace = L.workspace)
     _flatten!(y, L.coeffs)
     return y
 end
@@ -189,7 +187,7 @@ function mul!(
     ) where {T}
     AbstractOperators.check(y, L, x)
     _unflatten!(L.A.coeffs, x)
-    ct_inverse!(L.A.dom_buf, L.A.coeffs, L.A.params; workspace = L.A.workspace, threading = L.A.threading)
+    ct_inverse!(L.A.dom_buf, L.A.coeffs, L.A.params; workspace = L.A.workspace)
     copyto!(y, L.A.dom_buf)
     return y
 end
@@ -248,7 +246,7 @@ julia> maximum(abs, x_rec .- ones(32, 32)) < 1.0e-8
 true
 ```
 """
-struct NSCTOp{T, P <: ContourletParams, W, C, Sz <: Tuple, CT <: Tuple, TP <: ThreadingPolicy, AT <: AbstractArray, DB <: AbstractMatrix} <: ContourletTransform{T, P, W, C, Sz, CT, TP, AT, DB}
+struct NSCTOp{T, P <: ContourletParams, W, C, Sz <: Tuple, CT <: Tuple, TP <: Bool, AT <: AbstractArray, DB <: AbstractMatrix} <: ContourletTransform{T, P, W, C, Sz, CT, TP, AT, DB}
     params::P
     dim_in::NTuple{2, Int}
     band_sizes::Vector{NTuple{2, Int}}
@@ -264,24 +262,23 @@ function NSCTOp(
         T::Type, params::ContourletParams, dim_in::NTuple{2, Int};
         threaded::Bool = true, array_type::Type{<:AbstractArray} = Array{T}
     )
-    # threading is also passed to make_nsct_workspace: its FFTW plans are threaded at
-    # construction time, and Contourlets.jl warns if a later call's threading kwarg
+    # threaded is also passed to make_nsct_workspace: its FFTW plans are threaded at
+    # construction time, and Contourlets.jl warns if a later call's threaded kwarg
     # implies a different thread count than the workspace was built with.
-    threading = _threading_policy(threaded)
     # make_nsct_workspace internally builds its buffers at Td = promote_type(eltype(params), T)
     # (it cannot go below the filter precision). similar_nsct_coefficients must use that same
     # Td, not the raw requested T, or coeffs/workspace end up with mismatched element types and
     # nsct_forward!/nsct_inverse! fail to dispatch at the first mul! call.
     Td = promote_type(eltype(params), T)
-    workspace = make_nsct_workspace(params, dim_in; T = Td, threading = threading)
+    workspace = make_nsct_workspace(params, dim_in; T = Td, threaded)
     AT = _normalize_array_type(array_type, Td)
-    return _make_nsct_op(Td, params, dim_in, workspace, threading, AT)
+    return _make_nsct_op(Td, params, dim_in, workspace, threaded, AT)
 end
 
 # Dispatch barrier: see the comment on `_make_contourlet_op` above.
 @noinline function _make_nsct_op(
         T::Type, params::P, dim_in::NTuple{2, Int}, workspace::W, threading::TP, ::Type{AT}
-    ) where {P <: ContourletParams, W, TP <: ThreadingPolicy, AT <: AbstractArray}
+    ) where {P <: ContourletParams, W, TP <: Bool, AT <: AbstractArray}
     coeffs = similar_nsct_coefficients(params, dim_in; Td = T)
     band_sizes = _band_sizes(coeffs)
     codomain_size = Tuple(band_sizes)
@@ -303,7 +300,7 @@ end
 function mul!(y::ArrayPartition, L::NSCTOp{T}, x::AbstractMatrix{T}) where {T}
     AbstractOperators.check(y, L, x)
     copyto!(L.dom_buf, x)
-    nsct_forward!(L.coeffs, L.dom_buf, L.params; workspace = L.workspace, threading = L.threading)
+    nsct_forward!(L.coeffs, L.dom_buf, L.params; workspace = L.workspace, threaded = L.threading)
     _flatten!(y, L.coeffs)
     return y
 end
@@ -313,7 +310,7 @@ function mul!(
     ) where {T}
     AbstractOperators.check(y, L, x)
     _unflatten!(L.A.coeffs, x)
-    nsct_inverse!(L.A.dom_buf, L.A.coeffs, L.A.params; workspace = L.A.workspace, threading = L.A.threading)
+    nsct_inverse!(L.A.dom_buf, L.A.coeffs, L.A.params; workspace = L.A.workspace, threaded = L.A.threading)
     copyto!(y, L.A.dom_buf)
     return y
 end
