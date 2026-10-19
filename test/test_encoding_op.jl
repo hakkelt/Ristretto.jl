@@ -790,11 +790,11 @@ end
     using Random
 
     # The parts of an operator that would run threaded, read off its type: a batch loop, a
-    # FastBroadcast kernel (`DiagOp{static(true)}`), and the element-wise operators that carry a
+    # FastBroadcast kernel (`DiagOp{FastBroadcast.Threaded()}`), and the element-wise operators that carry a
     # threaded flag as a type parameter.
     threaded_parts(op) = unique(
         m.match for m in eachmatch(
-                r"\w*MultiThreaded\w*|\w+\{static\(true\)|(SignAlternation|NoOperatorBroadCast)\{\w+, \d+, \d+, true",
+                r"\w*MultiThreaded\w*|\w+\{FastBroadcast\.Threaded\(\)|(SignAlternation|NoOperatorBroadCast)\{\w+, \d+, \d+, true",
                 string(typeof(op)),
             )
     )

@@ -19,8 +19,8 @@ function SoftPlus(
     ) where {T, N}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(SoftPlus, threaded, T, DomainDim, S) ?
-           SoftPlus{T, N, S, FastBroadcast.True()}(DomainDim) :
-           SoftPlus{T, N, S, FastBroadcast.False()}(DomainDim)
+           SoftPlus{T, N, S, FastBroadcast.Threaded()}(DomainDim) :
+           SoftPlus{T, N, S, FastBroadcast.Serial()}(DomainDim)
 end
 
 function SoftPlus(
@@ -34,12 +34,12 @@ function SoftPlus(
     ) where {T}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(SoftPlus, threaded, T, size(x), S) ?
-           SoftPlus{T, ndims(x), S, FastBroadcast.True()}(size(x)) :
-           SoftPlus{T, ndims(x), S, FastBroadcast.False()}(size(x))
+           SoftPlus{T, ndims(x), S, FastBroadcast.Threaded()}(size(x)) :
+           SoftPlus{T, ndims(x), S, FastBroadcast.Serial()}(size(x))
 end
 
 # One method per direction, parameterized by `Th`, rather than a `false`/`true` pair:
-# `Th` is `FastBroadcast.True()`/`False()` (see `_fbthread`), so `@.. thread = Th` resolves
+# `Th` is `FastBroadcast.Threaded()`/`Serial()` (see `_fbthread`), so `@.. thread = Th` resolves
 # to the same specialized code either way -- see `Scale`/`DiagOp` for the same pattern.
 function mul!(y::AbstractArray, L::SoftPlus{T, N, S, Th}, x::AbstractArray) where {T, N, S, Th}
     check(y, L, x)

@@ -1,6 +1,8 @@
 using TestItems
 
 @testitem "LowRank regularization" tags = [:regularization] setup = [RegTestSetup] begin
+    using LinearAlgebra
+    using Ristretto.ProximalOperators: prox!, preallocate
     @testset "Constructor" begin
         reg = LowRank(0.1)
         @test reg.λ == 0.1
@@ -37,6 +39,43 @@ using TestItems
         reg = LowRank(0.1; time_dim = 3)
         term = Ristretto.materialize(reg, x; threaded = false)
         @test term !== nothing
+    end
+
+    # With dimensions after `time_dim` the penalty is one nuclear norm per batch index. It used to
+    # hand the whole `(space, time, batch...)` array to `NuclearNorm`, which has no method for it
+    # ("no `preallocate` method for NuclearNorm with an input of type Array{ComplexF64, 3}").
+    @testset "batch dims: one Casorati matrix per batch index" for threaded in [false, true]
+        x = randn(ComplexF64, 6, 5, 4, 3, 2)
+        casorati(k...) = reshape(x[:, :, :, k...], 30, 4)
+        expected = 0.1 * sum(sum(svdvals(casorati(k...))) for k in Iterators.product(1:3, 1:2))
+        @test Ristretto.calculate(LowRank(0.1; time_dim = 3), x; threaded) ≈ expected
+        f = Ristretto.materialize(LowRank(0.1; time_dim = 3), Variable(copy(x)); threaded).f
+        X = Ristretto.get_operator(LowRank(0.1; time_dim = 3), x; threaded) * x
+        # Both the allocating prox and the preallocated one a solver uses (it used to fail on the
+        # buffers `NuclearNorm` sized for a slice view).
+        for g in (f, preallocate(f, X))
+            Y = similar(X)
+            @test prox!(Y, g, X, 1.0) ≈ 0.1 * sum(sum(max.(svdvals(casorati(k...)) .- 0.1, 0)) for k in Iterators.product(1:3, 1:2))
+            for k in Iterators.product(1:3, 1:2)
+                F = svd(casorati(k...))
+                @test Y[:, :, k...] ≈ F.U * Diagonal(max.(F.S .- 0.1, 0)) * F.Vt
+            end
+        end
+        r = Ristretto.materialize(RankLimit(1; time_dim = 3), Variable(copy(x)); threaded).f
+        R = similar(X)
+        prox!(R, preallocate(r, X), X, 1.0)
+        @test all(rank(R[:, :, k...]; atol = 1.0e-8) == 1 for k in Iterators.product(1:3, 1:2))
+    end
+
+    @testset "batch dims: reconstruct with a coupled batch dimension" begin
+        # A temporal term along the batch dimension keeps it from being split into tasks, so the
+        # low-rank term sees the batch dimension itself.
+        x = rand(ComplexF32, 8, 8, 4, 3)
+        acq = AcquisitionInfo(is3D = false, image_size = (8, 8), subsampling = (:, trues(8)))
+        data = simulate_acquisition(x, acq; inverse_crime_check = false, keep_sensitivity_maps = true)
+        regs = (LowRank(0.01; time_dim = 3), TemporalTotalVariation(0.01; time_dim = 4))
+        rec = reconstruct(data, IterativeReconstruction(regs...; maxit = 5); verbosity = Silent())
+        @test size(rec) == size(x)
     end
 
     @testset "get_affected_dims" begin

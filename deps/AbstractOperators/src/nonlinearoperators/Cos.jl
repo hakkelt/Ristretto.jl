@@ -19,8 +19,8 @@ function Cos(
     ) where {T, N}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Cos, threaded, T, DomainDim, S) ?
-           Cos{T, N, S, FastBroadcast.True()}(DomainDim) :
-           Cos{T, N, S, FastBroadcast.False()}(DomainDim)
+           Cos{T, N, S, FastBroadcast.Threaded()}(DomainDim) :
+           Cos{T, N, S, FastBroadcast.Serial()}(DomainDim)
 end
 
 function Cos(
@@ -37,12 +37,12 @@ function Cos(
     ) where {T}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Cos, threaded, T, size(x), S) ?
-           Cos{T, ndims(x), S, FastBroadcast.True()}(size(x)) :
-           Cos{T, ndims(x), S, FastBroadcast.False()}(size(x))
+           Cos{T, ndims(x), S, FastBroadcast.Threaded()}(size(x)) :
+           Cos{T, ndims(x), S, FastBroadcast.Serial()}(size(x))
 end
 
 # One method per direction, parameterized by `Th`, rather than a `false`/`true` pair:
-# `Th` is `FastBroadcast.True()`/`False()` (see `_fbthread`), so `@.. thread = Th` resolves
+# `Th` is `FastBroadcast.Threaded()`/`Serial()` (see `_fbthread`), so `@.. thread = Th` resolves
 # to the same specialized code either way -- see `Scale`/`DiagOp` for the same pattern.
 function mul!(y::AbstractArray, L::Cos{T, N, S, Th}, x::AbstractArray) where {T, N, S, Th}
     check(y, L, x)

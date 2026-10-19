@@ -35,8 +35,8 @@ function DiagOp(
     dS = _normalize_array_type(array_type, D)
     cS = _normalize_array_type(array_type, C)
     return _elementwise_threaded(DiagOp, threaded, D, domain_dim, dS0) ?
-           DiagOp{FastBroadcast.True(),D, C, N, dS, cS, T}(domain_dim, d) :
-           DiagOp{FastBroadcast.False(),D, C, N, dS, cS, T}(domain_dim, d)
+           DiagOp{FastBroadcast.Threaded(),D, C, N, dS, cS, T}(domain_dim, d) :
+           DiagOp{FastBroadcast.Serial(),D, C, N, dS, cS, T}(domain_dim, d)
 end
 
 ###standard constructor with Scalar
@@ -50,8 +50,8 @@ function DiagOp(
     dS = _normalize_array_type(array_type, D)
     cS = _normalize_array_type(array_type, C)
     return _elementwise_threaded(DiagOp, threaded, D, domain_dim, dS0) ?
-           DiagOp{FastBroadcast.True(),D, C, N, dS, cS, T}(domain_dim, d) :
-           DiagOp{FastBroadcast.False(),D, C, N, dS, cS, T}(domain_dim, d)
+           DiagOp{FastBroadcast.Threaded(),D, C, N, dS, cS, T}(domain_dim, d) :
+           DiagOp{FastBroadcast.Serial(),D, C, N, dS, cS, T}(domain_dim, d)
 end
 
 # other constructors
@@ -63,8 +63,8 @@ function DiagOp(
     S0 = _normalize_array_type(array_type, T)
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(DiagOp, threaded, T, size(d), S0) ?
-           DiagOp{FastBroadcast.True(),eltype(d), C, N, S, S, typeof(d)}(size(d), d) :
-           DiagOp{FastBroadcast.False(),eltype(d), C, N, S, S, typeof(d)}(size(d), d)
+           DiagOp{FastBroadcast.Threaded(),eltype(d), C, N, S, S, typeof(d)}(size(d), d) :
+           DiagOp{FastBroadcast.Serial(),eltype(d), C, N, S, S, typeof(d)}(size(d), d)
 end
 function DiagOp(
         domain_dim::NTuple{N, Int}, d::A; threaded::Bool = true, array_type::Type = Array{Float64}
@@ -143,7 +143,7 @@ codomain_type(::DiagOp{<:Any, <:Any, C}) where {C} = C
 is_thread_safe(::DiagOp) = true
 
 function _copy_operator_impl(op::DiagOp{B}; storage_type = nothing, threaded = nothing) where {B}
-    new_threaded = threaded === nothing ? (B == FastBroadcast.True()) : threaded
+    new_threaded = threaded === nothing ? (B == FastBroadcast.Threaded()) : threaded
     # `d` is the operator's actual diagonal data, not a scratch buffer: a storage-type
     # switch must carry its values over, so this goes through `copyto!` rather than
     # `_convert_buffer` (which allocates uninitialized memory for buffers that `mul!`
