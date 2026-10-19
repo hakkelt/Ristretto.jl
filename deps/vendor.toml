@@ -442,13 +442,6 @@ branch = "fix/dft-normal-op-eltype"
 parent = "unified-threading"
 pr = "hakkelt/AbstractOperators.jl#56"
 
-# Band-limited shearlet and surfacelet frames (`ShearletOp`, `SurfaceletOp` in FFTWOperators), for
-# Ristretto's `L1Shearlet` and `L1Surfacelet`. New operators that no existing branch owns.
-[[AbstractOperators.stack]]
-branch = "add-directional-frame-operators"
-parent = "unified-threading"
-pr = "hakkelt/AbstractOperators.jl#57"
-
 # FastBroadcast 1: `Threaded()`/`Serial()` replace 0.3's `True()`/`False()` thread flags, so
 # Ristretto can share an environment with packages that need FastBroadcast 1 (Shearlets.jl,
 # Surfacelets.jl). The flags all come from the frozen `unified-threading`.
