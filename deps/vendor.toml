@@ -450,6 +450,13 @@ branch = "chore/fastbroadcast-1"
 parent = "unified-threading"
 pr = "hakkelt/AbstractOperators.jl#58"
 
+# Contourlets.jl master: a `threaded` keyword replaces the ThreadingPolicy types the released
+# 0.1.1 used, so ContourletOperators builds against the master branch (and its GPU paths).
+[[AbstractOperators.stack]]
+branch = "chore/contourlets-master"
+parent = "add-contourlet-operators"
+pr = ""
+
 [ProximalOperators]
 fork = "https://github.com/hakkelt/ProximalOperators.jl.git"
 upstream = "https://github.com/JuliaFirstOrder/ProximalOperators.jl.git"
