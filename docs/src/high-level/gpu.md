@@ -39,7 +39,7 @@ differences of 1e-7 to 1e-4, depending on the number of iterations).
 | `LowRank`, `RankLimit` | native (the device's SVD) |
 | `LocallyLowRank`, `MultiScaleLowRank` | native block gathering; on CUDA all blocks are thresholded at once by CUSOLVER's batched Jacobi solvers whenever a block has at most 32 voxels or 32 frames (5-25x faster than the fallback on an A100); otherwise each block goes through its small Gram matrix, whose eigendecomposition runs on the host |
 | `StructuredLowRank` (`:c`, `:s`, `:g`, ALOHA weights) | native lifts; the device's SVD |
-| `L1Contourlet`, `L1Shearlet`, `L1Surfacelet` | the transform runs on the host, the rest on the device |
+| `L1Contourlet` | the transform runs on the host, the rest on the device |
 | Direct, Homodyne, POCS, phase-constrained partial Fourier | native |
 | GRAPPA, SPIRiT | on a host copy; the image is moved back |
 | Sensitivity estimation, coil compression, density compensation, gradient delay correction | on a host copy; the result is moved back |

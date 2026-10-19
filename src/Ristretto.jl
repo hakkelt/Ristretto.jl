@@ -35,7 +35,7 @@ using NestedThreading: @budgeted_threads, capacity, with_full_threads, with_rest
     with_thread_default
 using .WaveletOperators: WaveletOp, WT, wavelet
 using .ContourletOperators: ContourletOp, NSCTOp, ContourletParams, parabolic_levels
-using .FFTWOperators: FFTWOperators, DFT, fftshift_op, ifftshift_op, alternate_sign!, ShearletOp, SurfaceletOp
+using .FFTWOperators: FFTWOperators, DFT, fftshift_op, ifftshift_op, alternate_sign!
 using RecursiveArrayTools: ArrayPartition
 using FFTW: FFTW, fft, ifft, fftshift, ifftshift
 using FastBroadcast: @..
@@ -66,7 +66,7 @@ const LBFGS = ProximalAlgorithms.LimitedMemoryBFGS
 # See NAMING.md for the rules governing this split.
 
 # Regularization terms
-export L2Image, L1Image, L1Wavelet2D, L1Wavelet3D, L1Contourlet, L1Shearlet, L1Surfacelet, TotalVariation2D, TotalVariation3D, L1TemporalFourier, LowRank, RankLimit
+export L2Image, L1Image, L1Wavelet2D, L1Wavelet3D, L1Contourlet, TotalVariation2D, TotalVariation3D, L1TemporalFourier, LowRank, RankLimit
 export AnisotropicTotalVariation2D, AnisotropicTotalVariation3D
 export TemporalTotalVariation, JointSparsity, LocallyLowRank, ReferencePrior, NonNegative, BoxConstraint
 export SecondOrderTotalVariation2D, SecondOrderTotalVariation3D, MultiScaleLowRank, StructuredLowRank
@@ -176,7 +176,6 @@ include("regularization/regularization.jl")
 include("regularization/image_domain_reg.jl")
 include("regularization/wavelet_reg.jl")
 include("regularization/contourlet_reg.jl")
-include("regularization/directional_frame_reg.jl")
 include("regularization/total_variation_reg.jl")
 include("regularization/temporal_fourier_reg.jl")
 include("regularization/temporal_total_variation_reg.jl")
