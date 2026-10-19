@@ -455,7 +455,7 @@ pr = "hakkelt/AbstractOperators.jl#58"
 [[AbstractOperators.stack]]
 branch = "chore/contourlets-master"
 parent = "add-contourlet-operators"
-pr = ""
+pr = "hakkelt/AbstractOperators.jl#59"
 
 [ProximalOperators]
 fork = "https://github.com/hakkelt/ProximalOperators.jl.git"
