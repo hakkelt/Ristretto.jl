@@ -1,5 +1,5 @@
 diff --git a/deps/AbstractOperators/ContourletOperators/src/ContourletOperators.jl b/deps/AbstractOperators/ContourletOperators/src/ContourletOperators.jl
-index 07b8f92..73df032 100644
+index e813b54..b71db92 100644
 --- a/deps/AbstractOperators/ContourletOperators/src/ContourletOperators.jl
 +++ b/deps/AbstractOperators/ContourletOperators/src/ContourletOperators.jl
 @@ -2,15 +2,15 @@ module ContourletOperators
@@ -19,7 +19,7 @@ index 07b8f92..73df032 100644
 -import OperatorCore: is_invertible
 +import ..OperatorCore: is_invertible
  
- _threading_policy(threaded::Bool) = threaded ? Enabled() : Disabled()
+ # ── Shared coefficient <-> ArrayPartition flattening (in-place, allocation-free) ──
  
 diff --git a/deps/AbstractOperators/DSPOperators/src/DSPOperators.jl b/deps/AbstractOperators/DSPOperators/src/DSPOperators.jl
 index 19f6080..6e93c88 100644
@@ -58,7 +58,7 @@ index 87f606d..9b33d58 100644
  
  # GPU constructor for DFT with real input — avoids FFTW-specific `flags`/`timelimit`/`num_threads` kwargs
 diff --git a/deps/AbstractOperators/FFTWOperators/src/FFTWOperators.jl b/deps/AbstractOperators/FFTWOperators/src/FFTWOperators.jl
-index dd25238..df079ee 100644
+index fd2546a..f21a74b 100644
 --- a/deps/AbstractOperators/FFTWOperators/src/FFTWOperators.jl
 +++ b/deps/AbstractOperators/FFTWOperators/src/FFTWOperators.jl
 @@ -1,19 +1,21 @@
