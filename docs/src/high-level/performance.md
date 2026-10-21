@@ -271,11 +271,13 @@ using LinearAlgebra, FFTW
 `get_fourier_operator`/`get_encoding_operator` take `m`, `sigma` and `precompute` keywords that
 forward straight to `NFFTOp`/NFFT.jl, exposing the gridding operating point instead of leaving
 it fixed. Left at `nothing` (the default), **Ristretto's own default operating point is used**: `m = 3`,
-`σ = 1.5`, `precompute = NFFT.POLYNOMIAL` (`DEFAULT_NFFT_M`, `DEFAULT_NFFT_SIGMA`,
+`σ = 1.5`, `precompute = NFFT.TENSOR` (`DEFAULT_NFFT_M`, `DEFAULT_NFFT_SIGMA`,
 `DEFAULT_NFFT_PRECOMPUTE` in `src/encoding/fourier_operators.jl`).
 
 The default was NFFT.jl's own (`m = 5`, `σ = 2.0`, `NFFT.POLYNOMIAL`) at first, then `m = 4`,
-`σ = 1.5`; both are far more accurate than the reconstruction needs. Measured on a 128×128 radial phantom
+`σ = 1.5`; both are far more accurate than the reconstruction needs. It then became `m = 3`,
+`σ = 1.5` with `NFFT.POLYNOMIAL`, and finally the same point with `NFFT.TENSOR` (see
+[below](@ref "POLYNOMIAL vs. TENSOR precomputation")). Measured on a 128×128 radial phantom
 (`GeometricMedicalPhantoms`'s Shepp-Logan, 256 samples × 128 spokes), single thread, timings
 interleaved round-robin across configs rather than one after another (a single measurement on
 this shared login node can swing 30-60%):
@@ -286,7 +288,7 @@ this shared login node can swing 30-60%):
 | 4 | 2.00 | POLYNOMIAL | 7.0 / 8.1 | 5.5 / 6.4 | 3.8e-8 |
 | 4 | 1.50 | POLYNOMIAL (former default) | 4.0 / 4.5 | 4.6 / 5.3 | 2.5e-7 |
 | 3 | 2.00 | POLYNOMIAL | 6.0 / 6.8 | 4.3 / 4.9 | 2.4e-6 |
-| **3** | **1.50** | **POLYNOMIAL (Ristretto default)** | **2.8 / 3.2** | **3.3 / 3.8** | **1.7e-5** |
+| 3 | 1.50 | POLYNOMIAL (former default) | 2.8 / 3.2 | 3.3 / 3.8 | 1.7e-5 |
 | 3 | 1.25 | TENSOR (MRIReco's point) | 2.5 / 2.9 | 2.8 / 3.1 | 7.1e-5 |
 | 2 | 1.50 | POLYNOMIAL | 2.3 / 2.6 | 2.4 / 2.8 | 7.4e-4 |
 | 2 | 1.25 | TENSOR | 2.0 / 2.3 | 1.9 / 2.2 | 2.1e-3 |
@@ -316,6 +318,43 @@ starts to matter near 1e-3 NFFT error. `m = 3, σ = 1.5` is the default because 
 point clearly below that: 1.5-1.6x faster per forward/adjoint pair than `m = 4, σ = 1.5`
 (8 threads, EPYC 7763: 2D 256² radial, 12 coils, 52 vs 76 ms; 3D 128³ kooshball, 4 coils,
 0.77 vs 1.24 s).
+
+### POLYNOMIAL vs. TENSOR precomputation
+
+`precompute` decides how NFFT.jl gets the gridding kernel's weights. `POLYNOMIAL` evaluates a
+polynomial fit of the window on every apply. `TENSOR` computes each sample's per-axis weights once,
+when the plan is built, and reads them back on every apply. Both give the same transform: the
+adjoint error against `m = 8, σ = 2` was 1.5e-5 (2D) and 1.7e-5 (cine) for either.
+
+Measured at `m = 3, σ = 1.5` on a Xeon W-2245 (8 cores, Windows), OpenBLAS, 5 interleaved runs per
+configuration, minimum time. The FFTW plans were shared between the two, so only the gridding
+differs:
+
+| case | threads | adjoint POLYNOMIAL / TENSOR (ms) | forward POLYNOMIAL / TENSOR (ms) |
+|---|---|---|---|
+| 2D 128² radial, 256 × 64, 8 coils | 1 | 17.9 / 7.6 | 16.1 / 6.5 |
+| | 8 | 3.6 / 1.9 | 3.6 / 1.5 |
+| radial cine 128² × 30 frames, 256 × 34, 8 coils | 1 | 323 / 146 | 295 / 128 |
+| | 8 | 44 / 22 | 50 / 23 |
+| 2D 256² radial, 512 × 403, 12 coils | 1 | 295 / 101 | 262 / 83 |
+| | 8 | 57 / 21 | 51 / 17 |
+| 3D 128³ kooshball, 256 × 8000, 4 coils | 1 | 2828 / 1953 | 2131 / 1309 |
+| | 8 | 739-1483 / 775-786 | 577-593 / 687-696 |
+
+On the 3D case at 8 threads the two are within run-to-run noise: the ranges are two separate runs.
+
+`TENSOR`'s extra setup is small next to the FFTW `MEASURE` planning both pay:
+
+| case | FFTW planning (both) | extra setup of TENSOR |
+|---|---|---|
+| 2D 128², 8 coils (and the cine) | ≈ 0.3 s | ≈ 1 ms |
+| 2D 256², 12 coils | ≈ 0.46 s | 13-22 ms |
+| 3D 128³, 2M samples | ≈ 2.4 s | ≈ 0.4 s |
+
+The extra setup pays for itself within one forward/adjoint pair in every case; an iterative
+reconstruction applies the operator tens to hundreds of times. Separate cold builds can pick
+different FFTW plans under `MEASURE`, and those differ by more than the gridding does, so compare
+the two strategies with shared FFTW wisdom.
 
 Independently, MRIReco's operating point (`m = 3`, `σ = 1.25`, `NFFT.TENSOR`) is faster still, at
 real accuracy cost: measured per coil, 4.28 ms vs 1.00 ms for a forward error of 1.6e-7 vs 5.7e-5

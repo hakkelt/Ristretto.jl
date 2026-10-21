@@ -197,7 +197,7 @@ end
 Non-Cartesian (NFFT-backed) Fourier operator. `m`, `sigma` (`σ`) and `precompute` expose the
 gridding operating point: `m` is the interpolation kernel's half-width, `sigma` its oversampling
 factor, `precompute` the `NFFT.PrecomputeFlags` gridding strategy. Leaving them at `nothing` (the
-default) uses Ristretto's own default operating point (`m=3, σ=1.5, precompute=NFFT.POLYNOMIAL` —
+default) uses Ristretto's own default operating point (`m=3, σ=1.5, precompute=NFFT.TENSOR` —
 `DEFAULT_NFFT_M`/`DEFAULT_NFFT_SIGMA`/`DEFAULT_NFFT_PRECOMPUTE`), chosen for speed at negligible
 accuracy cost; pass explicit values for a different point on the accuracy/speed curve, e.g.
 NFFT.jl's own higher-accuracy default (`m=5, sigma=2.0`) or MRIReco's faster, less accurate one
@@ -306,12 +306,21 @@ node can swing 30-60%, so configs were timed round-robin rather than one after a
 | 4 | 2.00 | POLYNOMIAL | 7.0 / 8.1 | 5.5 / 6.4 | 3.8e-8 |
 | 4 | 1.50 | POLYNOMIAL (former Ristretto default) | 4.0 / 4.5 | 4.6 / 5.3 | 2.5e-7 |
 | 3 | 2.00 | POLYNOMIAL | 6.0 / 6.8 | 4.3 / 4.9 | 2.4e-6 |
-| **3** | **1.50** | **POLYNOMIAL (Ristretto default)** | **2.8 / 3.2** | **3.3 / 3.8** | **1.7e-5** |
+| 3 | 1.50 | POLYNOMIAL (former Ristretto default) | 2.8 / 3.2 | 3.3 / 3.8 | 1.7e-5 |
 | 3 | 1.25 | TENSOR (MRIReco's point) | 2.5 / 2.9 | 2.8 / 3.1 | 7.1e-5 |
 | 2 | 1.50 | POLYNOMIAL | 2.3 / 2.6 | 2.4 / 2.8 | 7.4e-4 |
 | 2 | 1.25 | TENSOR | 2.0 / 2.3 | 1.9 / 2.2 | 2.1e-3 |
 
-`m=3, σ=1.5, POLYNOMIAL` is the default. Its error against an `m=8, σ=2` transform is about 5e-5
+`TENSOR` precomputes each sample's kernel weights once per plan instead of interpolating them on
+every apply, at the same accuracy. At `m=3, σ=1.5` it makes the multi-coil forward and adjoint
+2-3x faster (Xeon W-2245, 1 and 8 threads, interleaved runs with shared FFTW plans; 2D 128² radial
+8 coils, 2D 256² radial 12 coils, radial cine 128²×30 frames: adjoint 17.9 vs 7.6 ms, 295 vs
+101 ms, 323 vs 146 ms single-threaded). Its extra setup is 1-22 ms in 2D and about 0.4 s for a 3D
+128³ kooshball of 2M samples, recovered within one forward/adjoint pair; the FFTW `MEASURE`
+planning both share costs more (0.3-0.5 s in 2D, 2.4 s in 3D). On that 3D case at 8 threads the
+two are within run-to-run noise of each other.
+
+`m=3, σ=1.5, TENSOR` is the default. Its error against an `m=8, σ=2` transform is about 5e-5
 in `ComplexF32`, and iterative reconstructions do not notice it: on the radial Shepp-Logan case of
 `benchmark/` (CG-SENSE, L1-wavelet, TV with ADMM and with Chambolle-Pock) and on the radial torso
 cine (low rank, temporal TV), the magnitude NRMSE against the phantom moves by at most 4e-5 from
@@ -327,7 +336,7 @@ precompute=NFFT.TENSOR`, or NFFT.jl's own `m=5, sigma=2.0`).
 """
 const DEFAULT_NFFT_M = 3
 const DEFAULT_NFFT_SIGMA = 1.5
-const DEFAULT_NFFT_PRECOMPUTE = NFFT.POLYNOMIAL
+const DEFAULT_NFFT_PRECOMPUTE = NFFT.TENSOR
 
 # Always forward a concrete operating point: leaving `m`/`sigma`/`precompute` at `nothing`
 # substitutes Ristretto's own (lower-accuracy, faster) default rather than NFFT.jl's own default -- see
