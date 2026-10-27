@@ -356,8 +356,10 @@ end
 
 has_optimized_normalop(L::DFT) = true
 has_optimized_normalop(L::AdjointOperator{<:DFT}) = true
-get_normal_op(L::DFT) = diag_AcA(L) * Eye(size(L, 1))
-get_normal_op(L::AdjointOperator{<:DFT}) = diag_AAc(L) * Eye(size(L, 1))
+# The normal operator acts on the domain, so its identity takes the domain's element and storage
+# type: a bare `Eye(size)` is a `Float64` host operator and rejects complex or device input.
+get_normal_op(L::DFT) = diag_AcA(L) * Eye(domain_type(L), size(L, 2); array_type = domain_array_type(L))
+get_normal_op(L::AdjointOperator{<:DFT}) = diag_AAc(L) * Eye(domain_type(L), size(L, 2); array_type = domain_array_type(L))
 
 AbstractOperators.has_fast_opnorm(::DFT) = true
 AbstractOperators.has_fast_opnorm(::AdjointOperator{<:DFT}) = true

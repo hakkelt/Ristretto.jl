@@ -23,8 +23,8 @@ function Sigmoid(
     ) where {T, N, G <: Real}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Sigmoid, threaded, T, DomainDim, S) ?
-           Sigmoid{T, N, G, S, FastBroadcast.True()}(DomainDim, gamma) :
-           Sigmoid{T, N, G, S, FastBroadcast.False()}(DomainDim, gamma)
+           Sigmoid{T, N, G, S, FastBroadcast.Threaded()}(DomainDim, gamma) :
+           Sigmoid{T, N, G, S, FastBroadcast.Serial()}(DomainDim, gamma)
 end
 
 function Sigmoid(
@@ -40,12 +40,12 @@ function Sigmoid(
     ) where {T, G <: Real}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Sigmoid, threaded, T, size(x), S) ?
-           Sigmoid{T, ndims(x), G, S, FastBroadcast.True()}(size(x), gamma) :
-           Sigmoid{T, ndims(x), G, S, FastBroadcast.False()}(size(x), gamma)
+           Sigmoid{T, ndims(x), G, S, FastBroadcast.Threaded()}(size(x), gamma) :
+           Sigmoid{T, ndims(x), G, S, FastBroadcast.Serial()}(size(x), gamma)
 end
 
 # One method per direction, parameterized by `Th`, rather than a `false`/`true` pair:
-# `Th` is `FastBroadcast.True()`/`False()` (see `_fbthread`), so `@.. thread = Th` resolves
+# `Th` is `FastBroadcast.Threaded()`/`Serial()` (see `_fbthread`), so `@.. thread = Th` resolves
 # to the same specialized code either way -- see `Scale`/`DiagOp` for the same pattern.
 function mul!(y::AbstractArray, L::Sigmoid{T, N, G, S, Th}, x::AbstractArray) where {T, N, G, S, Th}
     check(y, L, x)

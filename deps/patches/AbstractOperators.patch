@@ -1,5 +1,5 @@
 diff --git a/deps/AbstractOperators/ContourletOperators/src/ContourletOperators.jl b/deps/AbstractOperators/ContourletOperators/src/ContourletOperators.jl
-index 07b8f92..73df032 100644
+index e813b54..b71db92 100644
 --- a/deps/AbstractOperators/ContourletOperators/src/ContourletOperators.jl
 +++ b/deps/AbstractOperators/ContourletOperators/src/ContourletOperators.jl
 @@ -2,15 +2,15 @@ module ContourletOperators
@@ -19,7 +19,7 @@ index 07b8f92..73df032 100644
 -import OperatorCore: is_invertible
 +import ..OperatorCore: is_invertible
  
- _threading_policy(threaded::Bool) = threaded ? Enabled() : Disabled()
+ # ── Shared coefficient <-> ArrayPartition flattening (in-place, allocation-free) ──
  
 diff --git a/deps/AbstractOperators/DSPOperators/src/DSPOperators.jl b/deps/AbstractOperators/DSPOperators/src/DSPOperators.jl
 index 19f6080..6e93c88 100644
@@ -41,7 +41,7 @@ index 19f6080..6e93c88 100644
      codomain_type,
      check,
 diff --git a/deps/AbstractOperators/FFTWOperators/ext/GpuExt/GpuExt.jl b/deps/AbstractOperators/FFTWOperators/ext/GpuExt/GpuExt.jl
-index beed1a1..f25edce 100644
+index 87f606d..9b33d58 100644
 --- a/deps/AbstractOperators/FFTWOperators/ext/GpuExt/GpuExt.jl
 +++ b/deps/AbstractOperators/FFTWOperators/ext/GpuExt/GpuExt.jl
 @@ -3,9 +3,9 @@ module GpuExt
@@ -177,7 +177,7 @@ index f741841..382d252 100644
      AdjointOperator, Variation, NoOperatorBroadCast,
      domain_type, allocate_in_domain, allocate_in_codomain,
 diff --git a/deps/AbstractOperators/src/AbstractOperators.jl b/deps/AbstractOperators/src/AbstractOperators.jl
-index 3545768..3d40e38 100644
+index eea80d7..4b31869 100644
 --- a/deps/AbstractOperators/src/AbstractOperators.jl
 +++ b/deps/AbstractOperators/src/AbstractOperators.jl
 @@ -18,7 +18,7 @@ import LinearAlgebra: mul!
