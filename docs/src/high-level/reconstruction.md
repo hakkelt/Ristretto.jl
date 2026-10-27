@@ -1,8 +1,13 @@
 # [Image Reconstruction](@id reconstruction)
 
-*Tutorial: [Getting started](../tutorials/01_getting_started.md).*
-
-The `reconstruct` function is the primary high-level interface for MRI image reconstruction from k-space data. It accepts an `AcquisitionInfo` object and an `ReconstructionMethod` (defaulting to `DirectReconstruction()`), with automatic task splitting and performance optimization.
+`reconstruct(acq, method)` turns an [`AcquisitionInfo`](@ref) into an image. `method` defaults to
+[`DirectReconstruction`](@ref), the adjoint ``\mathcal{A}^H y``; an [`IterativeReconstruction`](@ref)
+solves ``\min_x \tfrac12\|\mathcal{A}x - y\|_2^2 + \sum_i \lambda_i R_i(x)`` with the
+[regularizers](regularization.md) it is given and an [algorithm](algorithms.md) it picks or is
+told. This page covers the call, its result and the run settings. Batch dimensions are split into
+independent solves automatically ([Task Splitting](task_splitting.md)).
+[Getting started](../tutorials/01_getting_started.md) and
+[Algorithms and configuration](../tutorials/06_algorithms_and_configuration.md) show them in use.
 
 ## API Reference
 
@@ -13,48 +18,35 @@ IterativeReconstruction
 ReconstructionConfig
 ```
 
-## Basic Usage
-
-The simplest reconstruction performs direct adjoint reconstruction ($\mathcal{A}^* y$):
+## The result: `ReconImage`
 
 ```@setup recon
 using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
 using Random
-Random.seed!(123)
+Random.seed!(0)
+n, nc, nt = 64, 8, 8
+phantom = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+smaps = coil_sensitivities(n, n, nc)
+pattern = create_sampling_pattern(VariableDensitySampling(PolynomialDistribution(3), 3.0, 0.08), (n, n))
+simulate(x, acq) = add_noise(simulate_acquisition(x, acq; inverse_crime_check = false, keep_sensitivity_maps = true); snr_db = 30)
+acq = simulate(phantom, AcquisitionInfo(; image_size = (n, n), subsampling = pattern, sensitivity_maps = smaps))
+using NamedDims
+ksp_ms = NamedDimsArray{(:kx, :ky, :coil, :z)}(rand(ComplexF32, n, n, nc, 4))
+maps_ms = NamedDimsArray{(:x, :y, :coil, :z)}(rand(ComplexF32, n, n, nc, 4))
+acq_ms = AcquisitionInfo(ksp_ms; sensitivity_maps = maps_ms, header = (; fov = (220, 220), slice_thickness = 5))
 ```
-
-```@example recon
-using Ristretto
-
-# Create k-space data
-ksp = rand(ComplexF32, 128, 128, 8)
-acq = AcquisitionInfo(ksp; is3D=false)
-
-# Direct reconstruction (adjoint of encoding operator)
-x_direct = reconstruct(acq)
-println("Reconstructed image size: ", size(x_direct))
-```
-
-## The result: `ReconImage`
 
 `reconstruct` returns a [`ReconImage`](@ref): the image (a `NamedDimsArray` inside when the
 k-space was named) with a copy of the acquisition's [`Header`](@ref). It behaves as the array it
 holds, and keyword indexing returns a `ReconImage` whose geometry describes the part selected:
 
 ```@example recon
-using NamedDims
-using Ristretto: header
-
-ksp = NamedDimsArray{(:kx, :ky, :z)}(rand(ComplexF32, 64, 64, 3))
-acq = AcquisitionInfo(ksp; header = (; fov = (220, 220), spacing = (220 / 64, 220 / 64, 5),
-    orientation = [1.0 0 0; 0 1 0; 0 0 1], offset = (-110, -110, 0)))
-img = reconstruct(acq)
-header(img[z = 2]).offset        # moved by one slice spacing
-```
-
-```@example recon
-crop = img[x = 17:48]
-size(crop), header(crop).fov
+acq_cartesian = acq # hide
+acq = acq_ms # hide
+img = reconstruct(acq)                  # acq: named (:kx, :ky, :z) k-space with a header
+Ristretto.header(img[z = 2]).offset    # moved by one slice spacing
+Ristretto.header(img[x = 17:48]).fov   # the field of view of the crop
 ```
 
 Tagging the image (`settag!(img, :reader, "A")`) never changes the acquisition. `Array(img)` is
@@ -62,59 +54,6 @@ a plain array, and broadcasting acts on the image data and returns a plain array
 
 ```@docs
 ReconImage
-```
-
-## Reconstruction Workflow
-
-### 1. Direct Reconstruction (No Regularization)
-
-When no method is explicitly specified, `reconstruct` defaults to `DirectReconstruction()` using the adjoint of the encoding operator:
-
-```@example recon
-# Fully sampled data
-ksp_full = rand(ComplexF32, 64, 64, 4)
-smaps = rand(ComplexF32, 64, 64, 4)
-acq_full = AcquisitionInfo(ksp_full; is3D=false, sensitivity_maps=smaps)
-
-# Direct reconstruction: x = 𝒜' * y
-x_direct = reconstruct(acq_full, DirectReconstruction())
-println("Direct reconstruction completed")
-println("Output type: ", typeof(x_direct))
-```
-
-This is equivalent to:
-```math
-\hat{x} = \mathcal{A}^H y
-```
-where $\mathcal{A}$ is the encoding operator and $y$ is the k-space data.
-
-### 2. Iterative Reconstruction with Regularization
-
-For undersampled data, configure an `IterativeReconstruction` to solve:
-```math
-\min_x \frac{1}{2}\|\mathcal{A}x - y\|_2^2 + \sum_i \lambda_i R_i(x)
-```
-
-```@example recon
-# Undersampled acquisition
-mask = rand(Bool, 64, 64)
-mask[25:40, 25:40] .= true  # Fully sample center
-smaps = rand(ComplexF32, 64, 64, 4)
-acq_under = AcquisitionInfo(
-    nothing;
-    is3D=false,
-    image_size=(64, 64),
-    subsampling=mask,
-    sensitivity_maps=smaps
-)
-
-# Simulate undersampled data
-phantom = rand(ComplexF32, 64, 64)
-data = simulate_acquisition(phantom, acq_under; inverse_crime_check = false, keep_sensitivity_maps = true)
-
-# Reconstruct with L2 regularization
-x_tikhonov = reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 20); verbosity = Silent())
-println("L2Image reconstruction completed")
 ```
 
 ## Configuration Control
@@ -132,22 +71,11 @@ Passing `maxit`, `reltol` or `algorithm` to `reconstruct` throws rather than bei
 ignored, which is what happened before this split.
 
 ```@example recon
-# Method 1: keyword arguments for the run, constructor arguments for the method
-x1 = reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 50, reltol = 1e-5); verbosity = Silent())
-nothing # hide
-```
-
-```@example recon
-# Method 2: a ReconstructionConfig object, reusable across methods
-config = ReconstructionConfig(; verbosity = Silent(), scaling = QuantileScaling())
-x2 = reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 50, reltol = 1e-5); config = config)
-nothing # hide
-```
-
-```@example recon
-# Method 3: override config fields with keywords
-config_base = ReconstructionConfig(; verbosity = Verbose())
-x3 = reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 25); config = config_base, verbosity = Silent())
+acq = acq_cartesian # hide
+method = IterativeReconstruction(L1Wavelet2D(5e-3); maxit = 50, reltol = 1e-5)   # method parameters
+reconstruct(acq, method; scaling = QuantileScaling(), verbosity = Silent())      # run settings as keywords
+config = ReconstructionConfig(; scaling = QuantileScaling())                      # or reusable
+reconstruct(acq, method; config, verbosity = Verbose())                          # keywords override it
 nothing # hide
 ```
 
@@ -155,33 +83,15 @@ nothing # hide
 
 #### Iteration Control
 
-```@example recon
-# Iteration parameters belong to the method
-IterativeReconstruction(
-    L2Image(0.01);
-    maxit = 100,          # Maximum iterations
-    reltol = 1e-4,        # Relative stopping tolerance (`nothing` defers to the algorithm)
-    algorithm = FISTA(),  # Solver
-)
-```
-
-`reltol` is relative, hence the name: the absolute threshold handed to the solver is
-`max(10*eps, reltol * maximum(abs, x₀))`. Setting `maxit = nothing` or `reltol = nothing` leaves the
-corresponding parameter to the `algorithm` itself, so
-`IterativeReconstruction(reg; algorithm = FISTA(maxit = 500), maxit = nothing)` really runs 500
-iterations.
+`maxit`, `reltol` and `algorithm` are method parameters; [Optimization Algorithms](algorithms.md#Iterations-and-Tolerance)
+covers what they mean and how they interact with the algorithm's own settings.
 
 #### Output
 
-```@example recon
-# Three mutually exclusive output modes
-reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 5); verbosity = Silent())      # nothing at all
-reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 5); verbosity = ProgressBar()) # one progress bar
-reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 5); verbosity = Verbose(; freq = 1))  # textual log
-nothing # hide
-```
-
-`verbosity` also accepts `true`/`false` and the symbols `:verbose`, `:progress`, `:silent`.
+`verbosity` takes one of three modes: `Silent()` (the default), `ProgressBar()`, or
+`Verbose(; freq, printfunc)`, a log line every `freq` iterations written through `printfunc`
+(`println` by default; pass a function that collects the lines to capture them). It also accepts
+`true`/`false` and the symbols `:verbose`, `:progress`, `:silent`.
 
 ```@docs
 Verbosity
@@ -248,69 +158,24 @@ FixedScaling
 NoScaling
 ```
 
-```@example recon
-# Data scaling strategies
-config_default = ReconstructionConfig(scaling = QuantileScaling())
-config_bart = ReconstructionConfig(scaling = BartScaling())
-config_none = ReconstructionConfig(scaling = NoScaling())
-nothing # hide
-```
+Choose one with `reconstruct(acq, method; scaling = BartScaling())`, or in a `ReconstructionConfig`.
+`disable_inverse_scale_output = true` returns the image in the scaled units instead of the data's.
 
-## Algorithm Selection
+## Several Terms and Components
 
-Specify optimization algorithms via `IterativeReconstruction`:
-
-```@example recon
-# Single algorithm
-x_fista = reconstruct(data, IterativeReconstruction(L2Image(0.01); algorithm=FISTA(), maxit = 30); verbosity = Silent())
-nothing # hide
-```
-
-```@example recon
-# Tuple of algorithms (tries in order based on problem structure)
-x_auto = reconstruct(
-    data,
-    IterativeReconstruction(
-        L2Image(0.01);
-        algorithm=(CG(), FISTA(), ADMM()), maxit = 50); verbosity = Silent())
-nothing # hide
-```
-
-Common algorithms:
-- **CG / CGNR**: Conjugate Gradient - best for quadratic problems (L2Image / least squares)
-- **FISTA**: Fast Iterative Shrinkage-Thresholding - for L1 / sparsity regularization
-- **ADMM**: Alternating Direction Method of Multipliers - for composite / multi-term regularization
-
-See [Optimization Algorithms](algorithms.md) and [Reconstruction Methods](methods.md) for detailed information.
-
-## Multiple Regularization Terms
-
-Combine multiple regularization terms for composite regularization:
-
-```@example recon
-# Wavelet sparsity + Total Variation
-x_composite = reconstruct(
-    data,
-    IterativeReconstruction(L1Wavelet2D(0.005), TotalVariation2D(0.002); maxit = 50); verbosity = Silent())
-nothing # hide
-```
-
-See [Regularization](regularization.md) for available regularization terms.
-
-For additive multi-component models (e.g. low-rank background plus sparse foreground), pass `Component`s into `IterativeReconstruction`; see [Image Decomposition](image_decomposition.md).
+Regularizers are listed one after another in `IterativeReconstruction`, and their sum is
+minimized; [Regularization](regularization.md#Combining-Multiple-Regularizers) says which solver a
+combination gets. Additive models (a low-rank background plus a sparse foreground) pass
+`Component`s instead; see [Image Decomposition](image_decomposition.md).
 
 ## Initial Guess
 
-Provide a custom initial estimate via `x₀`:
+`x₀` starts the solver from a given image, in the data's units: a direct reconstruction, or the
+result of a neighbouring λ in a parameter sweep.
 
 ```@example recon
-# Use direct reconstruction as initial guess
-x_init = reconstruct(data; verbosity = Silent())
-
-# Refine with regularization
-x_refined = reconstruct(
-    data,
-    IterativeReconstruction(L1Wavelet2D(0.005); maxit = 30); x₀=x_init, verbosity = Silent())
+x_l1 = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(5e-3)))
+x = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(3e-3)); x₀ = x_l1)
 nothing # hide
 ```
 
@@ -318,15 +183,8 @@ nothing # hide
 
 ### Operator Scaling
 
-By default, the encoding operator is normalized to unit norm for stable step size selection. This can be configured on `IterativeReconstruction`:
-
-```@example recon
-# Disable operator normalization
-x_unnorm = reconstruct(
-    data,
-    IterativeReconstruction(L2Image(0.01); disable_operator_normalization=true, maxit = 20); verbosity = Silent())
-println("Unnormalized reconstruction completed")
-```
+By default, the encoding operator is normalized to unit norm for stable step size selection;
+`IterativeReconstruction(reg; disable_operator_normalization = true)` turns that off.
 
 ### Normal Operator Optimization
 
@@ -336,92 +194,3 @@ implementation cheaper than applying $\mathcal{A}$ and then $\mathcal{A}^*$ — 
 the FFT- and NFFT-based encoding operators this package builds. Nothing has to be requested:
 the model always carries the plain least-squares term, and the substitution is decided when the
 problem is handed to a solver, against the full set of variables the problem turns out to have.
-
-### Output Scaling
-
-Control whether the output is scaled back to the original data range:
-
-```@example recon
-# Standard (output is inverse-scaled)
-x_scaled = reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 20); verbosity = Silent())
-
-# Keep scaled output
-x_unscaled = reconstruct(
-    data,
-    IterativeReconstruction(L2Image(0.01); maxit = 20); disable_inverse_scale_output=true, verbosity = Silent())
-
-println("Scaled max: ", maximum(abs, x_scaled))
-println("Unscaled max: ", maximum(abs, x_unscaled))
-```
-
-## Task Splitting
-
-For multi-dimensional data (e.g., 2D+time, multi-slice), `reconstruct` automatically splits the task over independent dimensions:
-
-```@example recon
-# Multi-slice 2D data
-nx, ny, nslices, nc = 32, 32, 5, 4
-ksp_ms = rand(ComplexF32, nx, ny, nc, nslices)
-smaps_ms = rand(ComplexF32, nx, ny, nc, nslices)
-
-acq_ms = AcquisitionInfo(ksp_ms; is3D=false, sensitivity_maps=smaps_ms)
-
-# Automatically splits over slice dimension
-x_slices = reconstruct(acq_ms; verbosity = Silent())
-println("Reconstructed slices: ", size(x_slices))
-```
-
-Task splitting:
-- Identifies batch dimensions not affected by Fourier transforms or regularization
-- Reconstructs each batch element independently
-- Utilizes multiple CPU cores for parallel execution
-- Combines results into a single output array
-
-To disable task splitting (e.g., for debugging):
-
-```@example recon
-x_no_split = reconstruct(
-    acq_ms; disable_task_splitting=true, verbosity = Silent())
-println("Sequential reconstruction completed")
-```
-
-See [Task Splitting](task_splitting.md) for details.
-
-## Custom Progress Logging
-
-Replace the default logging function:
-
-```@example recon
-# Custom print function
-messages = String[]
-custom_print(args...) = push!(messages, string(args...))
-
-config_custom = ReconstructionConfig(; verbosity = Verbose(; printfunc = custom_print))
-
-x_custom = reconstruct(data, IterativeReconstruction(L2Image(0.01); maxit = 5); config=config_custom)
-println("Captured ", length(messages), " log messages")
-println("First message: ", messages[1])
-```
-
-## Named Dimensions Support
-
-`reconstruct` preserves `NamedDimsArray` metadata:
-
-```@example recon
-using NamedDims
-
-# Create named k-space data
-ksp_named = NamedDimsArray{(:kx, :ky, :coil)}(
-    rand(ComplexF32, 64, 64, 4)
-)
-smaps_named = NamedDimsArray{(:x, :y, :coil)}(
-    rand(ComplexF32, 64, 64, 4)
-)
-
-acq_named = AcquisitionInfo(ksp_named; sensitivity_maps=smaps_named)
-x_named = reconstruct(acq_named; verbosity = Silent())
-
-println("Output dimensions: ", dimnames(x_named))
-```
-
-See [Named Dimensions](nameddims.md) for more information.
