@@ -100,38 +100,36 @@ include(joinpath(@__DIR__, "_setup.jl"))
         @test isapprox(energy_ristretto, energy_bart, rtol = 1.0e-2)
     end
 
-    @testset "Gradient Delay (RING)" begin
+    @testset "Gradient Delay" begin
         N = 128
-        Nspokes = 128
+        Nspokes = 101
+        q = (0.5, 0.2, 0.1)  # BART `-q x:y:xy`, in samples
 
-        # 1. Generate radial trajectory with gradient delay
-        # -q x:y:xy
-        delay_x = 0.5
-        delay_y = 0.2
-        delay_xy = 0.1
-        traj = run_bart(1, "traj -r -x $N -y $Nspokes -G -q $(delay_x):$(delay_y):$(delay_xy)")
+        # 1. Nominal golden-angle trajectory, and the actual one: the full displacement S n of a
+        #    delay on each gradient axis (`-O` keeps the part across the spoke as well).
+        traj_nominal = run_bart(1, "traj -r -x $N -y $Nspokes -G")
+        traj_actual = run_bart(1, "traj -r -x $N -y $Nspokes -G -q $(q[1]):$(q[2]):$(q[3]) -O")
 
-        # 2. Generate radial k-space data
-        ksp = run_bart(1, "phantom -k -t", traj)
+        # 2. Multi-coil k-space sampled on the actual trajectory.
+        ksp = run_bart(1, "phantom -k -s 8 -t", traj_actual)
 
-        # 3. Estimate with BART estdelay -R
-        # Usage: estdelay ... <trajectory> <data> [<qf>]
-        qf_bart = run_bart(1, "estdelay -R", traj, ksp)
+        # 3. BART estimates from the nominal trajectory (default: opposed spokes; -R: RING).
+        qf_bart = run_bart(1, "estdelay", traj_nominal, ksp)
+        qf_bart_ring = run_bart(1, "estdelay -R", traj_nominal, ksp)
 
-        # 4. Estimate with Ristretto RING
-        ksp_ristretto = dropdims(ksp, dims = 1) # Remove BART's singleton readout dimension
-        traj_ristretto = real.(traj[1:2, :, :]) ./ N
+        # 4. Ristretto. BART stores the trajectory as (y, x, z) in units of 1/FOV.
+        ksp_ristretto = ComplexF64.(dropdims(ksp, dims = 1))
+        traj_ristretto = Float64.(real.(traj_nominal[[2, 1], :, :])) ./ N
         acq = Ristretto.NonCartesianAcquisitionInfo(ksp_ristretto, trajectory = traj_ristretto, image_size = (N, N))
-        delays_ristretto_ring = Ristretto.estimate_gradient_delays(acq, method = Ristretto.RING())
-        delays_ristretto_os = Ristretto.estimate_gradient_delays(acq, method = Ristretto.OpposingSpokes())
+        samples(d) = (d.dx * N, d.dy * N, d.dxy * N)
+        delays_ring = samples(Ristretto.estimate_gradient_delays(acq, method = Ristretto.RING()))
+        delays_os = samples(Ristretto.estimate_gradient_delays(acq, method = Ristretto.OpposingSpokes()))
 
         # 5. Compare
-        @info "RING BART qf = $(qf_bart[:])"
-        @info "RING Ristretto delays = $(delays_ristretto_ring)"
-        @info "OS Ristretto delays = $(delays_ristretto_os)"
-
-        # In case the scaling is off, we just ensure they correlate or match after scaling.
-        @test true
+        @info "Gradient delays (samples)" truth = q bart_default = real.(qf_bart[:]) bart_ring = real.(qf_bart_ring[:]) ristretto_ring = delays_ring ristretto_opposing = delays_os
+        @test all(isapprox.(delays_ring, q; atol = 0.02))
+        # Both opposed-spoke estimators neglect the part of the displacement across the spoke.
+        @test all(isapprox.(delays_os, real.(qf_bart[1:3]); atol = 0.1))
     end
 
     @testset "Prewhitening" begin

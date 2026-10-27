@@ -17,7 +17,7 @@ apply throughout; in particular, changes to vendored packages go on fork branche
 | **P1 — done** (PR #2, 2026-10-09) | 5 (rename), 9, 2, 11, 1 (measurement + quick wins), 3 |
 | **P2 — documentation (next)** | 28, 30, 29, 31, 6, 7 + 8, 10, 23, 4 |
 | **P3 — strengthens the paper** | 19, 20 (Python wrapper), 22 |
-| **Deferred** | 12, 13, 14, 15, rest of 1, 16, 17, 18, 24, 25, 26, 27, 32–38, 39 (to discuss) |
+| **Deferred** | 12, 13, 14, 15, rest of 1, 16, 17, 18, 24, 25, 26, 27, 32–38, 39 (to discuss), 40 (to examine) |
 
 Ordering constraints: 5 before 4, 10 and 20 (a rename touches all of them); 9 and 7 before 10
 (notebooks are rewritten only once); 9 before 22 (simulated benchmark cases change); 7 before 8;
@@ -404,6 +404,26 @@ pull requests and compares it with the base branch, so a performance regression 
 review rather than in the next manual run. Shared CI runners are noisy (see the timing caveats
 in `benchmark/`), so the job reports ratios against the base run on the same runner and flags
 only large changes.
+
+### 40. Batch dimensions last, automatically
+**Status:** to examine. **Tier:** deferred.
+
+Task splitting slices the batch dimensions (`:time`, `:echo`, slices of a 2D multi-slice
+acquisition, …), and a slice over a trailing dimension is contiguous, while one over an inner
+dimension is strided. `AcquisitionInfo`, or `reconstruct`, could permute the k-space, the maps and
+any per-batch pattern so that the task-splitting dimensions come last, and permute the result back.
+Examine first whether it is worth it, and what it risks:
+
+- Measure what a strided batch dimension costs today: a solve with `:time` before `:coil`
+  against the same data with `:time` last, for a Cartesian cine and a multi-slice case.
+- The permutation copies the k-space (and the maps), which doubles the memory for the copy; on a
+  GPU it is another device array.
+- Where it happens decides what the user sees: in `AcquisitionInfo`, `acq.kspace_data` no longer
+  has the order the user passed; in `reconstruct`, every solve pays the copy again.
+- Plain arrays carry no names, so the returned image must be permuted back into the order the
+  user expects; named arrays are safe either way.
+- Per-batch subsampling vectors, `PartitionedKSpace` (whose ragged dimension is a batch dimension)
+  and sensitivity maps with batch dimensions all have to follow the same permutation.
 
 ## New domains (survey first)
 

@@ -119,11 +119,18 @@ not on the anatomy. `normalize_sensitivity_maps` divides them by $\sqrt{\sum_c |
 coil sum of squares is one wherever there is signal, which is the conventional SENSE scaling
 (Pruessmann et al. 1999, Roemer et al. 1990).
 
+```@setup preprocessing
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+x = create_shepp_logan_phantom(64, 64, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+acq = AcquisitionInfo(simulate_acquisition(x, AcquisitionInfo(; image_size = (64, 64), sensitivity_maps = coil_sensitivities(64, 64, 8)); inverse_crime_check = false))
+```
+
 ```@docs
 normalize_sensitivity_maps
 ```
 
-```julia
+```@example preprocessing
 acq = estimate_sensitivities(acq; method = ESPIRiT())
 acq = normalize_sensitivity_maps(acq)
 ```
@@ -140,11 +147,37 @@ benefits remain but the free operator norm does not.
 
 Eddy currents and gradient hardware timing delays displace non-Cartesian trajectory samples from their nominal positions, causing blurring and ring artifacts in radial and spiral acquisitions.
 
-Both estimators are auto-calibrated from the radial data itself. `OpposingSpokes` reads the delay
-from the shift between antiparallel spokes, which sample the same line in opposite directions
-(Peters et al. 2003). `RING` (Rosenzweig et al. 2019) uses the fact that ideal spokes all cross at
-$k = 0$: with anisotropic delays the pairwise intersection points move, and fitting them gives the
-full 2D delay tensor (three parameters) from as few as three spokes.
+Both estimators are auto-calibrated from the radial data itself and estimate the symmetric delay
+tensor $S$ of the model $\mathbf k_\text{actual} = \mathbf k_\text{nominal} + S\mathbf n$, where
+$\mathbf n$ is the direction of a spoke (Peters et al. 2003; Moussavi et al. 2014). The estimate is
+returned as `(dx = Sxx, dy = Syy, dxy = Sxy)` in trajectory units.
+
+- `OpposingSpokes` (Block & Uecker 2011) pairs every spoke with the one pointing the opposite way.
+  Both are moved by the same amount $\mathbf n^T S\mathbf n$ along their own direction, so the
+  sub-sample shift that aligns one complex profile with the reversed profile of its partner is twice
+  the delay; the per-spoke delays are then fitted with $\mathbf n^T S\mathbf n$. It needs spokes
+  over the full circle (golden angle, 360° orderings), and it neglects the sideways displacement
+  an anisotropic delay also causes, which biases it slightly for extended, off-centre objects.
+- `RING` (Rosenzweig et al. 2019) uses the fact that ideal spokes all cross at $k = 0$. With
+  delays two non-parallel spokes meet elsewhere, at the point where they measure the same complex
+  value; the intersection of each spoke with its nearest-to-orthogonal partner is found on finely
+  interpolated profiles and gives two linear equations in $S$. It works on any ordering, including
+  180° ones, and from few spokes. It is the default.
+
+  The per-pair intersections are only a start: RING then refines $S$ by Gauss–Newton on the
+  intersection condition of all pairs at once. With a single coil and an object that fills the
+  field of view, two profiles can also agree at spurious points, so the start matters. `init`
+  selects it: `:opposing` (the `OpposingSpokes` estimate, several times faster), `:grid` (a
+  coarse search of the joint condition), `:intersections` (the paper's per-pair estimate, combined
+  robustly) or `:auto` (the default: `:opposing` when the spokes cover the full circle, `:grid`
+  otherwise). `phase = true` also fits a per-spoke phase $\psi_x\cos\theta + \psi_y\sin\theta$
+  from B0 eddy currents (Moussavi et al. 2014), which otherwise biases RING on single-coil data;
+  it is off by default because the two extra unknowns make the estimate noisier.
+
+`correct_gradient_delays` moves every spoke by the full displacement $S\mathbf n$, including the
+part across the spoke that an anisotropic delay causes (as `bart traj -q … -O` does; without `-O`,
+BART applies only the part along the spoke). The spokes must be straight with uniformly spaced
+samples.
 
 ```@docs
 GradientDelay
@@ -156,7 +189,7 @@ correct_gradient_delays
 
 ### When to use:
 - Radial projection acquisitions (such as golden-angle or 3D stack-of-stars) suffering from trajectory delay artifacts.
-- Opposing spoke pair cross-correlation (`OpposingSpokes`) or spoke intersection analysis (`RING`).
+- Golden-angle or 360° data: either estimator; 180° orderings or few spokes: `RING`.
 
 ## References
 
@@ -165,5 +198,7 @@ correct_gradient_delays
 - Huang, F., Vijayakumar, S., Li, Y., Hertel, S., & Duensing, G. R. (2008). *A software channel compression technique for faster reconstruction with many channels.* Magnetic Resonance Imaging, 26(1), 133-141. <https://doi.org/10.1016/j.mri.2007.04.010>
 - Zhang, T., Pauly, J. M., Vasanawala, S. S., & Lustig, M. (2013). *Coil compression for accelerated imaging with Cartesian and non-Cartesian sampling.* Magnetic Resonance in Medicine, 69(2), 571-582. <https://doi.org/10.1002/mrm.24267> — [`GeometricCompression`](@ref).
 - Uecker, M., et al. (2014). *ESPIRiT — an eigenvalue approach to autocalibrating parallel MRI: Where SENSE meets GRAPPA.* Magnetic Resonance in Medicine, 71(3), 990-1001. <https://doi.org/10.1002/mrm.24751> — [`ESPIRiT`](@ref).
-- Peters, D. C., Derbyshire, J. A., & McVeigh, E. R. (2003). *Centering the projection reconstruction trajectory: Reducing gradient delay errors.* Magnetic Resonance in Medicine, 50(1), 1-6. — [`OpposingSpokes`](@ref).
+- Peters, D. C., Derbyshire, J. A., & McVeigh, E. R. (2003). *Centering the projection reconstruction trajectory: Reducing gradient delay errors.* Magnetic Resonance in Medicine, 50(1), 1-6. — the delay model.
+- Block, K. T., & Uecker, M. (2011). *Simple method for adaptive gradient-delay compensation in radial MRI.* Proc. Intl. Soc. Mag. Reson. Med. 19, 2816. — [`OpposingSpokes`](@ref).
+- Moussavi, A., Untenberger, M., Uecker, M., & Frahm, J. (2014). *Correction of gradient-induced phase errors in radial MRI.* Magnetic Resonance in Medicine, 71(1), 308-312. <https://doi.org/10.1002/mrm.24643> — the quadratic delay model fitted by [`OpposingSpokes`](@ref).
 - Rosenzweig, S., Holme, H. C. M., & Uecker, M. (2019). *Simple auto-calibrated gradient delay estimation from few spokes using radial intersections (RING).* Magnetic Resonance in Medicine, 81(3), 1898-1906. <https://doi.org/10.1002/mrm.27506> — [`RING`](@ref).
