@@ -164,7 +164,7 @@ ZeroFPR NRMSE 0.1289
 x_tight = reconstruct(data, IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 200, reltol = 1.0f-6))
 println(&quot;reltol 1e-3 NRMSE &quot;, round(nrmse1(x_loose), digits = 4), &quot;   (stopped early)&quot;)
 println(&quot;reltol 1e-6 NRMSE &quot;, round(nrmse1(x_tight), digits = 4), &quot;   (ran further)&quot;)</code></pre><pre><code class="nohighlight hljs">reltol 1e-3 NRMSE 0.127   (stopped early)
-reltol 1e-6 NRMSE 0.1272   (ran further)
+reltol 1e-6 NRMSE 0.1273   (ran further)
 </code></pre><p>The looser tolerance gives the <em>lower</em> NRMSE, which is not a mistake: stopping early is itself a form of regularization, and the extra iterations the tighter run buys are spent fitting the noise the data term is asking it to fit. <code>reltol</code> controls how faithfully the <em>objective</em> is minimized; whether that objective&#39;s minimizer is the best image is λ&#39;s job.</p><pre><code class="language-julia hljs"># Defer to the algorithm&#39;s own iteration count.
 x_alg = reconstruct(
     data,
@@ -186,12 +186,12 @@ reconstruct(
 ------|-----------|-----------|-----------
    10 | 6.415e-01 | 3.562e+00 | 3.535e-02
    20 | 1.761e-01 | 3.312e+00 | 3.752e-02
-   30 | 1.277e-01 | 3.121e+00 | 3.144e-02
-   40 | 1.099e-01 | 3.037e+00 | 2.488e-02
-   50 | 1.011e-01 | 3.015e+00 | 1.764e-02
-   60 | 9.895e-02 | 3.010e+00 | 1.042e-02
-   70 | 9.858e-02 | 3.008e+00 | 6.684e-03
-   71 | 9.885e-02 | 3.008e+00 | 6.536e-04
+   30 | 1.275e-01 | 3.121e+00 | 3.144e-02
+   40 | 1.098e-01 | 3.037e+00 | 2.489e-02
+   50 | 1.010e-01 | 3.015e+00 | 1.764e-02
+   60 | 9.892e-02 | 3.010e+00 | 1.042e-02
+   70 | 9.845e-02 | 3.008e+00 | 6.684e-03
+   73 | 9.867e-02 | 3.008e+00 | 6.124e-04
 </code></pre><pre><code class="language-julia hljs">println(&quot;reltol = 0, maxit = 20 — the tolerance is switched off, so the budget decides:&quot;)
 reconstruct(
     data, IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 20, reltol = 0.0);
@@ -212,14 +212,14 @@ reconstruct(data, IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 60); verb
    10 | 6.415e-01 | 3.562e+00 | 3.535e-02
    15 | 2.688e-01 | 3.440e+00 | 4.013e-02
    20 | 1.761e-01 | 3.312e+00 | 3.752e-02
-   25 | 1.459e-01 | 3.201e+00 | 3.057e-02
-   30 | 1.277e-01 | 3.121e+00 | 3.144e-02
+   25 | 1.458e-01 | 3.201e+00 | 3.057e-02
+   30 | 1.275e-01 | 3.121e+00 | 3.144e-02
    35 | 1.167e-01 | 3.068e+00 | 3.108e-02
-   40 | 1.099e-01 | 3.037e+00 | 2.488e-02
-   45 | 1.046e-01 | 3.022e+00 | 2.368e-02
-   50 | 1.011e-01 | 3.015e+00 | 1.764e-02
-   55 | 9.950e-02 | 3.012e+00 | 1.225e-02
-   60 | 9.895e-02 | 3.010e+00 | 1.042e-02
+   40 | 1.098e-01 | 3.037e+00 | 2.489e-02
+   45 | 1.044e-01 | 3.022e+00 | 2.368e-02
+   50 | 1.010e-01 | 3.015e+00 | 1.764e-02
+   55 | 9.934e-02 | 3.012e+00 | 1.225e-02
+   60 | 9.892e-02 | 3.010e+00 | 1.042e-02
 </code></pre><pre><code class="language-julia hljs">println(&quot;--- Verbose(; freq = 1): overridden, every iteration ---&quot;)
 reconstruct(data, IterativeReconstruction(L2Image(1.0f-4); maxit = 5); verbosity = Verbose(; freq = 1, timing = false));</code></pre><pre><code class="nohighlight hljs">--- Verbose(; freq = 1): overridden, every iteration ---
       | ‖Aᴴb - (AᴴA + λI)x‖ |   λ‖x‖²  
@@ -235,7 +235,7 @@ reconstruct(
     data, IterativeReconstruction(L2Image(1.0f-4); maxit = 5);
     verbosity = Verbose(; printfunc = (args...) -&gt; push!(messages, string(args...)))
 )
-println(length(messages), &quot; messages captured; first: &quot;, first(messages))</code></pre><pre><code class="nohighlight hljs">20 messages captured; first: Constructing encoding operator: 956.86 µs (1.47 k allocations: 6.232 MiB)
+println(length(messages), &quot; messages captured; first: &quot;, first(messages))</code></pre><pre><code class="nohighlight hljs">20 messages captured; first: Constructing encoding operator: 1.47 ms (1.47 k allocations: 6.232 MiB)
 </code></pre><h2 id="5.-Data-scaling"><a class="docs-heading-anchor" href="#5.-Data-scaling">5. Data scaling</a><a id="5.-Data-scaling-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Data-scaling" title="Permalink"></a></h2><p>The absolute magnitude of the k-space is not neutral, for two reasons that have nothing to do with each other:</p><ol><li><strong>λ is scale-dependent.</strong> The objective is <span>$\tfrac12\|\mathcal{A}x - y\|^2 + \lambda R(x)$</span>. Multiply the data by <span>$c$</span> and the data term grows like <span>$c^2$</span> while an ℓ₁-type <span>$R$</span> grows like <span>$c$</span>, so the balance between them moves and the λ you tuned no longer means the same thing. Bringing every dataset to a common scale first is what makes a λ transferable between scans, scanners and vendors.</li><li><strong>The arithmetic has finite range.</strong> These reconstructions run in <code>Float32</code>, and the data term squares whatever comes off the scanner; raw k-space that lives around <code>1e-6</code> or <code>1e6</code> spends that range on the exponent instead of on the image.</li></ol><p>The stopping tolerance, by contrast, is already scale-free: it is relative to <code>maximum(abs, x₀)</code> (§3), so it needs no help from the scaling.</p><p><code>QuantileScaling</code>, the default, divides by the 99th percentile of the direct reconstruction&#39;s magnitude; <code>BartScaling</code> divides by its 90th percentile or its maximum (the convention BART uses), <code>MeasurementBasedScaling</code> derives the factor from the measurements, <code>FixedScaling</code> takes a number you supply, and <code>NoScaling</code> leaves the data alone. The reconstruction guide lists the others and how they compare. The output is scaled back unless you ask otherwise, so the choice does not change the units you get out — it changes the units the solver works in, and therefore what λ means.</p><pre><code class="language-julia hljs">for scaling in (NoScaling(), QuantileScaling(), BartScaling(), MeasurementBasedScaling())
     x̂ = reconstruct(
         data, IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 40);
@@ -297,9 +297,9 @@ for kwargs in ((;), (; disable_operator_normalization = true))
         rpad(isempty(kwargs) ? &quot;ADMM, default&quot; : &quot;ADMM, no estimate&quot;, 20),
         &quot; NRMSE &quot;, round(nrmse1(x̂), digits = 5), &quot;   &quot;, round(t, digits = 3), &quot; s&quot;
     )
-end</code></pre><pre><code class="nohighlight hljs">the operator-norm estimate costs 4.3 ms
-ADMM, default        NRMSE 0.07164   0.263 s
-ADMM, no estimate    NRMSE 0.07164   0.26 s
+end</code></pre><pre><code class="nohighlight hljs">the operator-norm estimate costs 5.8 ms
+ADMM, default        NRMSE 0.07164   0.251 s
+ADMM, no estimate    NRMSE 0.07164   0.265 s
 </code></pre><h3 id="The-three-options"><a class="docs-heading-anchor" href="#The-three-options">The three options</a><a id="The-three-options-1"></a><a class="docs-heading-anchor-permalink" href="#The-three-options" title="Permalink"></a></h3><p><strong><code>exact_opnorm = true</code></strong> — replace <code>estimate_opnorm</code> with <code>LinearAlgebra.opnorm</code>, run to convergence. <em>Costs</em> a longer setup: the iteration keeps applying <span>$\mathcal{A}$</span> and <span>$\mathcal{A}^*$</span> until it stops moving, instead of stopping as soon as the certified interval is within <code>rel_margin</code>. <em>Reach for it</em> when you need the true constant rather than a certified bound — <code>estimate_opnorm</code> returns the upper end of that interval, so <code>1/Lf</code> is a slightly <strong>smaller</strong> step than the true norm would give, which costs convergence rate but never safety.</p><p><strong>Supplying the constant yourself</strong> — <code>disable_operator_normalization</code> is not the only alternative to estimating. Because Ristretto fills <code>Lf</code> in only when the algorithm does not already carry one, an <code>Lf</code> you pass to the algorithm wins; combine it with <code>disable_operator_normalization = true</code> and the estimate is skipped as well. <em>Costs</em> nothing, and <em>reach for it</em> whenever you already know <span>$\|\mathcal{A}\|$</span> — a parameter sweep over λ on one fixed operator computes it once and reuses it.</p><p><strong><code>disable_operator_normalization = true</code></strong> — skip the estimate and pass no <code>Lf</code>. The forward-backward iteration then switches to <code>adaptive = true</code>: it seeds <code>γ</code> from its own cheap lower bound on the smoothness constant and re-checks a descent condition every iteration, halving <code>γ</code> whenever the check fails. <em>Costs</em> one extra evaluation of the smooth term per iteration — the descent check — rather than one power iteration up front, so it trades a fixed setup cost for a per-iteration one. <em>Reach for it</em> for an operator whose norm you cannot estimate cheaply, or to check that a suspicious step size is not the cause of a bad reconstruction. For CG, CGNR and ADMM the setting is a no-op as far as the solve is concerned — they never use <code>Lf</code> — so it only saves the estimate those runs would have discarded anyway.</p><p><strong>The normal-operator substitution</strong> is not a switch at all, but it is worth knowing about because it decides how much a gradient costs. The model always carries the plain least-squares term <code>ls(𝒜x - y)</code>; when the problem is handed to a solver, the term&#39;s gradient is rewritten to go through <span>$\mathcal{A}^*\mathcal{A}$</span> wherever that product has an implementation cheaper than applying <span>$\mathcal{A}$</span> and then <span>$\mathcal{A}^*$</span> — which the FFT- and NFFT-based encoding operators do have. Both forms do one forward-and-adjoint&#39;s worth of work per gradient: the plain one forms the residual <span>$r = \mathcal{A}x - y$</span>, takes <span>$\|r\|^2$</span> for the value and <span>$\mathcal{A}^*r$</span> for the gradient. What the substitution buys is that the <em>composed</em> operator can be cheaper than its two factors run back to back — for an NFFT it is a Toeplitz embedding, one FFT pair on a padded grid instead of two gridding passes — and that it recovers the value from the gradient instead of applying <span>$\mathcal{A}$</span> again. On a Cartesian FFT there is little to collapse and the saving is a few per cent; on a radial NFFT it is a large fraction of the run.</p><p>One consequence to keep in mind when reading a printed objective: the substituted form never applies <span>$\mathcal{A}$</span> a second time, so its value is the potential of the gradient it already computed. With Ristretto&#39;s <code>BACKWARD</code>-normalized Fourier operator <span>$\mathcal{A}^*$</span> is the inverse rather than the true adjoint, so that potential is <span>$\tfrac12\|\mathcal{A}x - y\|^2 / \sigma$</span> with <span>$\sigma = N$</span> — the right quantity for the solver and for a line search, but scaled if you wanted to read off <span>$\tfrac12\|\mathcal{A}x - y\|^2$</span> itself.</p><pre><code class="language-julia hljs"># `Lf = n‖𝒜‖²` with n = 1: computed once here (the same `𝒜` as above), then handed to the
 # algorithm.
 L = estimate_opnorm(𝒜)
@@ -334,8 +334,8 @@ end
 println(&quot;--- Cartesian, 128², 8 coils ---&quot;)
 compare_options(data, nrmse1)</code></pre><pre><code class="nohighlight hljs">--- Cartesian, 128², 8 coils ---
 default              NRMSE 0.16356   0.117 s
-exact_opnorm         NRMSE 0.16356   0.219 s
-no normalization     NRMSE 0.1624   0.128 s
+exact_opnorm         NRMSE 0.16356   0.223 s
+no normalization     NRMSE 0.1624   0.127 s
 </code></pre><p>The same three options on a <strong>non-Cartesian</strong> acquisition — radial, 200 golden-angle spokes of 256 samples over the same phantom and coils (tutorial 08 is where non-Cartesian encoding is covered properly). This is also where the normal-operator substitution stops being a footnote: for an NFFT the normal operator is a Toeplitz embedding, one FFT pair on a padded grid, where running <span>$\mathcal{A}$</span> and <span>$\mathcal{A}^*$</span> separately means two full gridding passes instead.</p><pre><code class="language-julia hljs">traj_no = radial_trajectory(256, 200; ordering = GoldenAngle())
 acq_noncart = AcquisitionInfo(;
     trajectory = traj_no, image_size = (nx, ny),
@@ -347,16 +347,16 @@ println(&quot;--- non-Cartesian, 200 radial spokes ---&quot;)
 compare_options(data_noncart, nrmse1; maxit = 30)</code></pre><pre><code class="nohighlight hljs">┌ Warning: simulate_acquisition: the phantom has the reconstruction&#39;s size 128×128, so the data are simulated with the operator that will reconstruct them (the inverse crime), and reconstructions look better than they would on measured data. Simulate from a finer, area-sampled phantom, e.g. 202×202; pass `inverse_crime_check = false` where the consistency is intended.
 └ @ Ristretto ~/work/Ristretto.jl/Ristretto.jl/src/simulation/simulate_acquisition.jl:313
 --- non-Cartesian, 200 radial spokes ---
-default              NRMSE 0.30839   0.455 s
-exact_opnorm         NRMSE 0.30828   0.482 s
-no normalization     NRMSE 9718.743   0.63 s
+default              NRMSE 0.30839   0.5 s
+exact_opnorm         NRMSE 0.30828   0.536 s
+no normalization     NRMSE 9718.743   0.647 s
 </code></pre><p>Several rows in those two tables are worth explaining, because none of them is obvious. (Wall-clock timings vary from run to run; the <em>reasons</em> below are the part to keep.)</p><p><strong>Why the per-iteration cost differs so much between the two acquisitions.</strong> Cartesian: the normal operator is a masked FFT pair, which is what <span>$\mathcal{A}$</span> then <span>$\mathcal{A}^*$</span> already costs, so the substitution saves only the second value computation — a few per cent. Radial: the NFFT&#39;s normal operator is a Toeplitz embedding, a single FFT pair on a padded grid, against two full gridding passes with their interpolation kernels — so it removes a large fraction of the per-iteration cost. The substitution is a footnote on Cartesian data and a large win on non-Cartesian data, which is why it is applied wherever the operator supports it.</p><p><strong>Why <code>exact_opnorm</code> costs so much wall-clock time.</strong> Not because of the iterations — <code>maxit</code> is unchanged — but because of the setup. The estimate took a few tens of milliseconds in the cell above; running the power iteration to convergence takes roughly an order of magnitude longer, while the whole 40-iteration solve is only a couple of hundred milliseconds. The setup, not the solve, is what grew.</p><p><strong>Why &quot;no normalization&quot; costs extra time too, and where it goes.</strong> Not to a longer setup — there is none — but to the loop. Without <code>Lf</code> the iteration runs in adaptive mode and performs a descent check every iteration, one extra evaluation of the smooth term each time. On the Cartesian problem the check always passes and <code>γ</code> never actually shrinks (it stays close to the <code>1/Lf</code> the estimate would have given), so the price is paid for information Ristretto could have supplied once.</p><p><strong>Why &quot;no normalization&quot; is a catastrophe on the radial problem, and what it is really telling you.</strong> That row&#39;s NRMSE is not a typo and it is not the solver failing: <code>‖𝒜‖</code> is used for a <em>second</em> purpose, the default warm start <code>x₀ = 𝒜*y/L²</code>, and switching the estimate off switches that scaling off with it. For a Cartesian FFT <code>𝒜*y</code> is already roughly on the image&#39;s scale and nothing much happens. For an uncompensated radial NFFT it is not: here <code>‖𝒜*y‖ ≈ 5.2e7</code> against <code>‖x‖ ≈ 25</code>, six orders of magnitude out, and thirty iterations starting from there get nowhere near the solution. FISTA does exactly as badly, so this is not about which solver is in the slot. The lesson is that <code>disable_operator_normalization</code> is not a pure &quot;skip an estimate&quot; switch on non-Cartesian data — it also removes the one Landweber step that makes the adjoint a usable starting point — and if that is what you want, supply <code>x₀</code> yourself.</p><p><strong>Why the two settings differ in NRMSE at this budget.</strong> Neither converges to a worse image — they converge to the same one, at slightly different rates. The two calls return slightly different numbers for <code>‖𝒜‖</code>: <code>estimate_opnorm</code> returns the <em>upper</em> end of a certified interval, while <code>LinearAlgebra.opnorm</code> iterates a power method that approaches the norm from <em>below</em>. The larger of the two makes <code>Lf</code> larger and therefore <code>γ = 1/Lf</code> smaller, and a smaller step means less progress per iteration, so at a truncated <code>maxit = 40</code> it lands a little further back along the same trajectory. λ is not involved: since <code>‖𝒜‖</code> no longer rescales <code>𝒜</code>, the objective being minimized is identical in both runs. The cell below checks that directly by giving both enough iterations to converge.</p><pre><code class="language-julia hljs">for (label, kwargs) in ((&quot;default&quot;, (;)), (&quot;exact_opnorm&quot;, (; exact_opnorm = true)))
     x̂ = reconstruct(
         data, IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 300, reltol = 0.0, kwargs...)
     )
     println(rpad(label, 14), &quot; NRMSE after 300 iterations &quot;, round(nrmse1(x̂), digits = 5))
-end</code></pre><pre><code class="nohighlight hljs">default        NRMSE after 300 iterations 0.12715
-exact_opnorm   NRMSE after 300 iterations 0.12816
+end</code></pre><pre><code class="nohighlight hljs">default        NRMSE after 300 iterations 0.12735
+exact_opnorm   NRMSE after 300 iterations 0.12698
 </code></pre><h2 id="8.-Task-splitting-and-threading"><a class="docs-heading-anchor" href="#8.-Task-splitting-and-threading">8. Task splitting and threading</a><a id="8.-Task-splitting-and-threading-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Task-splitting-and-threading" title="Permalink"></a></h2><p>When the data has batch dimensions that <em>nothing couples</em> — slices, contrasts, echoes, or time if there is no temporal regularizer — <code>reconstruct</code> splits the problem into one independent solve per batch element and runs them in parallel. This is <strong>task splitting</strong>, and it is a run setting: <code>task_executor</code> chooses how the tasks are run, <code>disable_task_splitting</code> turns the whole mechanism off.</p><p>(Do not confuse it with <em>image decomposition</em> — <code>Component</code>, L+S — which splits one image into additive parts inside a single solve. Tutorial 07 covers that.)</p><pre><code class="language-julia hljs">n_ms, nslices, nc_ms = 128, 32, 4
 vol = create_shepp_logan_phantom(n_ms, n_ms, nslices; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
 smaps_ms = NamedDimsArray{(:x, :y, :coil)}(coil_sensitivities(n_ms, n_ms, nc_ms))
@@ -459,10 +459,10 @@ for (label, alg) in ((&quot;ISTA&quot;, ISTA()), (&quot;FISTA&quot;, FISTA()), (
         rpad(label, 6), &quot; &quot;, length(trace.values), &quot; iterations in &quot;,
         round(trace.times[end], digits = 2), &quot; s   final NRMSE &quot;, round(trace.values[end], digits = 4)
     )
-end</code></pre><pre><code class="nohighlight hljs">ISTA   100 iterations in 0.48 s   final NRMSE 0.2908
-FISTA  100 iterations in 0.46 s   final NRMSE 0.1271
-POGM   100 iterations in 0.5 s   final NRMSE 0.1271
-ADMM   100 iterations in 1.6 s   final NRMSE 0.1322
+end</code></pre><pre><code class="nohighlight hljs">ISTA   100 iterations in 0.45 s   final NRMSE 0.2908
+FISTA  100 iterations in 0.47 s   final NRMSE 0.1271
+POGM   100 iterations in 0.47 s   final NRMSE 0.1273
+ADMM   100 iterations in 1.47 s   final NRMSE 0.1322
 </code></pre><p><strong>Plot it against both axes.</strong> One ADMM iteration costs several times what one FISTA iteration costs — it solves an inner linear system and updates a set of dual variables every step — as the printed times above show for the same iteration count. A plot against iteration number charges every algorithm the same price for a step, so it flatters whichever does the most work per step; a plot against wall-clock time is what you actually pay for. Neither plot alone is the answer, which is why the figure has both.</p><pre><code class="language-julia hljs">p_iter = plot(; xlabel = &quot;iteration&quot;, ylabel = &quot;NRMSE&quot;, yscale = :log10, title = &quot;per iteration&quot;)
 p_time = plot(; xlabel = &quot;wall-clock time (s)&quot;, ylabel = &quot;NRMSE&quot;, yscale = :log10, title = &quot;per second&quot;)
 for label in (&quot;ISTA&quot;, &quot;FISTA&quot;, &quot;POGM&quot;, &quot;ADMM&quot;)
@@ -535,4 +535,4 @@ ProximalOperators       not loaded
 ProximalAlgorithms      not loaded
 OperatorCore            not loaded
 NestedThreading           0.1.3
-</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05_regularization/">« Regularization</a><a class="docs-footer-nextpage" href="../07_dynamic_and_decomposition/">Dynamic imaging and image decomposition »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 27 October 2026 11:56">Tuesday 27 October 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05_regularization/">« Regularization</a><a class="docs-footer-nextpage" href="../07_dynamic_and_decomposition/">Dynamic imaging and image decomposition »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 27 October 2026 22:49">Tuesday 27 October 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

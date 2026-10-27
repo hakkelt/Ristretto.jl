@@ -112,7 +112,7 @@ report(&quot;L1TemporalFourier&quot;, x_tf)
 report(&quot;TemporalTotalVariation&quot;, x_ttv)
 report(&quot;spatial TV + temporal TV&quot;, x_spatiotemporal)</code></pre><pre><code class="nohighlight hljs">direct                     global: 0.2294, lv_blood: 0.0919, rv_blood: 0.0778, heart: 0.2003, lung: 0.7583, bones: 0.2569
 L1TemporalFourier          global: 0.1784, lv_blood: 0.0976, rv_blood: 0.0846, heart: 0.2283, lung: 0.747, bones: 0.2107
-TemporalTotalVariation     global: 0.0878, lv_blood: 0.043, rv_blood: 0.0341, heart: 0.0805, lung: 0.3156, bones: 0.1093
+TemporalTotalVariation     global: 0.0878, lv_blood: 0.043, rv_blood: 0.034, heart: 0.0805, lung: 0.3156, bones: 0.1093
 spatial TV + temporal TV   global: 0.0304, lv_blood: 0.0204, rv_blood: 0.0154, heart: 0.0536, lung: 0.0503, bones: 0.0432
 </code></pre><p>Read the columns, not just the first one. Every method improves the global number, but the ranking inside the <em>lung</em> — low signal, and moving with the diaphragm — is different from the ranking inside the blood pools, and the lung is where each method&#39;s error is largest.</p><pre><code class="language-julia hljs">frame = 8
 side_by_side(
@@ -155,10 +155,10 @@ report(&quot;LocallyLowRank(8)&quot;, x_llr)
 report(&quot;MultiScaleLowRank&quot;, x_mslr)</code></pre><pre><code class="nohighlight hljs">best λ (interior optimum unless noted):
 LowRank              λ = 0.002  NRMSE 0.116  (EDGE — widen the sweep)
 LocallyLowRank(8)    λ = 0.01  NRMSE 0.1016
-MultiScaleLowRank    λ = 0.02  NRMSE 0.1034
+MultiScaleLowRank    λ = 0.02  NRMSE 0.1035
 LowRank                    global: 0.116, lv_blood: 0.0499, rv_blood: 0.0448, heart: 0.1069, lung: 0.4059, bones: 0.1549
 LocallyLowRank(8)          global: 0.1016, lv_blood: 0.038, rv_blood: 0.033, heart: 0.087, lung: 0.3193, bones: 0.1459
-MultiScaleLowRank          global: 0.1034, lv_blood: 0.0423, rv_blood: 0.0353, heart: 0.0923, lung: 0.3068, bones: 0.1526
+MultiScaleLowRank          global: 0.1035, lv_blood: 0.0423, rv_blood: 0.0354, heart: 0.0924, lung: 0.307, bones: 0.1527
 </code></pre><p><code>MultiScaleLowRank</code> also accepts one λ per scale instead of a single shared one — coarser blocks capture more of the signal energy, so they often want a different threshold than fine blocks. Comparing a per-scale λ against the best shared one shows what the extra degree of freedom buys.</p><pre><code class="language-julia hljs">x_mslr_per_scale = reconstruct(
     data_dyn,
     IterativeReconstruction(
@@ -166,7 +166,7 @@ MultiScaleLowRank          global: 0.1034, lv_blood: 0.0423, rv_blood: 0.0353, h
     )
 )
 report(&quot;MultiScaleLowRank, shared λ&quot;, x_mslr)
-report(&quot;MultiScaleLowRank, per-scale λ&quot;, x_mslr_per_scale)</code></pre><pre><code class="nohighlight hljs">MultiScaleLowRank, shared λ global: 0.1034, lv_blood: 0.0423, rv_blood: 0.0353, heart: 0.0923, lung: 0.3068, bones: 0.1526
+report(&quot;MultiScaleLowRank, per-scale λ&quot;, x_mslr_per_scale)</code></pre><pre><code class="nohighlight hljs">MultiScaleLowRank, shared λ global: 0.1035, lv_blood: 0.0423, rv_blood: 0.0354, heart: 0.0924, lung: 0.307, bones: 0.1527
 MultiScaleLowRank, per-scale λ global: 0.1079, lv_blood: 0.0479, rv_blood: 0.0407, heart: 0.1016, lung: 0.2924, bones: 0.1627
 </code></pre><pre><code class="language-julia hljs"># `shift = :random` redraws the block grid before every proximal step, which averages out the
 # block boundaries a fixed grid can leave at large λ. It changes the objective from iteration to
@@ -205,7 +205,7 @@ println(typeof(img_ls).name.name)
 println(&quot;components: &quot;, keys(components(img_ls)))
 report(&quot;L+S&quot;, img_ls)</code></pre><pre><code class="nohighlight hljs">ReconImage
 components: (:lowrank, :sparse)
-L+S                        global: 0.1104, lv_blood: 0.0474, rv_blood: 0.0401, heart: 0.1093, lung: 0.3681, bones: 0.1504
+L+S                        global: 0.1105, lv_blood: 0.0474, rv_blood: 0.0401, heart: 0.1093, lung: 0.3682, bones: 0.1504
 </code></pre><pre><code class="language-julia hljs"># The result behaves as an array equal to the sum of its parts …
 println(&quot;sum of components == total: &quot;, sum(values(components(img_ls))) ≈ total_image(img_ls))
 
@@ -286,4 +286,4 @@ ProximalOperators       not loaded
 ProximalAlgorithms      not loaded
 OperatorCore            not loaded
 NestedThreading           0.1.3
-</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06_algorithms_and_configuration/">« Algorithms and configuration</a><a class="docs-footer-nextpage" href="../08_non_cartesian/">Non-Cartesian acquisitions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 27 October 2026 11:56">Tuesday 27 October 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06_algorithms_and_configuration/">« Algorithms and configuration</a><a class="docs-footer-nextpage" href="../08_non_cartesian/">Non-Cartesian acquisitions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 27 October 2026 22:49">Tuesday 27 October 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
