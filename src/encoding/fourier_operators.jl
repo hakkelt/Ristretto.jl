@@ -306,19 +306,21 @@ node can swing 30-60%, so configs were timed round-robin rather than one after a
 | 4 | 2.00 | POLYNOMIAL | 7.0 / 8.1 | 5.5 / 6.4 | 3.8e-8 |
 | 4 | 1.50 | POLYNOMIAL (former Ristretto default) | 4.0 / 4.5 | 4.6 / 5.3 | 2.5e-7 |
 | 3 | 2.00 | POLYNOMIAL | 6.0 / 6.8 | 4.3 / 4.9 | 2.4e-6 |
-| 3 | 1.50 | POLYNOMIAL (former Ristretto default) | 2.8 / 3.2 | 3.3 / 3.8 | 1.7e-5 |
+| 3 | 1.50 | POLYNOMIAL | 2.8 / 3.2 | 3.3 / 3.8 | 1.7e-5 |
 | 3 | 1.25 | TENSOR (MRIReco's point) | 2.5 / 2.9 | 2.8 / 3.1 | 7.1e-5 |
 | 2 | 1.50 | POLYNOMIAL | 2.3 / 2.6 | 2.4 / 2.8 | 7.4e-4 |
 | 2 | 1.25 | TENSOR | 2.0 / 2.3 | 1.9 / 2.2 | 2.1e-3 |
 
-`TENSOR` precomputes each sample's kernel weights once per plan instead of interpolating them on
-every apply, at the same accuracy. At `m=3, σ=1.5` it makes the multi-coil forward and adjoint
-2-3x faster (Xeon W-2245, 1 and 8 threads, interleaved runs with shared FFTW plans; 2D 128² radial
-8 coils, 2D 256² radial 12 coils, radial cine 128²×30 frames: adjoint 17.9 vs 7.6 ms, 295 vs
-101 ms, 323 vs 146 ms single-threaded). Its extra setup is 1-22 ms in 2D and about 0.4 s for a 3D
-128³ kooshball of 2M samples, recovered within one forward/adjoint pair; the FFTW `MEASURE`
-planning both share costs more (0.3-0.5 s in 2D, 2.4 s in 3D). On that 3D case at 8 threads the
-two are within run-to-run noise of each other.
+`TENSOR` precomputes each sample's kernel weights once per plan instead of evaluating the
+window's polynomial fit on every apply; the two transforms agree to 4e-7. Which one is faster
+depends on the CPU. On an AMD EPYC 7763 (1 and 8 threads, interleaved runs sharing one FFTW plan;
+2D 128² radial 8 coils, 2D 256² radial 12 coils, radial cine 128²×30 frames 8 coils, 3D 128³
+kooshball 4 coils) `TENSOR` is 5-13% slower forward and up to 5% faster adjoint, 0-5% slower per
+forward/adjoint pair: 6.0 / 6.3 ms against 5.6 / 6.6 ms for the 2D 128² case and 1.13 / 2.10 s
+against 1.08 / 2.06 s for the 3D one, single-threaded. On an Intel Xeon W-2245 it is 1.25-1.7x
+faster in both directions, which is why it is the default. Its extra setup is negligible in 2D and
+about 0.15-0.2 s for the 2M-sample 3D kooshball, less than the FFTW `MEASURE` planning both share
+(0.45-0.7 s in 2D, 2 s in 3D).
 
 `m=3, σ=1.5, TENSOR` is the default. Its error against an `m=8, σ=2` transform is about 5e-5
 in `ComplexF32`, and iterative reconstructions do not notice it: on the radial Shepp-Logan case of
