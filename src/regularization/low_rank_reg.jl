@@ -88,13 +88,29 @@ function materialize(reg::LowRank, x::Variable{T}; threaded::Bool) where {T}
     else
         @sprintf "%g ⋅ ‖ℛ * %s‖_*" λ get_name(x)
     end
-    return StructuredOptimization.Term(1, NuclearNorm(λ), op * x, repr)
+    return StructuredOptimization.Term(1, _per_casorati(NuclearNorm(λ), op), op * x, repr)
 end
 
 function materialize(reg::RankLimit, x::Variable{T}; threaded::Bool) where {T}
     op = get_operator(reg, ~x; threaded)
     repr = @sprintf "rank(ℛ * %s) ≤ %d" get_name(x) reg.max_rank
-    return StructuredOptimization.Term(1, IndBallRank(reg.max_rank), op * x, repr)
+    return StructuredOptimization.Term(1, _per_casorati(IndBallRank(reg.max_rank), op), op * x, repr)
+end
+
+"""
+    _per_casorati(f, op)
+
+`f` (a function of one Casorati matrix) applied to every Casorati matrix in the codomain of `op`.
+Without batch dimensions the codomain is the single `(space, time)` matrix and `f` is returned as
+is. With batch dimensions it is `(space, time, batch...)`, and the penalty is the sum of `f` over
+the `(space, time)` slices -- one matrix per batch index, as the docstring promises -- rather than
+`f` of the whole array, which neither the nuclear norm nor the rank ball defines.
+"""
+function _per_casorati(f, op)
+    sz = size(op, 1)
+    length(sz) == 2 && return f
+    slices = Tuple((:, :, Tuple(I)...) for I in CartesianIndices(sz[3:end]))
+    return ProximalOperators.SlicedSeparableSum(f, slices)
 end
 
 function get_affected_dims(reg::Union{LowRank, RankLimit}, ::Nothing, image_dims)
