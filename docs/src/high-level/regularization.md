@@ -1,83 +1,37 @@
 # Regularization
 
-*Tutorial: [Regularization](../tutorials/05_regularization.md).*
+The reference for every regularization term: its docstring, when to use it, and the constraints
+it puts on the solver. The objective the terms enter is stated in
+[Theoretical Background](../theory.md). The tutorials show the terms at work:
+[Regularization](../tutorials/05_regularization.md) runs each spatial term on one test problem,
+[Dynamic imaging](../tutorials/07_dynamic_and_decomposition.md) the temporal and low-rank ones, and
+[Advanced reconstruction](../tutorials/11_advanced_reconstruction.md) the structured low-rank
+k-space terms.
 
-Regularization is essential for reconstructing high-quality images from undersampled k-space data. This page explains the available regularization methods and how to use them.
-
-## Why Regularization?
-
-When k-space is undersampled (as in compressed sensing or parallel imaging), the reconstruction problem becomes **ill-posed** - there are many possible images that could have produced the observed data. Regularization adds prior knowledge about what "good" images look like to guide the reconstruction toward a unique, high-quality solution.
-
-## Understanding the Math
-
-For those interested in the mathematical details, the reconstruction solves:
-
+```@setup reg
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+using Random
+Random.seed!(0)
+n, nc, nt = 64, 8, 8
+phantom = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+smaps = coil_sensitivities(n, n, nc)
+pattern = create_sampling_pattern(VariableDensitySampling(PolynomialDistribution(3), 3.0, 0.08), (n, n))
+simulate(x, acq) = add_noise(simulate_acquisition(x, acq; inverse_crime_check = false, keep_sensitivity_maps = true); snr_db = 30)
+acq = simulate(phantom, AcquisitionInfo(; image_size = (n, n), subsampling = pattern, sensitivity_maps = smaps))
+acq_reference = acq
+# a dynamic series: the phantom with one ellipse's intensity varying over the frames
+series = cat((phantom .* (1 .+ 0.3f0 .* Float32(sin(2π * t / nt)) .* (abs.(phantom) .> 0.9f0)) for t in 1:nt)...; dims = 3)
+acq_dynamic = simulate(series, AcquisitionInfo(; image_size = (n, n),
+    subsampling = [(:, circshift(pattern[2], 2t)) for t in 1:nt], sensitivity_maps = smaps))
+echoes = cat((phantom .* w for w in (1.0f0, 0.7f0, 0.45f0))...; dims = 3)
+acq_multiecho = simulate(echoes, AcquisitionInfo(; image_size = (n, n), subsampling = pattern, sensitivity_maps = smaps))
+acq_calibrationless = AcquisitionInfo(simulate(phantom, AcquisitionInfo(; image_size = (n, n),
+    subsampling = create_sampling_pattern(UniformRandomSampling(2.0, 0.0), (n, n)), sensitivity_maps = smaps));
+    sensitivity_maps = nothing)
 ```
-minimize  (1/2)‖E·x - y‖₂² + ∑ᵢ λᵢ·Rᵢ(x)
-```
-
-Where:
-- `E` is the encoding operator (Fourier + sensitivity + subsampling)
-- `x` is the image to reconstruct
-- `y` is the observed k-space data
-- `‖E·x - y‖₂²` is the data fidelity term
-- `Rᵢ(x)` are the regularization terms
-- `λᵢ` are the regularization parameters
-
-The first term ensures the reconstruction is consistent with observed data. The regularization terms encode prior knowledge about image properties.
 
 ## Available Regularization Methods
-
-```@setup imports
-using Ristretto
-using MIRTjim: jim
-using Plots
-using Random
-
-Random.seed!(0)
-```
-
-The code snippets in the following sections assume that `Ristretto` and `MIRTjim` are already imported. `MIRTjim` is a convenience wrapper around `Plots.jl` for displaying multidimensional images. Also, assume you have an `AcquisitionInfo` object `acq` representing your k-space data and acquisition settings for simulated Shepp-Logan phantom:
-
-```@example imports
-using Ristretto
-using GeometricMedicalPhantoms
-using MIRTjim: jim
-using Ristretto: get_operator
-
-# Simulate 2D acquisition
-x = create_shepp_logan_phantom(128, 128, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
-x_noisy = x + 0.02f0 * randn(ComplexF32, 128, 128)
-smaps = coil_sensitivities(128, 128, 8)
-pdf = VariableDensitySampling(PolynomialDistribution(3), 4.0, 0.05)
-pattern = create_sampling_pattern(pdf, (128, 128))
-acq_full = AcquisitionInfo(
-    is3D=false, 
-    image_size=(128, 128), 
-    subsampling=pattern, 
-    sensitivity_maps=smaps
-)
-data = simulate_acquisition(x_noisy, acq_full; inverse_crime_check = false, keep_sensitivity_maps = true)
-
-# Simulate 3D acquisition
-x3d = create_shepp_logan_phantom(64, 64, 32; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
-smaps3d = coil_sensitivities(64, 64, 32, 8)
-subsampling3d = create_sampling_pattern(
-    VariableDensitySampling(PolynomialDistribution(3), 4.0, 0.05), 
-    (64, 64, 32)
-)
-acq3d = AcquisitionInfo(
-    image_size=(64, 64, 32), 
-    sensitivity_maps=smaps3d,
-    subsampling=subsampling3d,
-)
-data3d = simulate_acquisition(x3d, acq3d; inverse_crime_check = false, keep_sensitivity_maps = true)
-
-jim(x3d; title="Shepp-Logan Phantom (3D)", size=(800,400))
-savefig("shepp_logan_phantom_3d.png"); nothing # hide
-```
-
-![shepp_logan_phantom_3d.png](shepp_logan_phantom_3d.png)
 
 ### Image Domain Regularization
 
@@ -95,18 +49,6 @@ L2Image
 - As a baseline for comparison with other methods, especially for parallel imaging
 - Fast and simple regularization (it is computationally cheap and can be optimized with Conjugate Gradient)
 
-**Example:**
-```@example imports
-img₁ = reconstruct(data, IterativeReconstruction(L2Image(1e-1)); verbosity = Silent())
-img₂ = reconstruct(data, IterativeReconstruction(L2Image(1e-6)); verbosity = Silent())
-p1 = jim(img₁; title="L2Image λ=1e-1")
-p2 = jim(img₂; title="L2Image λ=1e-6")
-jim(p1, p2; layout=(1,2), size=(800,400))
-savefig("tikhonov_regularization.png"); nothing # hide
-```
-
-![tikhonov_regularization.png](tikhonov_regularization.png)
-
 #### L1 Regularization
 
 Promotes sparse images (many pixels close to zero):
@@ -117,18 +59,6 @@ L1Image
 
 **When to use:**
 - Images that are naturally sparse (e.g., angiography) and you want to suppress small values
-
-**Example:**
-```@example imports
-img₁ = reconstruct(data, IterativeReconstruction(L1Image(1e-2)); verbosity = Silent())
-img₂ = reconstruct(data, IterativeReconstruction(L1Image(1e-5)); verbosity = Silent())
-p1 = jim(img₁; title="L1Image λ=1e-2")
-p2 = jim(img₂; title="L1Image λ=1e-5")
-jim(p1, p2; layout=(1,2), size=(800,400))
-savefig("l1image_regularization.png"); nothing # hide
-```
-
-![l1image_regularization.png](l1image_regularization.png)
 
 ### Wavelet Domain Regularization
 
@@ -145,47 +75,17 @@ L1Wavelet2D
 - Most MRI applications (anatomy has multi-scale features)
 - Standard compressed sensing reconstruction
 
-**Parameters:**
-- `λ`: Regularization strength (try 1e-3 to 1e-2)
-- `wavelet`: Wavelet type (default: Daubechies, also try Haar, etc.)
-- `levels`: Number of decomposition levels (default: 4)
+#### 3D Wavelet Sparsity
 
-**Example:**
-```@example imports
-reg = L1Wavelet2D(1e-3)
-example_img = rand(ComplexF32, 128, 128)
-op = get_operator(reg, example_img)
-transformed = op * x_noisy
-p1 = jim(transformed; title="Wavelet Coefficients")
-img = reconstruct(data, IterativeReconstruction(reg); verbosity = Silent())
-p2 = jim(img; title="L1Wavelet2D Reconstruction")
-jim(p1, p2; layout=(1,2), size=(800,400))
-savefig("l1wavelet2d_regularization.png"); nothing # hide
+For volumetric / multislice data, promotes sparsity in 3D wavelet domain:
+
+```@docs
+L1Wavelet3D
 ```
 
-![l1wavelet2d_regularization.png](l1wavelet2d_regularization.png)
-
-**Options for `L1Wavelet2D`:**
-- `wavelet`: Specify wavelet type (e.g., `WT.haar`, `WT.db4`)
-- `levels`: Number of decomposition levels (default: 4)
-
-```@example imports
-reg_haar = L1Wavelet2D(1e-2; wavelet=WT.haar)
-op_haar = get_operator(reg_haar, example_img)
-transformed_haar = op_haar * x_noisy
-img_haar = reconstruct(data, IterativeReconstruction(reg_haar); verbosity = Silent())
-p1 = jim(transformed_haar; title="Haar Coefficients")
-p2 = jim(img_haar; title="Haar Reconstruction")
-
-reg_level8 = L1Wavelet2D(1e-3; levels=8)
-op_level8 = get_operator(reg_level8, example_img)
-transformed_level8 = op_level8 * x_noisy
-img_level8 = reconstruct(data, IterativeReconstruction(reg_level8); verbosity = Silent())
-p3 = jim(transformed_level8; title="Level 8 Coefficients")
-p4 = jim(img_level8; title="Level 8 Reconstruction")
-jim(p1, p2, p3, p4; layout=(2,2), size=(800,700))
-savefig("l1wavelet2d_options.png"); nothing # hide
-```
+**When to use:**
+- 3D acquisitions or multi-slice 2D data
+- When you want to exploit 3D structure
 
 ### Contourlet Domain Regularization
 
@@ -202,50 +102,6 @@ L1Contourlet
 - Images dominated by directional edges or elongated structures (vasculature, fibrous tissue)
 - As an alternative to [`L1Wavelet2D`](@ref) when wavelet's isotropic basis under-represents oriented features
 
-**Parameters:**
-- `λ`: Regularization strength (scalar only, try 1e-3 to 1e-2)
-- `params`: `ContourletParams` controlling pyramid levels/directions (default: `J=3`, `parabolic_levels(3)`)
-
-**Example:**
-```@example imports
-reg = L1Contourlet(1e-3)
-op = get_operator(reg, example_img)
-transformed = op * x_noisy
-p1 = jim(transformed[:, :, 1]; title="Contourlet Coarse Band")
-img = reconstruct(data, IterativeReconstruction(reg); verbosity = Silent())
-p2 = jim(img; title="Contourlet Reconstruction")
-jim(p1, p2; layout=(1,2), size=(800,400))
-savefig("contourlet_regularization.png"); nothing # hide
-```
-
-![contourlet_regularization.png](contourlet_regularization.png)
-
-![l1wavelet2d_options.png](l1wavelet2d_options.png)
-
-#### 3D Wavelet Sparsity
-
-For volumetric / multislice data, promotes sparsity in 3D wavelet domain:
-
-```@docs
-L1Wavelet3D
-```
-
-**When to use:**
-- 3D acquisitions or multi-slice 2D data
-- When you want to exploit 3D structure
-
-**Example:**
-```@example imports
-reg3d = L1Wavelet3D(1e-3)
-
-op = get_operator(reg3d, rand(ComplexF32, 64, 64, 32))
-transformed = op * x3d
-jim(abs.(transformed); title="3D Wavelet Coefficients", size=(800,400))
-savefig("l1wavelet3d_coefficients.png"); nothing # hide
-```
-
-![l1wavelet3d_coefficients.png](l1wavelet3d_coefficients.png)
-
 ### Total Variation
 
 #### 2D Total Variation
@@ -260,21 +116,6 @@ TotalVariation2D
 - Images with sharp edges and flat regions
 - Brain imaging with gray/white matter boundaries
 - When you want strong edge preservation
-
-**Example:**
-```@example imports
-reg = TotalVariation2D(1e-3)
-op = get_operator(reg, example_img)
-transformed = op * x_noisy
-img = reconstruct(data, IterativeReconstruction(reg); verbosity = Silent())
-p1 = jim(transformed[:,:,1]; title="Δx Coefficients")
-p2 = jim(transformed[:,:,2]; title="Δy Coefficients")
-p3 = jim(img; title="TotalVariation2D Reconstruction")
-jim(p1, p2, p3; layout=(1, 3), size=(900,250))
-savefig("totalvariation2d_coefficients.png"); nothing # hide
-```
-
-![totalvariation2d_coefficients.png](totalvariation2d_coefficients.png)
 
 **Practical tip:** TV can create a "cartoon-like" appearance. Use lower λ values (1e-4 to 5e-3) to preserve texture.
 
@@ -304,19 +145,6 @@ AnisotropicTotalVariation3D
 edges, so diagonal boundaries can pick up a faint staircase texture that
 [`TotalVariation2D`](@ref) does not produce. Isotropic TV remains the default for anatomy.
 
-```@example imports
-img_aniso = reconstruct(data, IterativeReconstruction(AnisotropicTotalVariation2D(1e-3)); verbosity = Silent())
-img_iso = reconstruct(data, IterativeReconstruction(TotalVariation2D(1e-3)); verbosity = Silent())
-jim(
-    jim(img_iso; title="isotropic TV"),
-    jim(img_aniso; title="anisotropic TV");
-    layout=(1, 2), size=(600,250)
-)
-savefig("anisotropic_tv.png"); nothing # hide
-```
-
-![anisotropic_tv.png](anisotropic_tv.png)
-
 #### Second-Order Total Variation
 
 Penalizes the second derivatives instead of the first, so a smooth intensity ramp costs nothing:
@@ -331,9 +159,10 @@ SecondOrderTotalVariation3D
 - Almost always in combination with a first-order term rather than alone, since a jump is penalized through its (large) second derivative and is therefore blurred
 
 **Example:**
-```julia
+```@example reg
 # first-order TV for the edges, second-order for the ramps
 img = reconstruct(acq, IterativeReconstruction(TotalVariation2D(1e-3), SecondOrderTotalVariation2D(2e-3)))
+nothing # hide
 ```
 
 **Practical tip:** If you find yourself tuning the balance between first- and second-order TV, use
@@ -355,8 +184,9 @@ TotalGeneralizedVariation3D
   symmetrized gradient run over all three spatial dimensions instead of treating slices independently
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq, IterativeReconstruction(TotalGeneralizedVariation2D(1e-3); algorithm = ADMM(), maxit = 500))
+nothing # hide
 ```
 
 **Practical tip:** TGV requires `ADMM` — the auxiliary field is coupled to the image through `∇x − w`, which
@@ -370,7 +200,7 @@ The infimal convolution of first- and second-order TV needs no regularization ty
 image decomposition into a piecewise-constant "cartoon" part and a piecewise-linear "ramp" part, which the
 [Image Decomposition](image_decomposition.md) machinery already expresses.
 
-```julia
+```@example reg
 components = (
     Component(:cartoon, TotalVariation2D(1e-3)),
     Component(:ramp, SecondOrderTotalVariation2D(1e-3)),
@@ -378,6 +208,7 @@ components = (
 img = reconstruct(acq, IterativeReconstruction(components...; algorithm = ADMM(), maxit = 500))
 img.cartoon   # the edges, shorthand for img.components.cartoon
 img.ramp      # the smooth background, shorthand for img.components.ramp
+nothing # hide
 ```
 
 Compared to [`TotalGeneralizedVariation2D`](@ref) this is the older and slightly weaker model — the two parts
@@ -399,8 +230,9 @@ EdgePreservingRoughness3D
 - Statistical / model-based reconstruction, where this is the classical choice of potential function
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq, IterativeReconstruction(EdgePreservingRoughness2D(1e-3; δ = 0.01)))
+nothing # hide
 ```
 
 **Practical tip:** `δ` is an absolute intensity, so it must be set relative to the image scale. A workable
@@ -425,8 +257,9 @@ L1TemporalFourier
 - When motion is periodic or smoothly varying
 
 **Example:**
-```julia
-img = reconstruct(acq, IterativeReconstruction(L1TemporalFourier(1e-2, time_dim=4)))
+```@example reg
+img = reconstruct(acq_dynamic, IterativeReconstruction(L1TemporalFourier(1e-2; time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** This works best when temporal changes are smooth or periodic. For irregular motion, consider temporal total variation or low-rank methods instead.
@@ -445,8 +278,9 @@ TemporalTotalVariation
 - As the sparse part of an L+S model (see [Image Decomposition](image_decomposition.md))
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq_dynamic, IterativeReconstruction(TemporalTotalVariation(2e-2; time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** Like spatial TV, this term uses a non-tight operator, so reconstruction falls back to ADMM. It is the temporal counterpart of [`TotalVariation2D`](@ref) and is often combined with it (`(TotalVariation2D(1e-3), TemporalTotalVariation(2e-2))`) — the "spatiotemporal TV" of the golden-angle radial sparse parallel (GRASP) literature.
@@ -469,9 +303,10 @@ RankLimit
 - When images share common features across time
 
 **Example:**
-```julia
+```@example reg
 # Dynamic series with low-rank structure
-img = reconstruct(acq_dynamic, IterativeReconstruction(LowRank(1e-1)))
+img = reconstruct(acq_dynamic, IterativeReconstruction(LowRank(1e-1; time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** Low-rank methods can be computationally expensive. Use for datasets where temporal correlations are strong.
@@ -489,8 +324,9 @@ LocallyLowRank
 - Quantitative parameter mapping (T1/T2 relaxometry, MR fingerprinting), where each voxel neighbourhood follows a low-dimensional signal model
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq_dynamic, IterativeReconstruction(LocallyLowRank(5e-2; block_size = 8, time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** `block_size` trades locality against cost and stability: 4-8 voxels for strongly varying dynamics, 12-16 when the temporal signal is smooth over larger regions. Each iteration performs one SVD of a `(∏ block_size) × n_frames` matrix per block. A single fixed block grid can leave visible block boundaries at large λ; pass `shift = :random` to redraw the grid before every proximal step, which averages them out (see below).
@@ -510,8 +346,9 @@ tiling remains a permutation of the voxels and the prox stays exact — but only
 divisible by the block edge, which is checked. Because the objective is no longer the same function at every
 iteration, the line-search algorithms (`PANOC`, `PANOCplus`, `ZeroFPR`) must not be used with it.
 
-```julia
+```@example reg
 img = reconstruct(acq_dynamic, IterativeReconstruction(LocallyLowRank(5e-2; block_size = 8, time_dim = 3, shift = :random); algorithm = FISTA()))
+nothing # hide
 ```
 
 #### Multi-Scale Low Rank
@@ -527,8 +364,9 @@ MultiScaleLowRank
 - As a less sensitive alternative to tuning `block_size` for [`LocallyLowRank`](@ref)
 
 **Example:**
-```julia
+```@example reg
 img = reconstruct(acq_dynamic, IterativeReconstruction(MultiScaleLowRank(5e-2; block_sizes = (4, 8, 16), time_dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** The term uses the *proximal average* of the per-scale penalties, which approximates their
@@ -536,7 +374,7 @@ sum; the objective value it reports is the weighted average of the per-scale pen
 multi-scale model of Ong & Lustig — one separate image component per scale — build it from components instead,
 which also gives you the separated scales:
 
-```julia
+```@example reg
 components = Tuple(
     Component(Symbol(:scale, b), LocallyLowRank(5e-2; block_size = b, time_dim = 3)) for b in (4, 8, 16)
 )
@@ -547,7 +385,7 @@ Cost grows linearly with the number of scales, so two or three are usually enoug
 `λ` may also be a vector with one entry per scale, giving coarse and fine scales independent
 thresholds instead of the single value applied everywhere:
 
-```julia
+```@example reg
 MultiScaleLowRank([2e-2, 5e-2, 1e-1]; block_sizes = (4, 8, 16), time_dim = 3)
 ```
 
@@ -580,7 +418,8 @@ StructuredLowRank
 - `window` is the sliding-window size over the k-space encoding dimensions, typically `(5, 5)` or `(6, 6)` in 2D and `(4, 4, 4)` in 3D.
 
 **Example:**
-```julia
+```@example reg
+acq = acq_calibrationless # hide
 # calibrationless: acq holds multi-coil k-space, no sensitivity_maps
 rec = reconstruct(
     acq,
@@ -591,6 +430,8 @@ rec = reconstruct(
         maxit = 100,
     ),
 )
+acq = acq_reference # hide
+nothing # hide
 ```
 
 !!! warning "The `max_rank` form is non-convex"
@@ -619,7 +460,7 @@ LORAKS' original point: no coils, no calibration, no phase estimate. On a 32×32
 partial-Fourier problem (62 % of `ky` from one side) they cut the NRMSE from 0.182 zero-filled to
 0.123 (`:s`) and 0.132 (`:g`).
 
-```julia
+```@example reg
 StructuredLowRank(; λ = 0.02, window = (5, 5), structure = :s)
 ```
 
@@ -638,7 +479,7 @@ are combined by a proximal average, as [`MultiScaleLowRank`](@ref) combines its 
 first entry of a built-in model is the approximation band — the plain unweighted term — because a
 difference weight vanishes at DC and the detail bands alone constrain nothing there.
 
-```julia
+```@example reg
 StructuredLowRank(; λ = 0.03, window = (6, 6), weights = :tv)
 ```
 
@@ -666,10 +507,11 @@ L0Wavelet3D
 - The `count` form when the sparsity level is known a priori and is easier to specify than a penalty weight — the same argument that makes [`RankLimit`](@ref) preferable to [`LowRank`](@ref) in some settings
 
 **Example:**
-```julia
+```@example reg
 # ℓ₀ penalty on wavelet coefficients, warm-started from an ℓ₁ solution
 x_l1 = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(1e-3)))
 img = reconstruct(acq, IterativeReconstruction(L0Wavelet2D(threshold = 1e-3)); x₀ = x_l1)
+nothing # hide
 ```
 
 **Practical tip:** Both terms are non-convex, so the solvers only guarantee a stationary point and the result
@@ -722,9 +564,10 @@ JointSparsity
 - Preferable to independent `L1Image`/`L1Wavelet2D` on each contrast, because the joint norm couples them
 
 **Example:**
-```julia
+```@example reg
 # echoes stored along dimension 3, sharing the same support
 img = reconstruct(acq_multiecho, IterativeReconstruction(JointSparsity(1e-2; dim = 3)))
+nothing # hide
 ```
 
 **Practical tip:** Joint sparsity is most effective on a sparsifying transform of the images. Combining `JointSparsity` with a wavelet regularizer per contrast (`(JointSparsity(1e-2; dim = 3), L1Wavelet2D(1e-3))`) is a common compromise.
@@ -743,9 +586,10 @@ ReferencePrior
 - Interventional / real-time imaging with a fully sampled baseline
 
 **Example:**
-```julia
+```@example reg
 x_ref = reconstruct(acq_reference, IterativeReconstruction(L1Wavelet2D(1e-3)))
 img = reconstruct(acq, IterativeReconstruction(ReferencePrior(1e-2, x_ref), L1Wavelet2D(1e-3)))
+nothing # hide
 ```
 
 **Practical tip:** The reference must be in the same units as the reconstruction; when data scaling is enabled the reference is rescaled automatically. A wrong reference biases the result toward it, so combine it with an ordinary sparsity term (as in the PICCS convex combination) rather than using it alone.
@@ -775,72 +619,62 @@ RegularizedLeastSquares.jl (used by MRIReco.jl) has `PositiveRegularization` and
 `RealRegularization`, which take the real part the way `complex_handling = :real` does.
 
 **Example:**
-```julia
-# real-valued image (e.g. a magnitude reconstruction)
-img = reconstruct(acq_real, IterativeReconstruction(TotalVariation2D(1e-3), NonNegative()))
-
-# complex image, projected onto the real non-negative orthant each iteration
+```@example reg
+# MRI images are complex: project onto the real non-negative orthant each iteration
 img = reconstruct(
     acq, IterativeReconstruction(TotalVariation2D(1e-3), NonNegative(; complex_handling = :real))
 )
+nothing # hide
 ```
 
 ## Combining Multiple Regularizers
 
-You can combine multiple regularization terms to exploit different image properties simultaneously:
+Terms are listed one after another; the objective is their sum, and `reconstruct` picks a solver
+that can handle the combination (ADMM as soon as there is more than one non-smooth term or a
+non-tight operator):
 
-```julia
-# Comprehensive regularization for dynamic imaging
-method = IterativeReconstruction(
-    L1Wavelet2D(5e-3),      # Spatial sparsity
-    TotalVariation2D(1e-3),  # Edge preservation
-    L1TemporalFourier(2e-2),   # Temporal smoothness
-)
-img = reconstruct(acq_dynamic, method)
+```@example reg
+method = IterativeReconstruction(L1Wavelet2D(5e-3), TotalVariation2D(1e-3), L1TemporalFourier(2e-2))
 ```
 
-**When to combine:**
-- Wavelet + TV: Exploit both multi-scale structure and edge preservation
-- Spatial + Temporal: Regularize both space and time dimensions
-- Multiple spatial regularizers: When images have complex structure
+## Starting Values for λ
 
-## Choosing Regularization Parameters
+The default [`QuantileScaling`](@ref) divides the data by the 99th percentile of the zero-filled
+image, so λ is relative to an image whose bright tissue is about 1, whatever the scanner's units.
+The ranges below are the λ whose error was within 5 % of the best on each of these test cases,
+joined: a Shepp-Logan phantom simulated off-grid (128², 8 coils, 4× variable density, 30 dB),
+tutorial 9's real 0.3 T brain slice (3× variable density), tutorial 7's torso cine (its fixed ky
+lines, and a variant with the lines shifted from frame to frame), a 64³ phantom for
+`L1Wavelet3D` and `TotalVariation3D`, and the sweeps on real OCMR
+cine data printed in tutorial 10. The start value is near the middle of the cases' optima. Data
+simulated on the reconstruction grid with little noise, as in tutorial 5, want λ at the bottom of
+the range or below it. They
+are starting points for a sweep, not settings: too noisy or aliased → increase λ; too smooth or
+blurry → decrease it; move in factors of 2–3.
 
-The regularization parameter λ controls the trade-off between data fidelity and regularization:
-
-- **Too small (λ → 0)**: Noisy, artifacts remain
-- **Too large (λ → ∞)**: Over-smoothed, loss of detail
-- **Just right**: Balance between noise/artifact suppression and detail preservation
-
-### Practical Guidelines
-
-**Starting values by regularization type:**
-- L2Image: `1e-5` to `1e-3`
-- L1Image: `1e-4` to `1e-2`
-- L1Wavelet: `1e-3` to `1e-2`
-- TotalVariation: `1e-4` to `5e-3`
-- AnisotropicTotalVariation: `1e-4` to `5e-3`, the same range as the isotropic term
-- SecondOrderTotalVariation: `1e-4` to `1e-2` (roughly 2× the first-order λ when the two are combined)
-- TotalGeneralizedVariation2D/3D: `1e-4` to `5e-3`, i.e. the same range as `TotalVariation2D`; leave `ratio` at `2.0`
-- EdgePreservingRoughness: `1e-4` to `5e-3` for λ; `δ` from the gradient magnitudes of a preliminary reconstruction
-- L1TemporalFourier: `1e-2` to `1e-1`
-- TemporalTotalVariation: `1e-2` to `1e-1`
-- LowRank: `1e-2` to `1`
-- LocallyLowRank: `1e-2` to `5e-1`
-- MultiScaleLowRank: `1e-2` to `5e-1`, as for LocallyLowRank
-- StructuredLowRank, `λ` form: `1e-2` to `1e-1`, relative to the k-space scale; `max_rank` form: no λ, set the rank from the singular-value spectrum of `𝓗 k` on the zero-filled data
-- L0Image/L0Wavelet2D/L0Wavelet3D, `threshold` form: `1e-4` to `1e-2`, but note the `sqrt(2γλ)` threshold — retune rather than reusing an ℓ₁ λ
-- L0Image/L0Wavelet2D/L0Wavelet3D, `count` form: no λ; set the coefficient budget from the expected sparsity
-- PlugAndPlay: `strength` `1e-2` to `1e-1`, in the units of the image intensity
-- JointSparsity: `1e-3` to `1e-2`
-- ReferencePrior: `1e-3` to `1e-1`
-- NonNegative / BoxConstraint: no parameter
-
-**Adjustment strategy:**
-1. Start with the suggested value
-2. If too noisy/aliased → increase λ
-3. If too smooth/blurry → decrease λ
-4. Typical range: adjust by factors of 2-5
+| Regularizer | Start | Range | Notes |
+|---|---|---|---|
+| `L2Image` | `1e-1` | `1e-2` … `3e-1` | on the phantom anything below `3e-2` is equally good; on the brain slice and OCMR the optimum is `8e-2` … `2e-1` |
+| `L1Image` | `3e-3` | `1e-3` … `1e-2` | only for images sparse in themselves; on the brain slice it hardly changes the error |
+| `L1Wavelet2D`, `L1Wavelet3D` | `5e-3` | `2e-3` … `3e-2` | |
+| `L1Contourlet` | `1e-3` | `1.5e-4` … `7e-3` | the phantom's optimum is 15× below the brain's |
+| `TotalVariation2D/3D`, `AnisotropicTotalVariation2D/3D` | `7e-3` | `1.5e-3` … `1.5e-2` | |
+| `SecondOrderTotalVariation2D/3D` | `5e-3` | `1e-3` … `1.5e-2` | |
+| `TotalGeneralizedVariation2D/3D` | `5e-3` | `1e-3` … `1.5e-2` | `ratio` left at `2.0` |
+| `EdgePreservingRoughness2D/3D` | `5e-3` | `1e-3` … `1.5e-2` | `δ` at the 15th percentile of the gradient magnitudes of an unregularized reconstruction |
+| `L1TemporalFourier` | `1e-3` | `3e-4` … `2e-3` | |
+| `TemporalTotalVariation` | `4e-3` | `3e-3` … `1e-2` | |
+| `LowRank` | `2e-1` | `1e-1` … `3e-1` | on OCMR the optimum is `3e-1` with fixed and with interleaved lines; on tutorial 7's synthetic cine with the same lines in every frame no λ beat the unregularized solve |
+| `LocallyLowRank` | `2e-2` | `5e-3` … `3e-2` | `block_size = 8` |
+| `MultiScaleLowRank` | `2e-2` | `5e-3` … `5e-2` | `block_sizes = (4, 8, 16)` |
+| `StructuredLowRank`, `λ` form | `1e-2` | `2e-3` … `1` | measured only on tutorial 11's calibrationless phantom, where the error is flat above `2e-3` and rises steeply below it |
+| `StructuredLowRank`, `max_rank` form | — | — | no λ; read the rank off the singular values of `𝓗 k` on the zero-filled data |
+| `L0Image`, `L0Wavelet2D/3D`, `threshold` form | `3e-3` | `3e-4` … `3e-2` | the good range of each case is narrow (a factor of 1.5) and its place differs 15–20× between the phantom and the brain; sweep finely, and retune rather than reuse an ℓ₁ λ |
+| `L0Image`, `L0Wavelet2D/3D`, `count` form | — | — | no λ; the coefficient budget from the expected sparsity |
+| `JointSparsity` | `1e-2` | `1e-2` … `1.5e-2` | measured only on tutorial 5's three-echo phantom |
+| `ReferencePrior` | `5e-3` | `2e-3` … `1.5e-2` | next to `L1Wavelet2D(3e-3)`, with a prior that differs from the image in one region |
+| `PlugAndPlay` | — | — | depends on the denoiser; `strength` is in image intensity units. A soft-threshold denoiser at `strength = sqrt(λ)` is `L1Image(λ)` (tutorial 5) |
+| `NonNegative`, `BoxConstraint` | — | — | no parameter |
 
 ## Choosing a Regularizer
 

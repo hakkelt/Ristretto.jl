@@ -532,10 +532,12 @@ end
 #
 # `get_encoding_operator` (and `get_fourier_operator`) forward `m`, `sigma` and `precompute`
 # straight to NFFT.jl. Left at `nothing`, Ristretto uses its own default operating point
-# (`DEFAULT_NFFT_M = 4`, `DEFAULT_NFFT_SIGMA = 1.5`, `DEFAULT_NFFT_PRECOMPUTE = NFFT.POLYNOMIAL`),
+# (`DEFAULT_NFFT_M = 3`, `DEFAULT_NFFT_SIGMA = 1.5`, `DEFAULT_NFFT_PRECOMPUTE = NFFT.POLYNOMIAL`),
 # a lower-accuracy, faster point than NFFT.jl's own default (`m = 5`, `σ = 2.0`), chosen because
 # the accuracy loss is negligible for iterative reconstruction while the speed gain compounds
-# over many forward/adjoint applications per solve.
+# over many forward/adjoint applications per solve. The
+# [Performance page](https://hakkelt.github.io/Ristretto.jl/dev/high-level/performance/#Non-Cartesian-accuracy-/-speed-trade-off)
+# has the measurements behind that choice, including its effect on iterative reconstructions.
 #
 # The table below reports `BenchmarkTools`' minimum time over a short sample, and the *ratios*
 # between the three configurations are the reproducible part rather than the absolute
@@ -546,7 +548,7 @@ using BenchmarkTools: @belapsed
 
 configs = (
     ("NFFT.jl default (m=5, σ=2.0, polynomial)", (m = 5, sigma = 2.0, precompute = NFFT.POLYNOMIAL)),
-    ("Ristretto default (m=4, σ=1.5, polynomial)", (m = nothing, sigma = nothing, precompute = nothing)),
+    ("Ristretto default (m=3, σ=1.5, polynomial)", (m = nothing, sigma = nothing, precompute = nothing)),
     ("fast (m=3, σ=1.25, tensor)", (m = 3, sigma = 1.25, precompute = NFFT.TENSOR)),
 )
 
@@ -556,7 +558,7 @@ y_reference = 𝒜_reference * x_true
 results = map(configs) do (name, c)
     𝒜 = get_encoding_operator(data_radial; m = c.m, sigma = c.sigma, precompute = c.precompute)
     y = 𝒜 * x_true
-    best_ms = 1000 * @belapsed $𝒜 * $x_true
+    best_ms = 1000 * @belapsed $𝒜 * $x_true seconds = 0.5
     rel_err = norm(y - y_reference) / norm(y_reference)
     (name = name, ms = round(best_ms, digits = 2), rel_err = round(rel_err, digits = 6))
 end
@@ -609,6 +611,13 @@ end
 # - [Spiral and radial artifacts](https://mriquestions.com/spiralradial-artifacts.html) — the
 #   streaks, blurring and off-resonance swirls these trajectories fail with, including the
 #   gradient-delay artefacts §4 corrects.
+#
+# Lectures and tutorials elsewhere:
+#
+# - Stanford EE369C lecture notes on [non-uniform reconstruction](https://web.stanford.edu/class/ee369c/Lectures/L3_Gridding_Intro.pdf),
+#   [gridding and density estimation](https://web.stanford.edu/class/ee369c/Lectures/L4_Gridding_and_Density.pdf) and
+#   [gridding kernel design](https://web.stanford.edu/class/ee369c/Lectures/L5_Gridding_Kernel.pdf) — the NFFT and the density
+#   compensation of §3–4, and the kernel-width/oversampling trade-off of §7.
 
 # ## Environment
 

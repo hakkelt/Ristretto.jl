@@ -25,14 +25,23 @@ using Pkg
 Pkg.add(url = "https://github.com/hakkelt/Ristretto.jl")
 ```
 
+```@setup index
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+x = create_shepp_logan_phantom(64, 64, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+sensitivity_maps = coil_sensitivities(64, 64, 8)
+kspace = simulate_acquisition(x, AcquisitionInfo(; image_size = (64, 64), sensitivity_maps); inverse_crime_check = false).kspace_data
+```
+
 ## A first reconstruction
 
-```julia
+```@example index
 using Ristretto
 
-acq = AcquisitionInfo(kspace; sensitivity_maps)            # k-space: (kx, ky, coil)
+acq = AcquisitionInfo(kspace; is3D = false, sensitivity_maps)  # k-space: (kx, ky, coil)
 x_direct = reconstruct(acq)                                # adjoint (zero-filled SENSE)
 x_cs = reconstruct(acq, IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 60))
+nothing # hide
 ```
 
 [Getting started](tutorials/01_getting_started.md) runs this on a simulated acquisition, with
