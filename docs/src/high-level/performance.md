@@ -271,7 +271,7 @@ using LinearAlgebra, FFTW
 `get_fourier_operator`/`get_encoding_operator` take `m`, `sigma` and `precompute` keywords that
 forward straight to `NFFTOp`/NFFT.jl, exposing the gridding operating point instead of leaving
 it fixed. Left at `nothing` (the default), **Ristretto's own default operating point is used**: `m = 3`,
-`σ = 1.5`, `precompute = NFFT.POLYNOMIAL` (`DEFAULT_NFFT_M`, `DEFAULT_NFFT_SIGMA`,
+`σ = 1.5`, `precompute = NFFT.TENSOR` (`DEFAULT_NFFT_M`, `DEFAULT_NFFT_SIGMA`,
 `DEFAULT_NFFT_PRECOMPUTE` in `src/encoding/fourier_operators.jl`).
 
 The default was NFFT.jl's own (`m = 5`, `σ = 2.0`, `NFFT.POLYNOMIAL`) at first, then `m = 4`,
@@ -286,7 +286,7 @@ this shared login node can swing 30-60%):
 | 4 | 2.00 | POLYNOMIAL | 7.0 / 8.1 | 5.5 / 6.4 | 3.8e-8 |
 | 4 | 1.50 | POLYNOMIAL (former default) | 4.0 / 4.5 | 4.6 / 5.3 | 2.5e-7 |
 | 3 | 2.00 | POLYNOMIAL | 6.0 / 6.8 | 4.3 / 4.9 | 2.4e-6 |
-| **3** | **1.50** | **POLYNOMIAL (Ristretto default)** | **2.8 / 3.2** | **3.3 / 3.8** | **1.7e-5** |
+| 3 | 1.50 | POLYNOMIAL | 2.8 / 3.2 | 3.3 / 3.8 | 1.7e-5 |
 | 3 | 1.25 | TENSOR (MRIReco's point) | 2.5 / 2.9 | 2.8 / 3.1 | 7.1e-5 |
 | 2 | 1.50 | POLYNOMIAL | 2.3 / 2.6 | 2.4 / 2.8 | 7.4e-4 |
 | 2 | 1.25 | TENSOR | 2.0 / 2.3 | 1.9 / 2.2 | 2.1e-3 |
