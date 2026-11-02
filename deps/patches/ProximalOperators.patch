@@ -1,8 +1,8 @@
 diff --git a/deps/ProximalOperators/Project.toml b/deps/ProximalOperators/Project.toml
-index de08d75..3bf2b39 100644
+index 62dc2d5..ff382db 100644
 --- a/deps/ProximalOperators/Project.toml
 +++ b/deps/ProximalOperators/Project.toml
-@@ -20,14 +20,12 @@ TSVD = "9449cd9e-2762-5aa3-a617-5413e99d722e"
+@@ -19,14 +19,12 @@ TSVD = "9449cd9e-2762-5aa3-a617-5413e99d722e"
  CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
  GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
  KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
@@ -17,7 +17,7 @@ index de08d75..3bf2b39 100644
  RecursiveArrayToolsExt = "RecursiveArrayTools"
  
  [compat]
-@@ -38,7 +36,6 @@ KernelAbstractions = "0.9"
+@@ -37,7 +35,6 @@ KernelAbstractions = "0.9"
  LinearAlgebra = "1.4"
  LoopVectorization = "0.12"
  NestedThreading = "0.1.2"
@@ -54,7 +54,7 @@ index f864744..556884a 100644
  using GPUArrays: AbstractGPUArray
  
 diff --git a/deps/ProximalOperators/src/ProximalOperators.jl b/deps/ProximalOperators/src/ProximalOperators.jl
-index 56dac6b..78bd240 100644
+index 56dac6b..31f6fb4 100644
 --- a/deps/ProximalOperators/src/ProximalOperators.jl
 +++ b/deps/ProximalOperators/src/ProximalOperators.jl
 @@ -70,7 +70,6 @@ include("functions/indNonnegative.jl")
@@ -68,7 +68,7 @@ index 56dac6b..78bd240 100644
 @@ -117,6 +116,8 @@ include("calculus/sum.jl")
  include("calculus/pointwiseMinimum.jl")
  include("calculus/proximalAverage.jl")
-
+ 
 +include("recursive_array_tools.jl")
 +
  # Functions obtained from basic (as special cases or using calculus rules)

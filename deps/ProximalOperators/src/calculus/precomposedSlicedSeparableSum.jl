@@ -94,6 +94,27 @@ function slice_var(x, idx)
     end
 end
 
+# A term's operator acting on the slices of every variable. It is either one operator taking the
+# tuple of slices (a block row such as `AbstractOperators.HCAT`), or a tuple of one operator per
+# variable, `nothing` where the term does not involve that variable, whose blocks are summed.
+_ops_mul(ops, x::Tuple) = ops * x
+function _ops_mul(ops::Tuple, x::Tuple)
+    res = nothing
+    for (op, xi) in zip(ops, x)
+        op === nothing && continue
+        res = res === nothing ? op * xi : (res .+= op * xi)
+    end
+    return res
+end
+
+_ops_adjoint_mul!(y::Tuple, ops, r) = mul!(y, adjoint(ops), r)
+function _ops_adjoint_mul!(y::Tuple, ops::Tuple, r)
+    for (yi, op) in zip(y, ops)
+        op === nothing ? fill!(yi, 0) : mul!(yi, adjoint(op), r)
+    end
+    return y
+end
+
 # Unroll the loop over the different types of functions to prox on
 function prox!(y::Tuple, f::PrecomposedSlicedSeparableSum, x::Tuple, gamma)
     v = zero(eltype(x[1]))
@@ -102,11 +123,11 @@ function prox!(y::Tuple, f::PrecomposedSlicedSeparableSum, x::Tuple, gamma)
         for (fun, idx_group, hcat_op, μ) in zip(fs_group, idxs_group, ops_group, μ_group) # For each function of that type
             sliced_x = Tuple(slice_var(x_var, idx) for (x_var, idx) in zip(x, idx_group))
             sliced_y = Tuple(slice_var(y_var, idx) for (y_var, idx) in zip(y, idx_group))
-            res = hcat_op * sliced_x
+            res = _ops_mul(hcat_op, sliced_x)
             prox_res, g = prox(fun, res, μ.*gamma)
             prox_res .-= res
             prox_res ./= μ
-            mul!(sliced_y, adjoint(hcat_op), prox_res)
+            _ops_adjoint_mul!(sliced_y, hcat_op, prox_res)
             for i in eachindex(sliced_x)
                 sliced_y[i] .+= sliced_x[i]
             end
@@ -136,10 +157,10 @@ function prox_naive(f::PrecomposedSlicedSeparableSum, x, gamma)
         for (fun, idx_group, hcat_op, μ) in zip(fs_group, idxs_group, ops_group, μ_group) # For each function of that type
             sliced_x = Tuple(slice_var(x_var, idx) for (x_var, idx) in zip(x, idx_group))
             sliced_y = Tuple(slice_var(y_var, idx) for (y_var, idx) in zip(y, idx_group))
-            res = hcat_op * sliced_x
+            res = _ops_mul(hcat_op, sliced_x)
             prox_res, _fy = prox_naive(fun, res, μ.*gamma)
             prox_res = (prox_res .- res) ./ μ
-            mul!(sliced_y, adjoint(hcat_op), prox_res)
+            _ops_adjoint_mul!(sliced_y, hcat_op, prox_res)
             fy += _fy
             for i in eachindex(sliced_x)
                 sliced_y[i] .+= sliced_x[i]

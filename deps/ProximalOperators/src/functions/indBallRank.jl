@@ -44,14 +44,16 @@ function (f::IndBallRank)(x)
     if maxr <= f.r
         return R(0)
     end
-    if is_cpu_storage(typeof(x))
-        U, S, V = tsvd(x, f.r + 1)
-    else
-        # `tsvd` has no device path, so a device matrix takes a full SVD where its backend
-        # has one and the host otherwise; only the leading `r + 1` values are read, on the host.
+    # The singular values come from a full SVD, not from `tsvd`: on a matrix of rank `r` exactly,
+    # which is what `prox!` returns, the Lanczos bidiagonalization of `tsvd(x, r + 1)` breaks down
+    # and its last value is spurious (0.76-0.91 of the largest on 20×50 matrices, where the SVD
+    # gives 1e-16), so the indicator of a projection came out `Inf`. A device matrix takes the
+    # SVD of its backend where there is one and the host otherwise; only the leading `r + 1`
+    # values are read, on the host.
+    if !is_cpu_storage(typeof(x))
         runs_natively(svdvals!, x) || return host_call(f, x)
-        S = Array(svdvals(x))[1:(f.r + 1)]
     end
+    S = Array(svdvals(x))[1:(f.r + 1)]
     # the tolerance in the following line should be customizable
     if S[end] / S[1] <= 1.0e-7
         return R(0)
