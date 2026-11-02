@@ -201,8 +201,15 @@ Add a `test/test_reg_<name>.jl` (`@testitem`, `tags = [:regularization]`) and a 
 
 `docs/make.jl` builds one Documenter site. The tutorials are Literate.jl scripts in
 `docs/literate/` (`# ` lines are prose, `## ` lines are code comments, `#-` splits a code block),
-executed on every build into the gitignored `docs/src/tutorials/`, each also written as a
+executed by Literate into the gitignored `docs/src/tutorials/`, each also written as a
 notebook to download. `RISTRETTO_DOCS_TUTORIALS=01,09` builds only those tutorials, `none` none.
+An executed page is kept, with a stamp hashing its script, `src/`, `ext/`, `deps/`, the
+version of every resolved package (not the manifest file, which the build rewrites), `make.jl`, the Julia version and the thread count; it is executed again only when the
+stamp changes (CI caches the folder), or always with `RISTRETTO_DOCS_CACHE=off`. Julia source is
+hashed by its parsed form, so comment, docstring and formatting edits keep the pages, and a page
+executed again logs which inputs changed. Code lines
+prefixed `#nb` run in the notebook only and appear on the page as a plain code block: the
+timing measurements use this, with a `#md` table measured once in their place.
 The related-packages page reads the committed benchmark snapshots through
 `docs/benchmark_tables.jl`.
 

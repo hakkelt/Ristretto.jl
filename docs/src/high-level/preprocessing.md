@@ -119,11 +119,18 @@ not on the anatomy. `normalize_sensitivity_maps` divides them by $\sqrt{\sum_c |
 coil sum of squares is one wherever there is signal, which is the conventional SENSE scaling
 (Pruessmann et al. 1999, Roemer et al. 1990).
 
+```@setup preprocessing
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+x = create_shepp_logan_phantom(64, 64, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+acq = AcquisitionInfo(simulate_acquisition(x, AcquisitionInfo(; image_size = (64, 64), sensitivity_maps = coil_sensitivities(64, 64, 8)); inverse_crime_check = false))
+```
+
 ```@docs
 normalize_sensitivity_maps
 ```
 
-```julia
+```@example preprocessing
 acq = estimate_sensitivities(acq; method = ESPIRiT())
 acq = normalize_sensitivity_maps(acq)
 ```

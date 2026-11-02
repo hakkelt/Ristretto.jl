@@ -757,33 +757,49 @@ println("Julia threads: ", Threads.nthreads())
 # solve dominates the fork/join overhead, which a 64² × 8-slice problem does not.
 #
 # Wall-clock timings vary from run to run, so each configuration below is measured three times and
-# the **best** time is reported; treat the ratios, not the absolute seconds, as the result.
+# the **best** time is reported; treat the ratios, not the absolute seconds, as the result. They
+# also depend on the thread count, which is why this page shows a table measured once at several
+# thread counts rather than the numbers of whichever machine built it; the notebook measures them
+# on yours.
 
-method_ms = IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 150, reltol = 0.0)
-warmup_ms = IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 2)
+#nb method_ms = IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 150, reltol = 0.0)
+#nb warmup_ms = IterativeReconstruction(L1Wavelet2D(2.0f-3); maxit = 2)
+#nb function best_of(kwargs; reps = 3)
+#nb     reconstruct(data_ms, warmup_ms; kwargs...)   # compile everything first
+#nb     times = Float64[]
+#nb     local x̂
+#nb     for _ in 1:reps
+#nb         push!(times, @elapsed x̂ = reconstruct(data_ms, method_ms; kwargs...))
+#nb     end
+#nb     return minimum(times), x̂
+#nb end
+#nb t_par, x_par = best_of((; task_executor = MultiThreadingExecutor()))
+#nb t_seq, x_seq = best_of((; task_executor = SequentialExecutor()))
+#nb t_none, x_none = best_of((; disable_task_splitting = true))
+#nb println("split, threaded over slices : ", round(t_par, digits = 2), " s")
+#nb println("split, one slice at a time  : ", round(t_seq, digits = 2), " s   (", round(t_seq / t_par, digits = 2), "× slower)")
+#nb println("not split at all            : ", round(t_none, digits = 2), " s   (", round(t_none / t_par, digits = 2), "× slower)")
+#nb println("same answer all three: ", x_par ≈ x_seq && x_par ≈ x_none)
 
-function best_of(kwargs; reps = 3)
-    reconstruct(data_ms, warmup_ms; kwargs...)   # compile everything first
-    times = Float64[]
-    local x̂
-    for _ in 1:reps
-        push!(times, @elapsed x̂ = reconstruct(data_ms, method_ms; kwargs...))
-    end
-    return minimum(times), x̂
-end
-
-t_par, x_par = best_of((; task_executor = MultiThreadingExecutor()))
-t_seq, x_seq = best_of((; task_executor = SequentialExecutor()))
-t_none, x_none = best_of((; disable_task_splitting = true))
-
-println("split, threaded over slices : ", round(t_par, digits = 2), " s")
-println("split, one slice at a time  : ", round(t_seq, digits = 2), " s   (", round(t_seq / t_par, digits = 2), "× slower)")
-println("not split at all            : ", round(t_none, digits = 2), " s   (", round(t_none / t_par, digits = 2), "× slower)")
-println("same answer all three: ", x_par ≈ x_seq && x_par ≈ x_none)
-
-# The unsplit run is the slowest of the three even though it is doing the same arithmetic: it
-# solves one big problem whose iterate is the whole stack, so every slice is dragged along until
-# the *last* one converges, and the operators work on 32× larger arrays.
+#md # Measured on 2026-10-15 on one AMD EPYC 7763 node with Julia 1.13.1, best of three:
+#md #
+#md # | threads | split, threaded over slices | split, one slice at a time | not split |
+#md # |---:|---:|---:|---:|
+#md # | 1 | 6.70 s | 6.49 s | 9.81 s |
+#md # | 4 | 2.45 s | 6.89 s | 4.67 s |
+#md # | 16 | 0.73 s | 7.30 s | 3.03 s |
+#md #
+#md # All three configurations return the same image at every thread count.
+#md #
+# On one thread the two split runs are the same computation, and the unsplit run is half again
+# slower although it does the same arithmetic: it solves one big problem, whose operators work on
+# 32× larger arrays. With more threads the unsplit run speeds up as well, because those large
+# operators thread internally, but nothing scales like running independent solves side by side:
+# at 16 threads the threaded split is four times faster than the unsplit run and ten times faster
+# than solving the slices one after another. That last column is not one the defaults pick: left
+# unset, `task_executor` runs slices this small in parallel. Forcing `SequentialExecutor()` with
+# several threads leaves them serial, because a single 128² slice is too small for its operators
+# to thread.
 #
 # > **Splitting can change the numbers slightly.** The three runs above agree because `reltol = 0.0`
 # > pins every configuration to exactly 150 iterations. With a real stopping tolerance they need
@@ -1005,6 +1021,16 @@ end
 #   reconstruction as the third ingredient, next to incoherent sampling and sparsity.
 # - [Parallel imaging: noise](https://mriquestions.com/noise-in-pi.html) — the g-factor, and why
 #   convergence to the least-squares solution is not the same as a good image.
+#
+# Lectures and tutorials elsewhere:
+#
+# - J. A. Fessler, [*Optimization methods for MR image reconstruction*](https://arxiv.org/abs/1903.03510),
+#   IEEE Signal Processing Magazine 2020 — CG, proximal gradient, POGM and ADMM, derived for the
+#   MRI problems this tutorial solves.
+# - L. Vandenberghe's ECE236C slides on the [proximal gradient method](https://www.seas.ucla.edu/~vandenbe/236C/lectures/proxgrad.pdf),
+#   [FISTA](https://www.seas.ucla.edu/~vandenbe/236C/lectures/fista.pdf), [Douglas–Rachford splitting and ADMM](https://www.seas.ucla.edu/~vandenbe/236C/lectures/dr.pdf),
+#   [primal-dual methods](https://www.seas.ucla.edu/~vandenbe/236C/lectures/pdprox.pdf), [conjugate gradients](https://www.seas.ucla.edu/~vandenbe/236C/lectures/cg.pdf) and
+#   [quasi-Newton methods](https://www.seas.ucla.edu/~vandenbe/236C/lectures/qnewton.pdf) — the solvers of §2, one deck each.
 
 # ## Environment
 

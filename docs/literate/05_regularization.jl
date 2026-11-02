@@ -4,9 +4,9 @@
 #
 # $$ \min_x \tfrac12\|\mathcal{A}x - y\|_2^2 + \sum_i \lambda_i R_i(x) $$
 #
-# See `docs/src/high-level/regularization.md` for the full reference list and a "Choosing a
-# regularizer" table. Temporal and low-rank terms have a tutorial of their own
-# (`07_dynamic_and_decomposition.md`) because they need a dynamic series.
+# The [Regularization reference](https://hakkelt.github.io/Ristretto.jl/dev/high-level/regularization/)
+# has the full list and a "Choosing a regularizer" table. Temporal and low-rank terms have a
+# tutorial of their own (`07_dynamic_and_decomposition.md`) because they need a dynamic series.
 #
 # **Contents**
 # 1. The common test problem
@@ -848,28 +848,22 @@ jim(
 
 # ### Starting values for λ
 #
-# Because the problem solved is $\tfrac12\|\mathcal{A}x-y\|^2 + \lambda R(x)$ with no operator
-# rescaling, λ is in the data's own units and the reconstructed image comes back in those units.
+# The default `QuantileScaling` divides the data by the 99th percentile of the direct
+# reconstruction before the solve and multiplies the image back afterwards, so λ acts on an image
+# whose bright tissue is about 1, whatever the scanner's units, and the reconstructed image comes
+# back in the data's own units.
 #
-# | Regularizer | Typical λ |
-# |---|---|
-# | `L2Image` | 1e-5 … 1e-3 |
-# | `L1Image` | 1e-4 … 1e-2 |
-# | `L1Wavelet2D/3D`, `L1Contourlet` | 1e-3 … 1e-2 |
-# | `TotalVariation2D/3D` | 1e-4 … 5e-3 |
-# | `AnisotropicTotalVariation2D/3D` | 1e-4 … 5e-3, the same range as the isotropic term |
-# | `SecondOrderTotalVariation2D` | ≈ 2× the first-order λ |
-# | `TotalGeneralizedVariation2D` | as `TotalVariation2D`; leave `ratio = 2.0` |
-# | `EdgePreservingRoughness2D` | 1e-4 … 5e-3, `δ` from the data |
-# | `L0Image`, `L0Wavelet2D`, `L0Wavelet3D` (`threshold` form) | 1e-4 … 1e-2 (threshold is `sqrt(2γλ)` — retune, don't reuse an ℓ₁ λ) |
-# | `JointSparsity` | 1e-3 … 1e-2 |
-# | `ReferencePrior` | 1e-3 … 1e-1 |
-# | `L1TemporalFourier`, `TemporalTotalVariation` | 1e-2 … 1e-1 |
-# | `LowRank`, `LocallyLowRank`, `MultiScaleLowRank` | 1e-2 … 5e-1 |
+# The [Regularization reference](https://hakkelt.github.io/Ristretto.jl/dev/high-level/regularization/#Starting-Values-for-λ)
+# lists a measured starting λ and range for every term. The λ in this tutorial sit at or below
+# the bottom of those ranges, and that is right for this phantom: it is simulated on the
+# reconstruction grid (the inverse crime, tutorial 03 §6) with little noise, so there is little
+# noise and no model error for a penalty to suppress. On this data the total-variation terms do
+# best at about `1e-3`, and `TotalVariation2D` at the table's `7e-3` has about four times the
+# error. Measured or off-grid data put the optimum higher.
 #
-# Too noisy or aliased → increase λ; too smooth → decrease it; move in factors of 2–5.
+# Too noisy or aliased → increase λ; too smooth → decrease it; move in factors of 2–3.
 
-λs = Float32[8.0e-4, 2.0e-3, 5.0e-3, 1.2e-2]
+λs = [8.0e-4, 2.0e-3, 5.0e-3, 1.2e-2]
 sweep = map(λs) do λ
     x̂ = reconstruct(data, IterativeReconstruction(L1Wavelet2D(λ); maxit = 40))
     jim(x̂; title = "λ = $λ\nNRMSE $(round(nrmse1(x̂), digits = 3))")
@@ -893,6 +887,13 @@ jim(sweep...; layout = grid_layout(length(sweep)), size = (1000, 660))
 #   periphery costs detail rather than contrast, which is what every λ here trades against.
 # - [Parallel imaging: noise](https://mriquestions.com/noise-in-pi.html) — the noise amplification
 #   these penalties are suppressing.
+#
+# Lectures and tutorials elsewhere:
+#
+# - Lustig's [compressed sensing MRI resources](https://people.eecs.berkeley.edu/~mlustig/CS.html) —
+#   a hands-on exercise on undersampled k-space, workshop slides with code, and the two papers
+#   (*Sparse MRI*, *Compressed Sensing MRI*) that introduced the ℓ₁-wavelet and TV formulation
+#   used here.
 
 # ## Environment
 

@@ -18,9 +18,24 @@ added to the data and reads the noise level off the spread of the results.
 pseudo_replica
 ```
 
+```@setup analysis
+using Ristretto
+using GeometricMedicalPhantoms: create_shepp_logan_phantom, MRISheppLoganIntensities
+using Random
+Random.seed!(0)
+n, nc, nt = 64, 8, 8
+phantom = create_shepp_logan_phantom(n, n, :axial; ti = MRISheppLoganIntensities(), eltype = ComplexF32)
+smaps = coil_sensitivities(n, n, nc)
+pattern = create_sampling_pattern(VariableDensitySampling(PolynomialDistribution(3), 3.0, 0.08), (n, n))
+simulate(x, acq) = add_noise(simulate_acquisition(x, acq; inverse_crime_check = false, keep_sensitivity_maps = true); snr_db = 30)
+acq = simulate(phantom, AcquisitionInfo(; image_size = (n, n), subsampling = pattern, sensitivity_maps = smaps))
+acq_data = acq
+method = IterativeReconstruction(L2Image(1e-3); maxit = 10)
+```
+
 ### Usage
 
-```julia
+```@example analysis
 # Run 64 pseudo-replica iterations with fixed scaling
 res = pseudo_replica(acq_data, method; replicas = 64, scaling = NoScaling())
 

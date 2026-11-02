@@ -11,6 +11,8 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  # julia-actions/cache deletes the depot caches this branch saved before.
+  actions: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

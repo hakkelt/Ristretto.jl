@@ -624,6 +624,13 @@ println("ZeroFPR NRMSE: ", round(nrmse(x_zerofpr), digits = 4))
 # - [k-space: trajectories](https://mriquestions.com/k-space-trajectories.html) — what the NFFT
 #   operator's trajectory argument describes.
 # - [Parallel imaging](https://mriquestions.com/what-is-pi.html) — what $\mathcal{S}$ models.
+#
+# Lectures and tutorials elsewhere:
+#
+# - N. Parikh, S. Boyd, [*Proximal algorithms*](https://stanford.edu/~boyd/papers/prox_algs.html),
+#   Foundations and Trends in Optimization 2014 — proximal operators, their calculus and a catalog
+#   of closed forms, for §5 and §8.
+# - L. Vandenberghe's ECE236C slides on [the proximal mapping](https://www.seas.ucla.edu/~vandenbe/236C/lectures/proxop.pdf).
 
 # ## Environment
 

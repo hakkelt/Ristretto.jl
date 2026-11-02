@@ -676,6 +676,12 @@ side_by_side(
 #   structured low-rank methods exploit without being told about it.
 # - [Compressed sensing](https://mriquestions.com/compressed-sensing.html) — the background for
 #   calibrationless reconstruction.
+#
+# Lectures and tutorials elsewhere:
+#
+# - M. Jacob, M. P. Mani, J. C. Ye, [*Structured low-rank algorithms: theory, MR applications, and
+#   links to machine learning*](https://arxiv.org/abs/1910.12162), IEEE Signal Processing Magazine
+#   2020 — the annihilation relations behind SAKE, LORAKS and ALOHA (§2.3–2.4).
 
 # ## Environment
 

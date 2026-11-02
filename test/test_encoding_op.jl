@@ -865,6 +865,16 @@ end
     A_named = get_encoding_operator(acq_named)
     @test A_named isa NamedDimsOp
     @test unname(A_named * NamedDimsArray{(:x, :y, :time)}(x)) ≈ chain * x
+
+    # As many coils as frames: the per-frame masks belong to the frame axis, not the coil axis
+    # of the same length.
+    smaps_nt = randn(ComplexF32, n, n, nt)
+    ksp_nt = randn(ComplexF32, n, ns, nt, nt)
+    acq_nt = CartesianAcquisitionInfo(ksp_nt; is3D = false, image_size = (n, n), subsampling = subs, sensitivity_maps = smaps_nt)
+    A_nt = get_encoding_operator(acq_nt)
+    chain_nt = get_encoding_operator(acq_nt; fast_planning = true)
+    @test A_nt * x ≈ chain_nt * x
+    @test A_nt' * randn(ComplexF32, size(A_nt, 1)) isa AbstractArray
 end
 
 @testitem "device encoding operator batches maps and masks over frames" tags = [:encoding, :operators, :gpu] setup = [GpuEnvSetup, GpuHelpers] begin

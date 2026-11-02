@@ -15,6 +15,10 @@ jobs:
     permissions:
       contents: write
       statuses: write
+      # julia-actions/cache deletes the depot caches this branch saved before. Without it they
+      # pile up past the repository's 10 GB, and GitHub then evicts the least recently used
+      # entries, the tutorial pages below included.
+      actions: write
 
     steps:
       - uses: actions/checkout@v4
@@ -46,7 +50,22 @@ jobs:
         with:
           path: ~/.julia/scratchspaces/b3f1a2c4-5d6e-4a7b-9c8d-0e1f2a3b4c5d
           key: mritestdata-${{ runner.os }}-v1
+      # Executed tutorial pages, each with a stamp of what it was executed from (docs/make.jl);
+      # a page whose inputs did not change is not executed again. A cache entry cannot be
+      # updated, so every run saves a new one and restores the newest. GitHub drops an entry no
+      # run has read for 7 days; cache-keepalive.yml reads master's twice a week.
+      - uses: actions/cache/restore@v4
+        with:
+          path: docs/src/tutorials
+          key: docs-tutorials-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: docs-tutorials-${{ runner.os }}-
       - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JULIA_NUM_THREADS: 2
+          JULIA_NUM_THREADS: 4
+      # Also after a failed build: the pages that were executed have their stamps.
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: docs/src/tutorials
+          key: docs-tutorials-${{ runner.os }}-${{ github.run_id }}
