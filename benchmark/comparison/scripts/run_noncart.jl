@@ -5,9 +5,9 @@
 #
 # ## The toolkits do not grid at the same accuracy by default
 #
-# Ristretto's default NFFT operating point is `m = 4, σ = 1.5, POLYNOMIAL` (`DEFAULT_NFFT_M` and friends);
-# MRIReco (`LinearOperatorCollection`'s `NFFTOp`) hardcodes `m = 3, σ = 1.25, TENSOR`, about 360×
-# less accurate on the forward transform and correspondingly cheaper — accuracy a gridding
+# Ristretto's default NFFT operating point is `m = 3, σ = 1.5, TENSOR` (`DEFAULT_NFFT_M` and friends);
+# MRIReco (`LinearOperatorCollection`'s `NFFTOp`) hardcodes `m = 3, σ = 1.25, TENSOR`, about 4-7×
+# less accurate on the forward transform and slightly cheaper — accuracy a gridding
 # reconstruction does not use, since its NRMSE against the phantom barely moves across that range.
 # So Ristretto is reported twice: at its default, and as `Ristretto (m=3, σ=1.25)` at MRIReco's operating point,
 # through `get_encoding_operator`'s `m` / `sigma` / `precompute` keywords.

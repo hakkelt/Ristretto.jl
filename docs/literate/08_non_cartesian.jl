@@ -532,7 +532,7 @@ end
 #
 # `get_encoding_operator` (and `get_fourier_operator`) forward `m`, `sigma` and `precompute`
 # straight to NFFT.jl. Left at `nothing`, Ristretto uses its own default operating point
-# (`DEFAULT_NFFT_M = 3`, `DEFAULT_NFFT_SIGMA = 1.5`, `DEFAULT_NFFT_PRECOMPUTE = NFFT.POLYNOMIAL`),
+# (`DEFAULT_NFFT_M = 3`, `DEFAULT_NFFT_SIGMA = 1.5`, `DEFAULT_NFFT_PRECOMPUTE = NFFT.TENSOR`),
 # a lower-accuracy, faster point than NFFT.jl's own default (`m = 5`, `σ = 2.0`), chosen because
 # the accuracy loss is negligible for iterative reconstruction while the speed gain compounds
 # over many forward/adjoint applications per solve. The
@@ -548,7 +548,7 @@ using BenchmarkTools: @belapsed
 
 configs = (
     ("NFFT.jl default (m=5, σ=2.0, polynomial)", (m = 5, sigma = 2.0, precompute = NFFT.POLYNOMIAL)),
-    ("Ristretto default (m=3, σ=1.5, polynomial)", (m = nothing, sigma = nothing, precompute = nothing)),
+    ("Ristretto default (m=3, σ=1.5, tensor)", (m = nothing, sigma = nothing, precompute = nothing)),
     ("fast (m=3, σ=1.25, tensor)", (m = 3, sigma = 1.25, precompute = NFFT.TENSOR)),
 )
 
