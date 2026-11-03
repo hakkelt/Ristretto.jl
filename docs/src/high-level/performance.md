@@ -320,8 +320,8 @@ point clearly below that: 1.5-1.6x faster per forward/adjoint pair than `m = 4, 
 Independently, MRIReco's operating point (`m = 3`, `σ = 1.25`, `NFFT.TENSOR`) is faster still, at
 real accuracy cost: measured per coil, 4.28 ms vs 1.00 ms for a forward error of 1.6e-7 vs 5.7e-5
 against Ristretto's old (`m=5,σ=2`) default, while the reconstructed image's NRMSE is 0.085 either way
-(measured whole multi-coil DCF adjoint, single thread, `benchmark/comparison/scripts/
-run_noncart.jl`, 2026-09-04: Ristretto at its old default 25.9 ms, Ristretto at MRIReco's operating point
+(measured whole multi-coil DCF adjoint, single thread, `run_noncart.jl` of the comparison suite in
+[RistrettoBenchmarking](https://github.com/hakkelt/RistrettoBenchmarking), 2026-09-04: Ristretto at its old default 25.9 ms, Ristretto at MRIReco's operating point
 6.1 ms, MRIReco 27.3 ms — all at NRMSE ≈ 0.085 against the phantom). At MRIReco's operating point
 Ristretto is faster than MRIReco while gridding more accurately; ask for it explicitly if you want the
 faster, less accurate end of the curve:

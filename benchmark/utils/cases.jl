@@ -1,5 +1,5 @@
 # The benchmark case catalog: one toolkit-neutral description of every reconstruction problem the
-# Ristretto harness (`benchmark/run.jl`) and the comparison suite (`benchmark/comparison/`) time.
+# Ristretto harness (`benchmark/run.jl`) and the comparison suite (RistrettoBenchmarking) time.
 #
 # A case holds plain arrays in fixed layouts (see `BenchCase`), generated only from
 # GeometricMedicalPhantoms, FFTW and seeded RNGs. Ristretto is used for exactly two things: simulating

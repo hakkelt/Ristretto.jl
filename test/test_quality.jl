@@ -166,7 +166,7 @@ end
 
     # The case catalog and Ristretto's reconstruction of each method, at the reduced size, one method per
     # case family: this guards against the harness (benchmark/run.jl) and the comparison suite
-    # breaking on an API change, without paying for a benchmark run.
+    # (RistrettoBenchmarking) breaking on an API change, without paying for a benchmark run.
     include(joinpath(pkgdir(Ristretto), "benchmark", "utils", "bench_utils.jl"))
     const BU = BenchUtils
     withenv("RISTRETTO_BENCH_SMALL" => "1", "RISTRETTO_BENCH_REAL_DATA" => "0") do

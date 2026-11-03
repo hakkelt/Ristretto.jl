@@ -1,7 +1,7 @@
 """
     BenchUtils
 
-Everything the Ristretto harness (`benchmark/run.jl`) and the comparison suite (`benchmark/comparison/`)
+Everything the Ristretto harness (`benchmark/run.jl`) and the comparison suite (RistrettoBenchmarking)
 share: site configuration, the case catalog with its phantoms, sampling patterns, noise and real
 data, Ristretto's reconstruction of each method, the timing function and the result store.
 

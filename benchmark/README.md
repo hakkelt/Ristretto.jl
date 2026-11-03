@@ -2,7 +2,10 @@
 
 Performance and accuracy measurement of Ristretto. Everything here reads the
 same **case catalog** (`utils/`), so two measurements of the same case, by two checkouts of Ristretto or by
-Ristretto and another toolkit, reconstruct byte-identical inputs.
+Ristretto and another toolkit, reconstruct byte-identical inputs. The cross-toolkit comparison
+(Ristretto against BART, SigPy, MRIReco, MIRT and MRpro) lives in
+[RistrettoBenchmarking](https://github.com/hakkelt/RistrettoBenchmarking), which pins a commit of
+this repository as a submodule and reads this catalog from it.
 
 | path | what it is |
 |---|---|
@@ -10,12 +13,12 @@ Ristretto and another toolkit, reconstruct byte-identical inputs.
 | `run.jl` | the Ristretto harness: every catalog case × every applicable method, one checkout of Ristretto at a time |
 | `compare.jl` | compares two checkouts (refs) measured by `run.jl` |
 | `ci/` | the pull-request benchmark: a small BenchmarkTools suite and the driver that posts its base/head comparison |
-| `comparison/` | the cross-toolkit suite: Ristretto against BART, SigPy, MRIReco, MIRT and MRpro ([its README](comparison/README.md)) |
-| `slurm/` | SLURM scripts for both; machine paths live in the untracked `slurm/site.env` |
+| `large_datasets/` | Ristretto alone on two full-size scanner datasets ([its README](large_datasets/README.md)) |
+| `slurm/` | SLURM scripts; machine paths live in the untracked `slurm/site.env` |
 | `results/` | harness results and SLURM logs (gitignored) |
 
 `benchmark/` is a member of the root workspace (`Project.toml`), so it runs against this checkout of
-Ristretto. `benchmark/comparison/` is a separate environment, since it carries Python and BART bridges.
+Ristretto.
 
 ## The case catalog
 
@@ -49,8 +52,8 @@ rank and temporal TV for the cines. Every TV also runs by PDHG instead of ADMM (
 rows. Iteration counts, λ and the ADMM ρ are fixed
 (`utils/ristretto_methods.jl`, `CMP_OUTER` / `CMP_CG_ITERS` to override).
 
-The GRAPPA rows of the comparison suite use `get_case(id; pattern = :regular)`, a regularly
-undersampled variant of the 2D and multislice cases, since GRAPPA needs a fixed stride.
+`get_case(id; pattern = :regular)` is a regularly undersampled variant of the 2D and multislice
+cases, for GRAPPA, which needs a fixed stride.
 
 `RISTRETTO_BENCH_SMALL=1` shrinks every case: 32², 3 slices, 32³, 8 frames and 4 coils. It is meant for
 smoke runs on a login node and for the `Benchmark case catalog smoke test` TestItem.
@@ -173,7 +176,7 @@ measurements. Timing claims come from `run.jl` on a cluster node.
 ## SLURM
 
 Copy `slurm/site.env.example` to `slurm/site.env` and fill in the paths of this machine: the Julia
-depot, the BART builds, the SigPy interpreter, the data directory and the partition names. No tracked
+depot, the data directory and the partition names. No tracked
 file names a machine path. Every script sources `slurm/common.sh`, which sets:
 - the depot Julia binary (the login-node `julia` wrapper fails inside a SLURM cgroup);
 - `TMPDIR=/dev/shm`, for BART's `.cfl` files;
@@ -184,13 +187,13 @@ unless given `--production`, which occupies a node for hours and needs agreement
 
 | script | what it runs |
 |---|---|
-| `matrix.sh` | one exclusive node; each configuration pinned to its own NUMA domain with `numactl`, several at a time, one CPU per physical core (never an SMT sibling; `run.jl` and the comparison suite pin their threads only to physical cores of the allowed set, and fail when it has too few). Refs and environment variants of one (threads, backend) pair start together. `--suite=harness` runs `run.jl`, `--suite=comparison` runs `comparison/scripts/run_all.jl`. Matrix dimensions: `--matrix-threads=`, `--matrix-backends=`, `--matrix-refs=name:path[:Pkg=PATH+...],...` (harness; the optional third field is passed to that ref's `run.jl --dev`), `--matrix-env=A=1+B=2,...` (recorded per row). The first ref or variant of a pair always starts on the lower domain, and domains differ; `--swap-repeat` queues the matrix again in reverse order with `--remeasure`, to be compared with `compare.jl --pick=min`. `--pack` lets several tasks share a domain, each on its own physical cores (best-fit within an L3 group, then a domain) and with `--pack-mem-gb=` reserved per task against the domain's memory; packed results get their own node class, so they are never reused for or silently compared with isolated ones. Leave it off for published numbers and when memory-bandwidth contention is the question. Every other flag is passed through. |
-| `calibrate.sh` | λ calibration (`comparison/scripts/calibrate_lambda.jl`), one case per array task |
+| `matrix.sh` | one exclusive node; each configuration pinned to its own NUMA domain with `numactl`, several at a time, one CPU per physical core (never an SMT sibling; `run.jl` pins its threads only to physical cores of the allowed set, and fails when it has too few). Refs and environment variants of one (threads, backend) pair start together. It runs `run.jl`. Matrix dimensions: `--matrix-threads=`, `--matrix-backends=`, `--matrix-refs=name:path[:Pkg=PATH+...],...` (the optional third field is passed to that ref's `run.jl --dev`), `--matrix-env=A=1+B=2,...` (recorded per row). The first ref or variant of a pair always starts on the lower domain, and domains differ; `--swap-repeat` queues the matrix again in reverse order with `--remeasure`, to be compared with `compare.jl --pick=min`. `--pack` lets several tasks share a domain, each on its own physical cores (best-fit within an L3 group, then a domain) and with `--pack-mem-gb=` reserved per task against the domain's memory; packed results get their own node class, so they are never reused for or silently compared with isolated ones. Leave it off for published numbers and when memory-bandwidth contention is the question. Every other flag is passed through. |
+| `large_datasets.sh`, `large_datasets_gpu.sh` | `large_datasets/run.jl` on the host and on one GPU |
+| `gpu_refs.sh` | a GPU benchmark on several checkouts in one job, alternating them round by round |
 | `report_efficiency.sh <jobid>` | CPU efficiency of a finished matrix job |
 
 ```sh
-benchmark/slurm/submit.sh matrix.sh --suite=harness --matrix-refs=master:../ristretto-master,perf:. --matrix-threads=1,8
-benchmark/slurm/submit.sh --array=0-6 calibrate.sh
+benchmark/slurm/submit.sh matrix.sh --matrix-refs=master:../ristretto-master,perf:. --matrix-threads=1,8
 ```
 
 Logs go to `results/slurm/`.

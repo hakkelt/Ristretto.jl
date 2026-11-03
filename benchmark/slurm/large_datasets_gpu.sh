@@ -13,4 +13,4 @@ set -euo pipefail
 source "${SLURM_SUBMIT_DIR:-$(pwd)}/benchmark/slurm/common.sh"
 
 nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
-"$JULIA_BIN" --project=benchmark/comparison -t 1 benchmark/large_datasets/run.jl --device=cuda "$@"
+"$JULIA_BIN" --project=benchmark -t 1 benchmark/large_datasets/run.jl --device=cuda "$@"

@@ -210,8 +210,9 @@ hashed by its parsed form, so comment, docstring and formatting edits keep the p
 executed again logs which inputs changed. Code lines
 prefixed `#nb` run in the notebook only and appear on the page as a plain code block: the
 timing measurements use this, with a `#md` table measured once in their place.
-The related-packages page reads the committed benchmark snapshots through
-`docs/benchmark_tables.jl`.
+The cross-toolkit benchmarks and the feature comparison live in
+[RistrettoBenchmarking](https://github.com/hakkelt/RistrettoBenchmarking); the related-packages
+page only describes each toolbox and links there.
 
 ## Formatting
 

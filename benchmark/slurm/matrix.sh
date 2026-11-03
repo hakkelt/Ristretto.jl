@@ -8,14 +8,14 @@
 # The node topology is discovered with ThreadPinning.jl, never hardcoded. Each domain must have at
 # least 16 cores (the largest thread count in the default matrix).
 #
-# Suites:
-#   --suite=comparison   benchmark/comparison/scripts/run_all.jl (Ristretto vs BART/SigPy/MRIReco/MIRT/MRpro)
-#   --suite=harness      benchmark/run.jl (Ristretto only, every catalog case and method)
+# It runs benchmark/run.jl (Ristretto only, every catalog case and method). The cross-toolkit
+# comparison has its own copy of this script in RistrettoBenchmarking
+# (https://github.com/hakkelt/RistrettoBenchmarking).
 #
 # Matrix dimensions (each a comma-separated list):
 #   --matrix-threads=1,2,4,8,16          thread counts (default: 1,2,4,8,16)
 #   --matrix-backends=openblas,mkl       BLAS backends (default: both)
-#   --matrix-refs=master:/path,perf:/path   harness only: Ristretto checkouts to measure, each passed to
+#   --matrix-refs=master:/path,perf:/path   Ristretto checkouts to measure, each passed to
 #                                        run.jl as --ristretto=<path> --ref-name=<name>. Default: this
 #                                        checkout. A third field redirects dev'd packages of that
 #                                        ref (run.jl --dev), `+` joining several:
@@ -41,15 +41,14 @@
 #                      memory bandwidth with their neighbours, so their results get a node class of
 #                      their own (RISTRETTO_BENCH_PLACEMENT=shared, see node_class in utils/harness.jl) and
 #                      are never reused for, or silently compared with, an isolated run.
-#   --pack-mem-gb=G    memory reserved per packed task (default 6 for the harness, whose tasks peak
-#                      at 4.5 GB; 12 for the comparison suite). A task starts on a domain only while
+#   --pack-mem-gb=G    memory reserved per packed task (default 6; the harness's tasks peak at
+#                      4.5 GB). A task starts on a domain only while
 #                      the reservations there stay within 90% of its MemTotal.
-# Everything else (--sections=, --cases=, --methods=, --frameworks=, --remeasure, ...) is passed
+# Everything else (--cases=, --methods=, --remeasure, ...) is passed
 # verbatim to every launched Julia process.
 #
 # usage (through submit.sh, which picks the partition):
-#   benchmark/slurm/submit.sh matrix.sh --suite=comparison --sections=base
-#   benchmark/slurm/submit.sh matrix.sh --suite=harness --matrix-refs=master:/wt/master,perf:/wt/perf
+#   benchmark/slurm/submit.sh matrix.sh --matrix-refs=master:/wt/master,perf:/wt/perf
 #
 #SBATCH --job-name=matrix
 #SBATCH --exclusive
@@ -63,7 +62,6 @@ source "$REPO_ROOT/benchmark/slurm/common.sh"
 
 ### ---- 1. Parse flags: matrix-level vs pass-through --------------------------------------------
 
-SUITE=comparison
 MATRIX_THREADS=(1 2 4 8 16)
 MATRIX_BACKENDS=(openblas mkl)
 MATRIX_REFS=("")
@@ -77,7 +75,6 @@ for a in "$@"; do
         --pack) PACK=1 ;;
         --swap-repeat) SWAP_REPEAT=1 ;;
         --pack-mem-gb=*) PACK_MEM_GB="${a#*=}" ;;
-        --suite=*) SUITE="${a#*=}" ;;
         --matrix-threads=*) IFS=, read -ra MATRIX_THREADS <<<"${a#*=}" ;;
         --matrix-backends=*) IFS=, read -ra MATRIX_BACKENDS <<<"${a#*=}" ;;
         --matrix-refs=*) IFS=, read -ra MATRIX_REFS <<<"${a#*=}" ;;
@@ -86,25 +83,10 @@ for a in "$@"; do
     esac
 done
 
-case "$SUITE" in
-    comparison)
-        PROJECT_DIR="benchmark/comparison"
-        SCRIPT_PATH="benchmark/comparison/scripts/run_all.jl"
-        RESULTS_DIR="benchmark/comparison/results/runs"
-        : "${PACK_MEM_GB:=12}"
-        if [ "${MATRIX_REFS[*]}" != "" ]; then
-            echo "### --matrix-refs is only supported by --suite=harness" >&2
-            exit 2
-        fi
-        ;;
-    harness)
-        PROJECT_DIR="benchmark"
-        SCRIPT_PATH="benchmark/run.jl"
-        RESULTS_DIR="benchmark/results/runs"
-        : "${PACK_MEM_GB:=6}"
-        ;;
-    *) echo "### unknown --suite=$SUITE (comparison or harness)" >&2; exit 2 ;;
-esac
+PROJECT_DIR="benchmark"
+SCRIPT_PATH="benchmark/run.jl"
+RESULTS_DIR="benchmark/results/runs"
+: "${PACK_MEM_GB:=6}"
 LOG_DIR="$BENCH_RESULTS/slurm/matrix_${SLURM_JOB_ID:-local}"
 mkdir -p "$RESULTS_DIR" "$LOG_DIR"
 START_MARKER="$LOG_DIR/.start"
@@ -212,7 +194,7 @@ if [ "$SWAP_REPEAT" = 1 ]; then
         done
     done
 fi
-echo "### suite $SUITE, queue: ${QUEUE[*]}"
+echo "### queue: ${QUEUE[*]}"
 echo "### refs: ${MATRIX_REFS[*]:-<this checkout>}  env variants: ${MATRIX_ENV[*]:-<none>}"
 echo "### pass-through args: ${PASS_ARGS[*]:-<none>}"
 

@@ -14,16 +14,6 @@ Manifest.toml
 # Jupyter artifacts
 .ipynb_checkpoints/
 
-# per-section/per-group benchmark fragments (legacy; superseded by results/runs/, kept ignored for
-# any leftover files from before the switch)
-benchmark/comparison/results/*__*.json
-
-# results/runs/: one immutable file per benchmark run (see benchmark/utils/results_store.jl); local working data,
-# not the same thing as a committed comparison snapshot
-benchmark/comparison/results/runs/
-# λ calibrated on the RISTRETTO_BENCH_SMALL=1 smoke cases; meaningless at full size
-/benchmark/comparison/results/lambda_small/
-
 # agent scaffolding and worktrees
 .claude/
 
