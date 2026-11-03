@@ -57,7 +57,7 @@ end
 # Mappings
 function mul!(y::AbstractArray, L::LMatrixOp, X::AbstractArray)
     check(y, L, X)
-    return _with_blas_threading(L.threaded, _matmul_work(X, L.b)) do
+    return _with_blas_threading(L.threaded, domain_array_type(L), _matmul_work(X, L.b)) do
         mul!(y, X, L.b)
     end
 end
@@ -69,14 +69,14 @@ end
 
 function mul!(y::AbstractArray, L::AdjointOperator{<:LMatrixOp}, Y::AbstractMatrix)
     check(y, L, Y)
-    return _with_blas_threading(L.A.threaded, _matmul_work(Y, L.A.b')) do
+    return _with_blas_threading(L.A.threaded, domain_array_type(L.A), _matmul_work(Y, L.A.b')) do
         mul!(y, Y, L.A.b')
     end
 end
 
 function mul!(y::AbstractArray, L::LMatrixOp, X::AbstractArray, α::Number, β::Number)
     check(y, L, X)
-    return _with_blas_threading(L.threaded) do
+    return _with_blas_threading(L.threaded, domain_array_type(L)) do
         mul!(y, X, L.b, _coefficient(y, α), _coefficient(y, β))
     end
 end
@@ -88,7 +88,7 @@ end
 
 function mul!(y::AbstractArray, L::AdjointOperator{<:LMatrixOp}, Y::AbstractMatrix, α::Number, β::Number)
     check(y, L, Y)
-    return _with_blas_threading(L.A.threaded) do
+    return _with_blas_threading(L.A.threaded, domain_array_type(L.A)) do
         mul!(y, Y, L.A.b', _coefficient(y, α), _coefficient(y, β))
     end
 end

@@ -235,7 +235,7 @@ end
 
 @testitem "Conv (GPU)" tags = [:gpu, :dsp, :Conv] setup = [TestUtils, GpuEnvSetup] begin
     using DSPOperators, DSP, GPUEnv, LinearAlgebra, Random
-    for backend in gpu_backends(; include_jlarrays = false, supports_fftw = true)
+    for backend in gpu_backends(; supports_fftw = true)
         Random.seed!(0)
         n, m = 20, 6
         h_cpu = randn(m)
@@ -262,9 +262,24 @@ end
     end
 end
 
+@testitem "Conv/Xcorr (GPU): never report CPU threads" tags = [
+    :gpu, :dsp, :threading, :Conv, :Xcorr,
+] setup = [TestUtils, GpuEnvSetup] begin
+    using DSPOperators, GPUEnv, AbstractOperators
+
+    # Above the CPU thread gate (a 2^19 padded transform), so on the CPU these would
+    # thread; a device plan has no CPU thread count.
+    n = 1 << 19
+    for backend in gpu_backends(; supports_fftw = true)
+        h = to_gpu(backend, randn(Float32, 16))
+        @test is_threaded(Conv(Float32, (n,), h)) == false
+        @test is_threaded(Xcorr(Float32, (n,), h)) == false
+    end
+end
+
 @testitem "Xcorr (GPU)" tags = [:gpu, :dsp, :Xcorr] setup = [TestUtils, GpuEnvSetup] begin
     using DSPOperators, DSP, GPUEnv, LinearAlgebra, Random
-    for backend in gpu_backends(; include_jlarrays = false, supports_fftw = true)
+    for backend in gpu_backends(; supports_fftw = true)
         Random.seed!(0)
         n, m = 15, 5
         h_cpu = randn(m)
@@ -294,7 +309,7 @@ end
 
 @testitem "Filt (GPU, FIR)" tags = [:gpu, :dsp, :Filt] setup = [TestUtils, GpuEnvSetup] begin
     using DSPOperators, DSP, GPUEnv, LinearAlgebra, Random
-    for backend in gpu_backends(; include_jlarrays = false, supports_fftw = true)
+    for backend in gpu_backends(; supports_fftw = true)
         Random.seed!(42)
         n = 20
         b = randn(5)
@@ -322,7 +337,7 @@ end
 
 @testitem "MIMOFilt (GPU, FIR)" tags = [:gpu, :dsp, :MIMOFilt] setup = [TestUtils, GpuEnvSetup] begin
     using DSPOperators, DSP, GPUEnv, LinearAlgebra, Random
-    for backend in gpu_backends(; include_jlarrays = false, supports_fftw = true)
+    for backend in gpu_backends(; supports_fftw = true)
         Random.seed!(7)
         m, n = 10, 3
         b = [randn(5), randn(3), randn(4), randn(5), randn(3), randn(4)]

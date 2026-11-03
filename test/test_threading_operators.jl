@@ -1,5 +1,5 @@
 @testitem "Threading contract: transcendental nonlinear operators" tags = [
-    :nonlinearoperator, :Threading, :Sin, :Cos, :Exp, :Atan, :Tanh, :Sech, :SoftPlus,
+    :nonlinearoperator, :threading, :Sin, :Cos, :Exp, :Atan, :Tanh, :Sech, :SoftPlus,
 ] setup = [TestUtils, ThreadingContract] begin
     using AbstractOperators, Random
     Random.seed!(0)
@@ -21,7 +21,7 @@
 end
 
 @testitem "Threading contract: Pow and Sigmoid" tags = [
-    :nonlinearoperator, :Threading, :Pow, :Sigmoid,
+    :nonlinearoperator, :threading, :Pow, :Sigmoid,
 ] setup = [TestUtils, ThreadingContract] begin
     using AbstractOperators, Random
     Random.seed!(0)
@@ -47,7 +47,7 @@ end
 end
 
 @testitem "Threading contract: SoftMax" tags = [
-    :nonlinearoperator, :Threading, :SoftMax,
+    :nonlinearoperator, :threading, :SoftMax,
 ] setup = [TestUtils] begin
     using AbstractOperators, Random
     Random.seed!(0)
@@ -60,7 +60,7 @@ end
     serial = SoftMax(Float64, (n,); threaded = false)
     threaded = SoftMax(Float64, (n,); threaded = true)
     @test is_threaded(serial) == false
-    @test is_threaded(threaded) == true
+    @test is_threaded(threaded) == (Threads.nthreads() > 1)
     @test supports_threading(serial) == true
     @test supports_threading(threaded) == true
 
@@ -71,13 +71,13 @@ end
     @test Jacobian(serial, x)' * r ≈ Jacobian(threaded, x)' * r
 
     # copy_operator round-trips the flag in both directions.
-    @test is_threaded(copy_operator(serial; threaded = true)) == true
+    @test is_threaded(copy_operator(serial; threaded = true)) == (Threads.nthreads() > 1)
     @test is_threaded(copy_operator(threaded; threaded = false)) == false
 
     # adapt_operator: share when satisfied, copy when not.
     @test adapt_operator(serial; threaded = false) === serial
     adapted = adapt_operator(serial; threaded = true)
-    @test is_threaded(adapted) == true
+    @test is_threaded(adapted) == (Threads.nthreads() > 1)
     @test is_threaded(serial) == false   # original untouched
 
     # A copy gets its own scratch buffer -- sharing it is what makes SoftMax unsafe to
@@ -88,7 +88,7 @@ end
     @test is_thread_safe(serial) == false
 end
 
-@testitem "Threading contract: FiniteDiff" tags = [:linearoperator, :Threading, :FiniteDiff] setup = [
+@testitem "Threading contract: FiniteDiff" tags = [:linearoperator, :threading, :FiniteDiff] setup = [
     TestUtils, ThreadingContract,
 ] begin
     using AbstractOperators, LinearAlgebra, Random
@@ -150,7 +150,7 @@ end
 end
 
 @testitem "Threading contract: forwarders report and forward threading" tags = [
-    :calculus, :Threading, :Compose, :Sum, :Scale,
+    :calculus, :threading, :Compose, :Sum, :Scale,
 ] setup = [TestUtils] begin
     using AbstractOperators, Random
     Random.seed!(0)
@@ -167,7 +167,7 @@ end
     # asserts the *forwarding rule*, and should not start failing because DiagOp's measured
     # threshold moved.
     diag = DiagOp(randn(n - 1); threaded = false)
-    @test is_threaded(Compose(diag, threaded_leaf)) == true
+    @test is_threaded(Compose(diag, threaded_leaf)) == (Threads.nthreads() > 1)
     @test is_threaded(Compose(diag, serial_leaf)) == false
     @test supports_threading(Compose(diag, serial_leaf)) == true
 
@@ -176,7 +176,7 @@ end
     adapted = adapt_operator(op; threaded = false)
     @test is_threaded(adapted) == false
     @test all(!is_threaded, adapted.A)
-    @test is_threaded(op) == true   # original untouched
+    @test is_threaded(op) == (Threads.nthreads() > 1)   # original untouched
 
     # Numerically unchanged by the adaptation.
     x = randn(n)
@@ -184,7 +184,7 @@ end
 end
 
 @testitem "Threading contract: leaf operators without a threaded path" tags = [
-    :linearoperator, :Threading, :Eye, :GetIndex, :ZeroPad, :Zeros,
+    :linearoperator, :threading, :Eye, :GetIndex, :ZeroPad, :Zeros,
 ] setup = [TestUtils] begin
     using AbstractOperators, Random
     Random.seed!(0)
@@ -213,7 +213,7 @@ end
 end
 
 @testitem "Threading contract: MatrixOp/LMatrixOp real BLAS threading" tags = [
-    :linearoperator, :Threading, :MatrixOp, :LMatrixOp,
+    :linearoperator, :threading, :MatrixOp, :LMatrixOp,
 ] setup = [TestUtils] begin
     using AbstractOperators, Random
     Random.seed!(0)
@@ -259,7 +259,7 @@ end
 end
 
 @testitem "Threading contract: batch operators disable threading in wrapped operators" tags = [
-    :batching, :Threading, :SimpleBatchOp, :SpreadingBatchOp,
+    :batching, :threading, :SimpleBatchOp, :SpreadingBatchOp,
 ] setup = [TestUtils] begin
     using AbstractOperators, Random
     Random.seed!(0)
@@ -286,11 +286,34 @@ end
         serial_batch = BatchOp(FiniteDiff(Float64, (n,); threaded = false), (nb,); threaded = false)
         x = randn(n, nb)
         @test bop * x == serial_batch * x
+
+        # A serial batch loop around a threaded operator is still threaded, and
+        # `threaded = false` reaches the wrapped operator.
+        sb = BatchOp(FiniteDiff(Float64, (n,); threaded = true), (4,); threaded = false)
+        @test is_threaded(sb) == true
+        for s in (
+                adapt_operator(bop; threaded = false),
+                adapt_operator(sb; threaded = false),
+                copy_operator(sb; threaded = false),
+            )
+            @test is_threaded(s) == false
+            @test is_threaded(AbstractOperators._wrapped_operator(s)) == false
+        end
+        @test copy_operator(sb) isa AbstractOperators.SimpleBatchOpSingleThreaded
+        @test is_threaded(copy_operator(sb).operator) == true
+
+        sbs = BatchOp([FiniteDiff(Float64, (n,); threaded = true) for _ in 1:3], 2; threaded = false)
+        @test is_threaded(sbs) == true
+        for s in (adapt_operator(sbs; threaded = false), copy_operator(sbs; threaded = false))
+            @test is_threaded(s) == false
+            @test all(!is_threaded, AbstractOperators._spreading_operators(s))
+        end
+        @test copy_operator(sbs) isa AbstractOperators.SpreadingBatchOpSingleThreaded
     end
 end
 
 @testitem "Threading contract: a batch smaller than the thread count leaves the threads to its operator" tags = [
-    :batching, :Threading, :SimpleBatchOp, :SpreadingBatchOp,
+    :batching, :threading, :SimpleBatchOp, :SpreadingBatchOp,
 ] setup = [TestUtils] begin
     using AbstractOperators, Random
     Random.seed!(0)
@@ -303,11 +326,11 @@ end
         # Two items cannot keep every thread busy, so the loop stays serial and each call
         # threads instead.
         bop = BatchOp(inner, (2,); threaded = true)
-        @test is_threaded(bop) == false
+        @test bop isa AbstractOperators.SimpleBatchOpSingleThreaded
         @test is_threaded(AbstractOperators._wrapped_operator(bop))
         ops = [FiniteDiff(Float64, (n,); threaded = true) for _ in 1:2]
         sbop = BatchOp(ops, 1; threaded = true)
-        @test is_threaded(sbop) == false
+        @test sbop isa AbstractOperators.SpreadingBatchOpSingleThreaded
         @test all(is_threaded, AbstractOperators._spreading_operators(sbop))
 
         # An operator that does not thread itself still threads across a small batch.
@@ -321,7 +344,7 @@ end
     end
 end
 
-@testitem "Threading contract: DCAT block-parallel loop" tags = [:calculus, :Threading, :DCAT] setup = [
+@testitem "Threading contract: DCAT block-parallel loop" tags = [:calculus, :threading, :DCAT] setup = [
     TestUtils,
 ] begin
     using AbstractOperators, LinearAlgebra, Random
@@ -334,7 +357,7 @@ end
     serial = DCAT(blocks...; threaded = false)
     threaded = DCAT(blocks...; threaded = true)
     @test is_threaded(serial) == false
-    @test is_threaded(threaded) == true
+    @test is_threaded(threaded) == (Threads.nthreads() > 1)
     @test supports_threading(serial) == true
 
     # Inputs captured once and shared by both operators.
@@ -347,7 +370,7 @@ end
     @test serial' * r == threaded' * r
 
     # copy_operator round-trips the block-loop flag.
-    @test is_threaded(copy_operator(serial; threaded = true)) == true
+    @test is_threaded(copy_operator(serial; threaded = true)) == (Threads.nthreads() > 1)
     @test is_threaded(copy_operator(threaded; threaded = false)) == false
 
     # Nesting safety: when the block loop threads, the blocks themselves must not.
@@ -355,8 +378,62 @@ end
     @test all(!is_threaded, nested.A)
 end
 
+@testitem "Threading contract: rebuilding a block-threaded DCAT copies each block at most once" tags = [
+    :calculus, :threading, :DCAT, :Compose,
+] setup = [TestUtils] begin
+    using AbstractOperators, JLArrays, LinearAlgebra, Random
+    using RecursiveArrayTools: ArrayPartition
+    const AO = AbstractOperators
+    Random.seed!(0)
+
+    # `Compose` keeps a scratch buffer and is not thread-safe, so a threaded block loop
+    # holds its own copy of each block.
+    n = 1 << 17
+    blk() = FiniteDiff((n,)) * DiagOp(randn(n))
+    D = DCAT(blk(), blk(), blk(), blk())
+    @test is_thread_safe(D.A[1]) == false
+    @test AO.is_block_threaded(D) == (Threads.nthreads() > 1)
+    x = ArrayPartition([randn(n) for _ in 1:4]...)
+    y = D * x
+
+    for kw in ((;), (; threaded = true))
+        Dc = copy_operator(D; kw...)
+        @test AO.is_block_threaded(Dc) == AO.is_block_threaded(D)
+        @test Dc * x == y
+        @test !any(i -> Dc.A[i] === D.A[i], 1:4)
+        if AO.is_block_threaded(Dc)
+            @test all(!is_threaded, Dc.A)
+            @test allunique(map(objectid, Dc.A))
+            # One serial copy per block, not two.
+            copy_operator(D; kw...), copy_operator(D.A[1]; threaded = false)
+            one_copy = 4 * (@allocated copy_operator(D.A[1]; threaded = false))
+            @test (@allocated copy_operator(D; kw...)) < 1.5 * one_copy
+        end
+    end
+
+    Dj = copy_operator(D; storage_type = JLArray)
+    @test AO.is_block_threaded(Dj) == false
+    @test AO.is_block_threaded(Dj) == AO.is_block_threaded(DCAT(Dj.A...))
+    yj = Dj * ArrayPartition(JLArray.(x.x)...)
+    @test all(i -> collect(yj.x[i]) ≈ y.x[i], 1:4)
+
+    @test AO.is_block_threaded(copy_operator(D; threaded = false)) == false
+
+    # Operators derived one per block need no copies of their own either.
+    @test AO.permute(D, [2, 1, 3, 4]).A === D.A
+    @test AO.remove_displacement(D).A === D.A
+    N = AO.get_normal_op(D)
+    @test AO.is_block_threaded(N) == AO.is_block_threaded(D)
+    @test N * x ≈ D' * (D * x)
+    if AO.is_block_threaded(D)
+        AO.get_normal_op(D.A[1])
+        one_normal = 4 * (@allocated AO.get_normal_op(D.A[1]))
+        @test (@allocated AO.get_normal_op(D)) < 1.5 * one_normal
+    end
+end
+
 @testitem "Threading contract: DCAT default policy tracks the benchmark" tags = [
-    :calculus, :Threading, :DCAT,
+    :calculus, :threading, :DCAT,
 ] begin
     using AbstractOperators
 
@@ -376,7 +453,7 @@ end
 end
 
 @testitem "Threading contract: batching an operator that has no threaded path" tags = [
-    :batching, :Threading, :fftw, :dsp,
+    :batching, :threading, :fftw, :dsp,
 ] setup = [TestUtils] begin
     using AbstractOperators, FFTWOperators, DSPOperators, LinearAlgebra, Random
     Random.seed!(0)
@@ -432,7 +509,7 @@ end
 end
 
 @testitem "Threading contract: subpackage operators declare their threading" tags = [
-    :Threading, :fftw, :dsp, :nfft, :wavelets,
+    :threading, :fftw, :dsp, :nfft, :wavelets,
 ] setup = [TestUtils] begin
     using AbstractOperators, FFTWOperators, DSPOperators, NFFTOperators, WaveletOperators
     using LinearAlgebra, Random
@@ -478,7 +555,7 @@ end
 
     # IDFT must stay an adjoint-wrapped DFT: that is what makes the DFT/IDFT combination
     # rules fire.
-    @test IDFT(8) isa AbstractOperators.AdjointOperator
+    @test IDFT(8) isa AdjointOperator
     @test AbstractOperators.can_be_combined(DFT(ComplexF64, 8), IDFT(8))
 
     # `Conv`/`Xcorr` plan their own FFTW transforms (DSPOperators does not depend on
@@ -492,12 +569,12 @@ end
     # checks below therefore stay small and cover the *granted* path through `num_threads`,
     # which bypasses the size policy by design.
     let n_below = DSPOperators.THRESHOLD_C2C - 1, n_above = DSPOperators.THRESHOLD_C2C
-        @test DSPOperators._dsp_fftw_num_threads(nothing, true, n_below) == 1
-        @test DSPOperators._dsp_fftw_num_threads(nothing, true, n_above) ==
+        @test DSPOperators._dsp_fftw_num_threads(nothing, true, n_below, zeros(1)) == 1
+        @test DSPOperators._dsp_fftw_num_threads(nothing, true, n_above, zeros(1)) ==
             (Threads.nthreads() > 1 ? Threads.nthreads() : 1)
         # `false` still vetoes above the threshold, and `num_threads` still wins over both.
-        @test DSPOperators._dsp_fftw_num_threads(nothing, false, n_above) == 1
-        @test DSPOperators._dsp_fftw_num_threads(2, false, n_below) == 2
+        @test DSPOperators._dsp_fftw_num_threads(nothing, false, n_above, zeros(1)) == 1
+        @test DSPOperators._dsp_fftw_num_threads(2, false, n_below, zeros(1)) == 2
     end
 
     for ctor in (
@@ -525,7 +602,7 @@ end
 end
 
 @testitem "Threading contract: NFFTOp reports its plan-time threading" tags = [
-    :Threading, :nfft,
+    :threading, :nfft,
 ] setup = [TestUtils] begin
     using AbstractOperators, NFFTOperators, LinearAlgebra, Random
     Random.seed!(0)
@@ -580,7 +657,7 @@ end
 end
 
 @testitem "Threading contract: FFTW r2r/r2c transforms thread their plans" tags = [
-    :Threading, :fftw, :DCT, :IDCT, :RDFT, :IRDFT,
+    :threading, :fftw, :DCT, :IDCT, :RDFT, :IRDFT,
 ] setup = [TestUtils] begin
     using AbstractOperators, FFTWOperators, Random
     Random.seed!(0)
@@ -629,7 +706,7 @@ end
 end
 
 @testitem "Threading contract: VCAT-forward and HCAT-adjoint block loops" tags = [
-    :calculus, :Threading, :VCAT, :HCAT,
+    :calculus, :threading, :VCAT, :HCAT,
 ] setup = [TestUtils] begin
     using AbstractOperators, LinearAlgebra, Random
     using RecursiveArrayTools: ArrayPartition
@@ -645,9 +722,9 @@ end
     vs = AO._copy_operator_impl(V; threaded = false)
     vt = AO._copy_operator_impl(V; threaded = true)
     @test AO.is_block_threaded(vs) == false
-    @test AO.is_block_threaded(vt) == true
+    @test AO.is_block_threaded(vt) == (Threads.nthreads() > 1)
     @test is_threaded(vs) == false
-    @test is_threaded(vt) == true
+    @test is_threaded(vt) == (Threads.nthreads() > 1)
     @test supports_threading(vs) == true
 
     x = randn(bs)
@@ -668,7 +745,7 @@ end
     big_bs = 1 << 17
     big_blocks = [FiniteDiff(Float64, (big_bs,); threaded = false) for _ in 1:4]
     H_big = AO._copy_operator_impl(HCAT(big_blocks...); threaded = true)
-    @test AO.is_block_threaded(H_big) == true
+    @test AO.is_block_threaded(H_big) == (Threads.nthreads() > 1)
     H_big_serial = AO._copy_operator_impl(H_big; threaded = false)
     xhb = ArrayPartition([randn(big_bs) for _ in 1:4]...)
     rhb = randn(big_bs - 1)
@@ -678,7 +755,7 @@ end
     # (non-natural) index HCAT.
     p = [2, 1, 4, 3]
     H_big_permuted = AO.permute(H_big, p)
-    @test AO.is_block_threaded(H_big_permuted) == true
+    @test AO.is_block_threaded(H_big_permuted) == (Threads.nthreads() > 1)
     expected = (H_big_serial' * rhb).x[p]
     @test collect(H_big_permuted' * rhb) == collect(ArrayPartition(expected...))
 
@@ -690,12 +767,12 @@ end
     nested = AO._copy_operator_impl(
         VCAT([FiniteDiff(Float64, (bs,); threaded = true) for _ in 1:nb]...); threaded = true
     )
-    @test all(is_threaded, nested.A)
+    @test all(is_threaded, nested.A) == (Threads.nthreads() > 1)
     @test all(!is_threaded, nested.A_par)
 end
 
 @testitem "Threading contract: block thresholds are per-operator and measured" tags = [
-    :calculus, :Threading, :VCAT, :HCAT, :DCAT,
+    :calculus, :threading, :VCAT, :HCAT, :DCAT,
 ] begin
     using AbstractOperators
     const AO = AbstractOperators
@@ -723,3 +800,192 @@ end
         @test AO.is_block_threaded(DCAT([fd(1 << 18) for _ in 1:2]...)) == false
     end
 end
+
+@testitem "Threading contract: block loops give shared blocks their own scratch" tags = [
+    :calculus, :threading, :DCAT, :VCAT, :HCAT, :dsp, :Conv,
+] setup = [TestUtils] begin
+    using AbstractOperators, DSPOperators, LinearAlgebra, Random
+    using RecursiveArrayTools: ArrayPartition
+    const AO = AbstractOperators
+    Random.seed!(0)
+
+    # `Conv` keeps scratch buffers and is not thread-safe; one instance fills several
+    # blocks, directly or wrapped in `Scale`.
+    n = 1 << 17
+    C = Conv(Float64, (n,), randn(16))
+    @test is_thread_safe(C) == false
+    x = ArrayPartition([randn(n) for _ in 1:4]...)
+    xv = randn(n)
+    y = randn(size(C, 1)...)
+
+    D = DCAT(C, C, C, C)
+    Dn = DCAT(C, 2 * C, 3 * C, 4 * C)
+    V = VCAT(C, C, C, C)
+    H = HCAT(C, C, C, C)
+    if Threads.nthreads() > 1
+        @test all(AO.is_block_threaded, (D, Dn, V, H))
+    end
+    # A threaded block loop works on its own copies of the non-thread-safe blocks.
+    if AO.is_block_threaded(D)
+        @test allunique(map(objectid, D.A))
+        @test allunique(map(objectid, V.A_par))
+        @test allunique(map(objectid, H.A_par))
+    end
+
+    if AO.is_block_threaded(Dn)
+        @test allunique(map(b -> objectid(b isa Scale ? b.A : b), Dn.A))
+    end
+
+    Cx = [C * x.x[i] for i in 1:4]
+    for _ in 1:5
+        @test D * x == ArrayPartition(Cx...)
+        @test Dn * x ≈ ArrayPartition([i .* Cx[i] for i in 1:4]...)
+        @test all(==(C * xv), (V * xv).x)
+        @test all(==(C' * y), (H' * y).x)
+    end
+end
+
+@testitem "Threading contract: block loops keep the caller's unshared blocks" tags = [
+    :calculus, :threading, :DCAT, :VCAT, :HCAT, :LBFGS,
+] setup = [TestUtils] begin
+    using AbstractOperators, LinearAlgebra, Random
+    using AbstractOperators: update!
+    using RecursiveArrayTools: ArrayPartition
+    const AO = AbstractOperators
+    Random.seed!(0)
+
+    # `LBFGS` is not thread-safe and holds state the caller updates.
+    n = 1 << 16
+    Ls = [LBFGS(zeros(n), 3) for _ in 1:4]
+    @test is_thread_safe(Ls[1]) == false
+    D = DCAT(Ls...)
+    V = VCAT(Ls...)
+    H = HCAT(Ls...)
+    if Threads.nthreads() > 1
+        @test AO.is_block_threaded(D)
+    end
+    AO.is_block_threaded(D) && @test all(i -> D.A[i] === Ls[i], 1:4)
+    AO.is_block_threaded(V) && @test all(i -> V.A_par[i] === Ls[i], 1:4)
+    AO.is_block_threaded(H) && @test all(i -> H.A_par[i] === Ls[i], 1:4)
+
+    # `g = 2x` keeps the curvature `s'y` positive, so `update!` really stores a pair.
+    x, x_old, g_old = randn(n), zeros(n), zeros(n)
+    update!(Ls[1], x, x_old, 2 .* x, g_old)
+    xs = ArrayPartition([randn(n) for _ in 1:4]...)
+    # `≈`, not `==`: inside the block loop BLAS runs single-threaded, so the LBFGS dot
+    # products may round differently from the direct call. The point is that the update
+    # reached the loop's block, which a stale copy (still the identity map) would miss.
+    @test (D * xs).x[1] ≈ Ls[1] * xs.x[1]
+    @test (V * xs.x[1]).x[1] ≈ Ls[1] * xs.x[1]
+    @test (H' * xs.x[1]).x[1] ≈ Ls[1]' * xs.x[1]
+    @test !(Ls[1] * xs.x[1] ≈ xs.x[1])
+end
+
+@testitem "Threading contract: block loops thread only when every block is on the CPU" tags = [
+    :calculus, :threading, :VCAT,
+] setup = [TestUtils] begin
+    using AbstractOperators, JLArrays
+    const AO = AbstractOperators
+
+    n = 1 << 17
+    cpu = DiagOp(randn(n))
+    dev = DiagOp(JLArray(randn(n)))
+    # Whatever position the device block takes, the host must not launch its `mul!` from
+    # several tasks at once.
+    @test AO.is_block_threaded(VCAT(cpu, dev, dev, dev)) == false
+    @test AO.is_block_threaded(VCAT(dev, cpu, cpu, cpu)) == false
+    @test AO.is_block_threaded(VCAT(cpu, cpu, cpu, cpu)) == (Threads.nthreads() > 1)
+end
+
+@testitem "Threading contract: block operators keep the block-loop flag when rebuilt" tags = [
+    :calculus, :threading, :DCAT, :VCAT, :HCAT, :fftw, :DFT,
+] setup = [TestUtils] begin
+    using AbstractOperators, FFTWOperators, Random
+    using RecursiveArrayTools: ArrayPartition
+    const AO = AbstractOperators
+    Random.seed!(0)
+
+    # `threaded = true` on a copy is a permission. Two blocks are too few for the DCAT
+    # block loop, so the threading has to stay inside the blocks.
+    d = DCAT(DFT(ComplexF64, (1 << 16,)), DFT(ComplexF64, (1 << 16,)))
+    @test is_threaded(copy_operator(d; threaded = true)) == is_threaded(d)
+    @test is_threaded(d) == (Threads.nthreads() > 1)
+
+    # A serial block loop stays serial through every operation that rebuilds the operator.
+    n = 1 << 17
+    diags() = [DiagOp(randn(n)) for _ in 1:8]
+    D = copy_operator(DCAT(diags()...); threaded = false)
+    @test AO.is_block_threaded(D) == false
+    @test AO.is_block_threaded(AO.get_normal_op(D)) == false
+    @test AO.is_block_threaded(AO.combine(D, D)) == false
+    S = copy_operator(DCAT([Sigmoid(Float64, (n,), 2.0) for _ in 1:8]...); threaded = false)
+    xs = ArrayPartition([randn(n) for _ in 1:8]...)
+    @test AO.is_block_threaded(Jacobian(S, xs)) == false
+
+    H = copy_operator(HCAT(diags()...); threaded = false)
+    @test AO.is_block_threaded(H) == false
+    @test AO.is_block_threaded(H[1:5]) == false
+    V = copy_operator(VCAT(diags()...); threaded = false)
+    @test AO.is_block_threaded(V) == false
+    @test AO.is_block_threaded(V[1:5]) == false
+
+    sl(i) = DiagOp(randn(n)) * GetIndex((2n,), (isodd(i) ? (1:n) : ((n + 1):(2n))))
+    Vsl = VCAT([sl(i) for i in 1:4]...)
+    @test AO.is_block_threaded(AO.remove_slicing(copy_operator(Vsl; threaded = false))) == false
+    # ...while a threaded one stays threaded.
+    if Threads.nthreads() > 1
+        @test AO.is_block_threaded(Vsl) == true
+        @test AO.is_block_threaded(AO.remove_slicing(Vsl)) == true
+        @test AO.is_block_threaded(AO.get_normal_op(DCAT(diags()...))) == true
+        @test AO.is_block_threaded(HCAT(diags()...)[1:5]) == true
+    end
+end
+
+@testitem "Threading contract: FFTW thread counts are 1 for device storage" tags = [
+    :threading, :fftw, :dsp,
+] setup = [TestUtils] begin
+    using AbstractOperators, FFTWOperators, DSPOperators, JLArrays
+
+    n = 1 << 20
+    dev = JLArray(zeros(ComplexF32, n))
+    host = zeros(ComplexF32, n)
+    @test FFTWOperators._fftw_num_threads(:c2c, nothing, true, dev) == 1
+    @test FFTWOperators._fftw_num_threads(:c2c, 4, true, dev) == 1
+    @test DSPOperators._dsp_fftw_num_threads(nothing, true, n, dev) == 1
+    @test DSPOperators._dsp_fftw_num_threads(4, true, n, dev) == 1
+    # Views of host memory are host storage.
+    @test FFTWOperators._fftw_num_threads(:c2c, nothing, true, view(host, :)) ==
+        FFTWOperators._fftw_num_threads(:c2c, nothing, true, host) ==
+        (Threads.nthreads() > 1 ? Threads.nthreads() : 1)
+    @test FFTWOperators._fftw_num_threads(:c2c, 4, true, host) == 4
+end
+
+@testitem "Threading contract: device MatrixOp/LMatrixOp skip the BLAS scope" tags = [
+    :linearoperator, :threading, :MatrixOp, :LMatrixOp,
+] setup = [TestUtils] begin
+    using AbstractOperators, LinearAlgebra, JLArrays
+    const AO = AbstractOperators
+
+    # The serial (`threaded = false`) CPU path pins BLAS to one thread for the call; a
+    # device path has nothing to pin, so it runs at whatever count is in force.
+    outer = BLAS.get_num_threads()
+    inside(S) = AO._with_blas_threading(() -> BLAS.get_num_threads(), false, S)
+    @test inside(JLArray{Float32, 1}) == outer
+    @test inside(Vector{Float32}) == 1
+    @test AO._with_blas_threading(() -> BLAS.get_num_threads(), true, Vector{Float32}) == outer
+
+    M = MatrixOp(JLArray(randn(Float32, 2, 2)))
+    @test is_threaded(M) == false
+    x = JLArray(randn(Float32, 2))
+    y = similar(x)
+    # Measured inside a function: `@allocated` at testitem top level counts the global
+    # variable boxing too. The JLArray `gemm` allocates by itself; the scope would add more.
+    allocs(y, A, x) = @allocated mul!(y, A, x)
+    allocs(y, M, x), allocs(y, M.A, x)
+    @test allocs(y, M, x) == allocs(y, M.A, x)
+    @test collect(y) ≈ collect(M.A) * collect(x)
+    L = LMatrixOp(JLArray(randn(Float32, 3)), 2)
+    X = JLArray(randn(Float32, 2, 3))
+    @test collect(L * X) ≈ collect(X) * collect(L.b)
+end
+
