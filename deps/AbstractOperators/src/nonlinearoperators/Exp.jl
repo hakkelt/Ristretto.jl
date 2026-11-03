@@ -19,8 +19,8 @@ function Exp(
     ) where {T, N}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Exp, threaded, T, DomainDim, S) ?
-           Exp{T, N, S, FastBroadcast.True()}(DomainDim) :
-           Exp{T, N, S, FastBroadcast.False()}(DomainDim)
+           Exp{T, N, S, FastBroadcast.Threaded()}(DomainDim) :
+           Exp{T, N, S, FastBroadcast.Serial()}(DomainDim)
 end
 
 function Exp(
@@ -37,12 +37,12 @@ function Exp(
     ) where {T}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Exp, threaded, T, size(x), S) ?
-           Exp{T, ndims(x), S, FastBroadcast.True()}(size(x)) :
-           Exp{T, ndims(x), S, FastBroadcast.False()}(size(x))
+           Exp{T, ndims(x), S, FastBroadcast.Threaded()}(size(x)) :
+           Exp{T, ndims(x), S, FastBroadcast.Serial()}(size(x))
 end
 
 # One method per direction, parameterized by `Th`, rather than a `false`/`true` pair:
-# `Th` is `FastBroadcast.True()`/`False()` (see `_fbthread`), so `@.. thread = Th` resolves
+# `Th` is `FastBroadcast.Threaded()`/`Serial()` (see `_fbthread`), so `@.. thread = Th` resolves
 # to the same specialized code either way -- see `Scale`/`DiagOp` for the same pattern.
 function mul!(y::AbstractArray, L::Exp{T, N, S, Th}, x::AbstractArray) where {T, N, S, Th}
     check(y, L, x)

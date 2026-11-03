@@ -790,11 +790,11 @@ end
     using Random
 
     # The parts of an operator that would run threaded, read off its type: a batch loop, a
-    # FastBroadcast kernel (`DiagOp{static(true)}`), and the element-wise operators that carry a
+    # FastBroadcast kernel (`DiagOp{FastBroadcast.Threaded()}`), and the element-wise operators that carry a
     # threaded flag as a type parameter.
     threaded_parts(op) = unique(
         m.match for m in eachmatch(
-                r"\w*MultiThreaded\w*|\w+\{static\(true\)|(SignAlternation|NoOperatorBroadCast)\{\w+, \d+, \d+, true",
+                r"\w*MultiThreaded\w*|\w+\{FastBroadcast\.Threaded\(\)|(SignAlternation|NoOperatorBroadCast)\{\w+, \d+, \d+, true",
                 string(typeof(op)),
             )
     )
@@ -823,6 +823,30 @@ end
         @test isempty(threaded_parts(A))
         x = randn(ComplexF32, size(A, 2))
         @test A * x ≈ get_encoding_operator(acq; threaded = true, fast_planning = true) * x
+    end
+end
+
+@testitem "operator norm of a named encoding operator with threaded = true" tags = [:encoding, :operators] begin
+    using Test
+    using Ristretto
+    using Ristretto: AbstractOperators, get_encoding_operator, CartesianAcquisitionInfo
+    using NamedDims
+    using Random
+
+    # On the host the norm iteration runs on named arrays; FastBroadcast's threaded path
+    # cannot slice a `NamedDimsStyle` broadcast, so the iteration must stay serial there even
+    # when `threaded = true` is asked for. Several calls, because a failing chunked broadcast
+    # used to throw only until Polyester stopped splitting the work.
+    Random.seed!(0)
+    n, ncoils, nechoes = 64, 4, 3
+    mask = rand(Bool, n, n)
+    ksp = NamedDimsArray{(:kxy, :coil, :echo)}(zeros(ComplexF32, count(mask), ncoils, nechoes))
+    smaps = NamedDimsArray{(:x, :y, :coil)}(randn(ComplexF32, n, n, ncoils))
+    acq = CartesianAcquisitionInfo(ksp; is3D = false, image_size = (n, n), subsampling = mask, sensitivity_maps = smaps)
+    A = get_encoding_operator(acq; fast_planning = true)
+    ref = AbstractOperators.estimate_opnorm(Ristretto.unname(A); threaded = false)
+    for _ in 1:3
+        @test AbstractOperators.estimate_opnorm(A; threaded = true) ≈ ref rtol = 1.0e-3
     end
 end
 

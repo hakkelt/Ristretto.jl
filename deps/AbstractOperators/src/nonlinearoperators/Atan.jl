@@ -19,8 +19,8 @@ function Atan(
     ) where {T, N}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Atan, threaded, T, DomainDim, S) ?
-           Atan{T, N, S, FastBroadcast.True()}(DomainDim) :
-           Atan{T, N, S, FastBroadcast.False()}(DomainDim)
+           Atan{T, N, S, FastBroadcast.Threaded()}(DomainDim) :
+           Atan{T, N, S, FastBroadcast.Serial()}(DomainDim)
 end
 
 function Atan(
@@ -37,12 +37,12 @@ function Atan(
     ) where {T}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Atan, threaded, T, size(x), S) ?
-           Atan{T, ndims(x), S, FastBroadcast.True()}(size(x)) :
-           Atan{T, ndims(x), S, FastBroadcast.False()}(size(x))
+           Atan{T, ndims(x), S, FastBroadcast.Threaded()}(size(x)) :
+           Atan{T, ndims(x), S, FastBroadcast.Serial()}(size(x))
 end
 
 # One method per direction, parameterized by `Th`, rather than a `false`/`true` pair:
-# `Th` is `FastBroadcast.True()`/`False()` (see `_fbthread`), so `@.. thread = Th` resolves
+# `Th` is `FastBroadcast.Threaded()`/`Serial()` (see `_fbthread`), so `@.. thread = Th` resolves
 # to the same specialized code either way -- see `Scale`/`DiagOp` for the same pattern.
 function mul!(y::AbstractArray, L::Atan{T, N, S, Th}, x::AbstractArray) where {T, N, S, Th}
     check(y, L, x)
@@ -54,8 +54,10 @@ function mul!(
     ) where {T, N, S, Th}
     check(y, J, b)
     L = J.A
-    return @.. thread = Th y = conj(1.0 / (1.0 + L.x^2)) * b
+    return @.. thread = Th y = _atan_jac_adj(L.x, b)
 end
+# A function rather than a literal `^2` in the broadcast; see `_tanh_jac_adj`.
+@inline _atan_jac_adj(x, b) = conj(1.0 / (1.0 + x * x)) * b
 
 fun_name(L::Atan) = "atan"
 

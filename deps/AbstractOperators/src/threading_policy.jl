@@ -177,6 +177,15 @@ threading a device array is much higher than the cost of missing a thread-level 
 _is_cpu_storage(::Type{<:AbstractArray}) = false
 _is_cpu_storage(::Type{<:Array}) = true
 
+"""
+	_is_cpu_array(x::AbstractArray) -> Bool
+
+[`_is_cpu_storage`](@ref) for an array value, looking through wrappers such as views and
+reshapes to the array that owns the memory.
+"""
+_is_cpu_array(x::AbstractArray) = _is_cpu_storage(typeof(_storage_owner(x)))
+_storage_owner(x::AbstractArray) = (p = parent(x)) === x ? x : _storage_owner(p)
+
 # ─── Per-operator policy ──────────────────────────────────────────────────────
 
 """
@@ -256,14 +265,62 @@ block loop. Requires enough blocks *and* enough work per block; see
 condition alone is not sufficient.
 """
 function default_block_threaded(::Type{Op}, blocks) where {Op <: AbstractOperator}
+    return _default_block_threaded(Op, blocks, nothing)
+end
+
+# The decision for copies of `blocks` moved to `storage_type` (`nothing`: unchanged).
+function _default_block_threaded(::Type{Op}, blocks, storage_type) where {Op <: AbstractOperator}
     Threads.nthreads() > 1 || return false
     length(blocks) >= MIN_BLOCKS_FOR_PARALLEL || return false
-    _is_cpu_storage(_array_wrapper_type(domain_array_type(first(blocks)))) || return false
+    # Blocks may mix storage types, and a device `mul!` must not run from several host
+    # tasks at once.
+    if storage_type === nothing
+        all(b -> _is_cpu_domain(domain_array_type(b)), blocks) || return false
+    else
+        _is_cpu_domain(storage_type) || return false
+    end
     total = sum(b -> _total_elements(size(b, 2)), blocks; init = 0)
     # Mean rather than minimum: with heterogeneous blocks the runtime is set by the total
     # work spread over the loop, and a single small block should not veto the whole thing.
     mean_block = total ÷ length(blocks)
     return mean_block >= block_threading_threshold(Op)
+end
+
+_is_cpu_domain(::Type{S}) where {S <: AbstractArray} = _is_cpu_storage(_array_wrapper_type(S))
+function _is_cpu_domain(::Type{<:ArrayPartition{T, S}}) where {T, S <: Tuple}
+    return all(_is_cpu_domain, fieldtypes(S))
+end
+
+"""
+	_block_loop_operators(blocks) -> Tuple
+
+The forms of `blocks` that a threaded block loop calls: serial, since the loop is the
+parallel layer, and copied when a block shares an operator that is not thread-safe with
+another block (`DCAT(C, C)`, `DCAT(C, 2 * C)`). Other blocks stay the caller's objects, so
+state the caller updates (e.g. `update!` on an `LBFGS`) still reaches them.
+"""
+function _block_loop_operators(blocks::Tuple)
+    nodes = map(b -> _thread_unsafe_nodes!(Base.IdSet{Any}(), b), blocks)
+    counts = IdDict{Any, Int}()
+    for ns in nodes, o in ns
+        counts[o] = get(counts, o, 0) + 1
+    end
+    return map(blocks, nodes) do b, ns
+        if any(o -> counts[o] > 1, ns)
+            copy_operator(b; threaded = false)
+        else
+            adapt_operator(b; threaded = false)
+        end
+    end
+end
+
+# The operators in the tree of `op` that are not thread-safe.
+function _thread_unsafe_nodes!(nodes::Base.IdSet{Any}, op::AbstractOperator)
+    is_thread_safe(op) || push!(nodes, op)
+    for c in _children(op)
+        _thread_unsafe_nodes!(nodes, c)
+    end
+    return nodes
 end
 
 # Multi-domain operators report an ArrayPartition, which the size policy cannot use
@@ -294,9 +351,9 @@ Consequently `is_threaded(copy_operator(L; threaded = true))` is **not** guarant
 `true`; `is_threaded(copy_operator(L; threaded = false))` *is* guaranteed to be `false`,
 which is the direction nesting safety depends on.
 
-Defaults to `false`.
+Defaults to whether any of `_children(L)` is threaded, so `false` for a leaf.
 """
-is_threaded(::AbstractOperator) = false
+is_threaded(L::AbstractOperator) = _is_threaded_from_children(L)
 
 """
 	_resolve_threaded(policy, threaded::Bool) -> Bool
@@ -335,15 +392,16 @@ deliberately no override that makes `is_threaded` disagree with the executed pat
 end
 
 """
-	_children(L::AbstractOperator) -> Tuple
+	_children(L::AbstractOperator)
 
-The wrapped operators of a forwarding (calculus) operator, or `()` for a leaf.
+The wrapped operators of a forwarding (calculus) operator, or `()` for a leaf. The result
+is only iterated, so any iterable works (a tuple, an array, or a flattened array of arrays).
 
-Forwarders get `is_threaded` for free from this, which matters for more than tidiness:
-`adapt_operator(op; threaded = false)` decides whether to copy by asking `is_threaded`, so
-a forwarder that inherited the `false` default would report "constraint already satisfied"
-and hand back an operator whose children are still threaded. That is a silent nesting bug,
-not a missing optimization.
+The default `is_threaded` and `supports_threading` are derived from it, which matters for
+more than tidiness: `adapt_operator(op; threaded = false)` decides whether to copy by
+asking `is_threaded`, so a forwarder whose children are missing here would report
+"constraint already satisfied" and hand back an operator whose children are still
+threaded. That is a silent nesting bug, not a missing optimization.
 """
 _children(::AbstractOperator) = ()
 
@@ -364,10 +422,10 @@ while `threaded = false` is a **demand** ("do not spawn threads", required for n
 safety). Without the distinction, passing `threaded = true` down a `Compose` to a
 memory-bound `Eye` would copy the `Eye` forever without ever satisfying the constraint.
 
-Defaults to `false`; leaf operators that gained a `Th` parameter override it, forwarders
-derive it from their children.
+Defaults to whether any of `_children(L)` supports threading, so `false` for a leaf;
+leaf operators with a threaded path override it.
 """
-supports_threading(::AbstractOperator) = false
+supports_threading(L::AbstractOperator) = _supports_threading_from_children(L)
 _supports_threading_from_children(L::AbstractOperator) = any(supports_threading, _children(L))
 
 # ─── FastBroadcast bridge ─────────────────────────────────────────────────────
@@ -376,10 +434,10 @@ _supports_threading_from_children(L::AbstractOperator) = any(supports_threading,
 # These convert between that encoding and the plain `Bool` used everywhere else;
 # `_fbbool` also accepts a `Bool`, so code generic over both encodings can call it.
 
-@inline _fbthread(b::Bool) = b ? FastBroadcast.True() : FastBroadcast.False()
+@inline _fbthread(b::Bool) = b ? FastBroadcast.Threaded() : FastBroadcast.Serial()
 
-@inline _fbbool(::FastBroadcast.True) = true
-@inline _fbbool(::FastBroadcast.False) = false
+@inline _fbbool(::FastBroadcast.Threaded) = true
+@inline _fbbool(::FastBroadcast.Serial) = false
 @inline _fbbool(b::Bool) = b
 
 # ─── BLAS bridge ───────────────────────────────────────────────────────────────
@@ -411,10 +469,12 @@ _supports_threading_from_children(L::AbstractOperator) = any(supports_threading,
 # callers is exactly the interleaving bug NestedThreading exists to prevent.
 
 """
-	_with_blas_threading(f, threaded::Bool)
+	_with_blas_threading(f, threaded::Bool, ::Type{S})
 
 Run `f()` with BLAS restricted to a single thread when `threaded` is `false`, or with BLAS
-left at whatever budget is in force when it is `true`.
+left at whatever budget is in force when it is `true`. For non-CPU storage `S` it runs
+`f()` directly: the scope restricts nothing a device `gemm` uses and would only add its
+lock to every call (5.4 us against 0.06 us for a 2x2 `JLArray` `MatrixOp`).
 
 The permitted branch deliberately opens **no** scope. Any outer `NestedThreading`
 restriction is process-global and already applied by the time it is reached, so re-asserting
@@ -445,7 +505,9 @@ full-throttle scope does that a plain call does not.
     themselves; setting `OPENBLAS_NUM_THREADS` also works, but note it makes LinearAlgebra
     skip its default entirely.
 """
-_with_blas_threading(f::F, threaded::Bool) where {F} = threaded ? f() : with_restricted_threads(f)
+function _with_blas_threading(f::F, threaded::Bool, ::Type{S}) where {F, S <: AbstractArray}
+    return threaded || !_is_cpu_storage(S) ? f() : with_restricted_threads(f)
+end
 
 """
     BLAS3_THREAD_WORK
@@ -470,13 +532,16 @@ all, so small `gemv`s pay nothing.
 const BLAS3_THREAD_WORK = Ref(2^25)
 
 """
-    _with_blas_threading(f, threaded::Bool, work::Integer)
+    _with_blas_threading(f, threaded::Bool, ::Type{S}, work::Integer)
 
-As `_with_blas_threading(f, threaded)`, and additionally run `f()` under a BLAS grant when
+As `_with_blas_threading(f, threaded, S)`, and additionally run `f()` under a BLAS grant when
 `threaded` and `work` reaches [`BLAS3_THREAD_WORK`](@ref). `work` is the call's
 multiply-add count, from [`_matmul_work`](@ref).
 """
-function _with_blas_threading(f::F, threaded::Bool, work::Integer) where {F}
+function _with_blas_threading(
+        f::F, threaded::Bool, ::Type{S}, work::Integer
+    ) where {F, S <: AbstractArray}
+    _is_cpu_storage(S) || return f()
     threaded || return with_restricted_threads(f)
     work < BLAS3_THREAD_WORK[] && return f()
     return with_thread_grant(f, typemax(Int); only = (:blas, :mkl))
@@ -499,8 +564,8 @@ end
 Resolve a BLAS-backed operator's `threaded` keyword: `false` vetoes, `true` permits, and the
 policy's only say is that BLAS threading is meaningless for non-CPU storage, where the
 `gemm` runs on the device instead. A GPU-backed operator therefore reports
-`is_threaded == false` and runs its `mul!` inside the restricted scope, which costs it
-nothing it would otherwise have used.
+`is_threaded == false`, and [`_with_blas_threading`](@ref) skips the restricted scope for
+it, since that scope restricts nothing a device `gemm` uses.
 
 Deliberately *not* routed through [`default_threaded`](@ref): see the section comment above
 for why the Julia thread count and an element-count threshold are both the wrong questions

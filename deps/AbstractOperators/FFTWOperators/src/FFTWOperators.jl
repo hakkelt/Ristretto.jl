@@ -38,6 +38,7 @@ import ..AbstractOperators:
     is_threaded,
     supports_threading,
     _resolve_threaded,
+    _is_cpu_array,
     _elementwise_threaded,
     threading_threshold,
     _copy_operator_impl
@@ -79,14 +80,17 @@ trusting FFTW's planner to sort it out.
 fftw_threading_threshold(kind::Symbol) = kind === :r2c ? 2^18 : 2^16
 
 """
-	_fftw_num_threads(kind, num_threads, threaded, n) -> Int
+	_fftw_num_threads(kind, num_threads, threaded, x) -> Int
 
-Resolve the plan-time FFTW thread count.
+Resolve the plan-time FFTW thread count for a transform of `x`.
 
 `num_threads` is FFTW's own vocabulary and is an explicit **command**: given, it wins
 outright, which keeps an escape hatch for callers who know what they want. `threaded` is the
 package-wide keyword and follows the package-wide rule -- `false` vetoes, `true`/`nothing`
 enable subject to the policy above. See `AbstractOperators._resolve_threaded`.
+
+A device array always gets 1, whatever was asked: its plan comes from the GPU FFT library,
+which has no CPU thread count, so `is_threaded` must report `false`.
 
 Past the threshold the whole pool is used. An intermediate count was measured and rejected
 (AMD EPYC 7352, 8 threads, `FFTW.ESTIMATE`, `ComplexF64` in-place c2c, min of 300 reps,
@@ -97,7 +101,7 @@ bought in a single c2c cell (64x64 x4 at 2^14: 25.52 us at four threads, 37.07 a
 The full count is the best or within 15 % of the best on every other cell measured, and never
 slower than one thread anywhere above the threshold.
 
-What `n` genuinely cannot express is **nesting**: an 8-thread plan applied from an
+What the transform size genuinely cannot express is **nesting**: an 8-thread plan applied from an
 already-saturated outer loop oversubscribes. Measured at `nthreads()` concurrent tasks each
 applying its own plan, an 8-thread plan is 7-32 % slower than a 1-thread one (64^2x8: 213.22
 vs 162.50 us; 320^2x8: 11896.72 vs 11116.78), while at half that concurrency it is still
@@ -105,8 +109,10 @@ vs 162.50 us; 320^2x8: 11896.72 vs 11116.78), while at half that concurrency it 
 belongs to the caller: pass `threaded = false` or an explicit `num_threads` when planning an
 operator that will be applied from inside a threaded region.
 """
-function _fftw_num_threads(kind::Symbol, num_threads, threaded::Bool, n::Int)
+function _fftw_num_threads(kind::Symbol, num_threads, threaded::Bool, x::AbstractArray)
+    _is_cpu_array(x) || return 1
     num_threads !== nothing && return Int(num_threads)
+    n = length(x)
     use = _resolve_threaded(threaded) do
         Threads.nthreads() > 1 && n >= fftw_threading_threshold(kind)
     end

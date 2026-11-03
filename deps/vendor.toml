@@ -419,14 +419,6 @@ branch = "perf/combinators-accumulate"
 parent = "feat/accumulating-mul"
 pr = "hakkelt/AbstractOperators.jl#43"
 
-# The test environment accepts JET 0.12, the series for Julia 1.13; 0.11 reports runtime dispatch
-# on every `op.field .= x`. The compat line is upstream's, so no branch owns it. Test-only: the
-# vendored copy does not change.
-[[AbstractOperators.stack]]
-branch = "test/jet-0.12"
-parent = "unified-threading"
-pr = "hakkelt/AbstractOperators.jl#44"
-
 # Docs only (pruned from the vendored copy): the fork deploys its `integration` docs to its own
 # GitHub Pages, which Ristretto's documentation links to.
 [[AbstractOperators.stack]]
@@ -441,6 +433,23 @@ pr = "hakkelt/AbstractOperators.jl#55"
 branch = "fix/dft-normal-op-eltype"
 parent = "unified-threading"
 pr = "hakkelt/AbstractOperators.jl#56"
+
+# FastBroadcast 1: `Threaded()`/`Serial()` replace 0.3's `True()`/`False()` thread flags, so
+# Ristretto can share an environment with packages that need FastBroadcast 1 (Shearlets.jl,
+# Surfacelets.jl). The flags all come from the frozen `unified-threading`. Stacked on
+# `perf/dft-threaded-scaling`, which gives FFTWOperators its FastBroadcast dependency, so that
+# FFTWOperators' compat moves to 1 together with the rest.
+[[AbstractOperators.stack]]
+branch = "chore/fastbroadcast-1"
+parent = "perf/dft-threaded-scaling"
+pr = "hakkelt/AbstractOperators.jl#58"
+
+# Contourlets.jl master: a `threaded` keyword replaces the ThreadingPolicy types the released
+# 0.1.1 used, so ContourletOperators builds against the master branch (and its GPU paths).
+[[AbstractOperators.stack]]
+branch = "chore/contourlets-master"
+parent = "add-contourlet-operators"
+pr = "hakkelt/AbstractOperators.jl#59"
 
 [ProximalOperators]
 fork = "https://github.com/hakkelt/ProximalOperators.jl.git"
