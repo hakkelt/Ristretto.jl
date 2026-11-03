@@ -135,11 +135,14 @@ opnorm_bound(L::NamedDimsOp) = opnorm_bound(L.L)
 LinearAlgebra.opnorm(L::NamedDimsOp) = LinearAlgebra.opnorm(L.L)
 # On a device the norm iteration runs on the unnamed operator: names add nothing to a norm, and a
 # named start vector would be drawn element by element, which a device array does not allow. On
-# the host it stays on named arrays, whose broadcasts and inner products are plain serial loops.
-# Unnamed, they are threaded `@..` broadcasts and BLAS calls, and the Polyester workers they wake
-# keep spinning into the solve that follows and slow it down.
+# the host it stays on named arrays with `threaded = false`, so its broadcasts and inner products
+# are plain serial loops. Threaded, they are `@..` broadcasts and BLAS calls whose Polyester
+# workers keep spinning into the solve that follows and slow it down; and FastBroadcast's threaded
+# path slices only the destination of a `NamedDimsStyle` broadcast, not its arguments, so it
+# throws a `DimensionMismatch` on named arrays.
 function AbstractOperators._powerit(L::NamedDimsOp; kwargs...)
-    domain_array_type(L.L) <: Array && return @invoke AbstractOperators._powerit(L::AbstractOperator; kwargs...)
+    domain_array_type(L.L) <: Array &&
+        return @invoke AbstractOperators._powerit(L::AbstractOperator; kwargs..., threaded = false)
     return AbstractOperators._powerit(L.L; kwargs...)
 end
 
