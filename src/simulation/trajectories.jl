@@ -486,7 +486,7 @@ function _SparklingMesh(::Val{D}, G, extent, cutoff, decay; threaded::Bool = tru
     diff = similar(target)
     diff_hat = similar(kernel_hat)
     # `ESTIMATE` picks the same plan in every run, so the result does not depend on timings.
-    num_threads = FFTWOperators._fftw_num_threads(:r2c, nothing, threaded, length(diff))
+    num_threads = FFTWOperators._fftw_num_threads(:r2c, nothing, threaded, diff)
     forward = FFTW.plan_rfft(diff; flags = FFTW.ESTIMATE, num_threads)
     backward = FFTW.plan_irfft(diff_hat, P; flags = FFTW.ESTIMATE, num_threads)
     return _SparklingMesh(G, h, target, kernel_hat, diff, diff_hat, similar(target), forward, backward)
