@@ -143,13 +143,13 @@ codomain_type(::DiagOp{<:Any, <:Any, C}) where {C} = C
 is_thread_safe(::DiagOp) = true
 
 function _copy_operator_impl(op::DiagOp{B}; storage_type = nothing, threaded = nothing) where {B}
-    new_threaded = threaded === nothing ? (B == FastBroadcast.Threaded()) : threaded
+    new_threaded = threaded === nothing ? _fbbool(B) : threaded
     # `d` is the operator's actual diagonal data, not a scratch buffer: a storage-type
     # switch must carry its values over, so this goes through `copyto!` rather than
     # `_convert_buffer` (which allocates uninitialized memory for buffers that `mul!`
     # overwrites on the next call anyway).
     new_d = _copy_diag(op.d, storage_type)
-    new_at = storage_type === nothing ? _array_wrapper(op.d) : storage_type
+    new_at = storage_type === nothing ? _array_wrapper_type(domain_array_type(op)) : storage_type
     return DiagOp(domain_type(op), op.dim_in, new_d; threaded = new_threaded, array_type = new_at)
 end
 
