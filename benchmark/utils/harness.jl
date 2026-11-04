@@ -100,6 +100,8 @@ function node_class()
             end
         end
     catch
+        # Windows has no /proc; Sys.cpu_info gives the same model string from the registry
+        cpu = strip(Sys.cpu_info()[1].model)
     end
     class = string(cpu, " / ", get(ENV, "SLURM_JOB_PARTITION", "login"))
     return get(ENV, "RISTRETTO_BENCH_PLACEMENT", "isolated") == "shared" ? class * " / shared domain" : class

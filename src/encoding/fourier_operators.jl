@@ -297,7 +297,7 @@ end
 Ristretto's own default NFFT gridding operating point, applied whenever `m`/`sigma`/`precompute` are
 left at `nothing` on `get_fourier_operator`/`get_encoding_operator`. Measured on a 128×128 radial
 phantom (`GeometricMedicalPhantoms`'s Shepp-Logan, 256 samples × 128 spokes), single thread,
-interleaved runs (`benchmark/comparison`-style methodology; a single measurement on this shared
+interleaved runs (the comparison suite's methodology; a single measurement on this shared
 node can swing 30-60%, so configs were timed round-robin rather than one after another):
 
 | m | σ | precompute | forward (min/median ms) | adjoint (min/median ms) | forward rel. error |

@@ -1,7 +1,7 @@
 # Ristretto on two full-size scanner datasets, one Cartesian and one non-Cartesian, at a given host thread
 # count or on a CUDA device:
 #
-#   julia --project=benchmark/comparison -t N benchmark/large_datasets/run.jl [options]
+#   julia --project=benchmark -t N benchmark/large_datasets/run.jl [options]
 #
 # Options:
 #   --device=cuda          reconstruct on the first CUDA device (host data in, host image out)
@@ -24,7 +24,7 @@
 # spokes, and the reference is a 30-iteration CG-SENSE from all 288 spokes. The breast
 # series is DCE, so its reference averages the contrast change.
 #
-# Every method runs at the fixed effort of the comparison suite (`OUTER_ITERATIONS`, `CG_ITERATIONS`,
+# Every method runs at the fixed effort of the cross-toolkit comparison suite (`OUTER_ITERATIONS`, `CG_ITERATIONS`,
 # `PDHG_ITERATIONS`, no early stop) and λ of the case's synthetic analogue. Each row is compiled on
 # the analogue first, then timed once. Results go to `results/<backend>.json` next to this script.
 

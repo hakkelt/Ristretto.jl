@@ -3,7 +3,6 @@ using Literate
 using Base64: base64decode
 using Pkg: Pkg
 using SHA: SHA
-include(joinpath(@__DIR__, "benchmark_tables.jl"))  # BenchmarkTables, for related_packages.md
 using Ristretto
 using Ristretto.ProximalAlgorithms
 using Ristretto.ProximalOperators

@@ -9,7 +9,7 @@ an `ArgumentError`):
 
 - `snr_db`: target signal-to-noise ratio in dB, defined relative to the RMS of the data,
   `σ = rms(data) * 10^(-snr_db / 20)`. This is the convention already used by the
-  `add_noise` helper in `benchmark/comparison/scripts/_toolkits.jl` and matches how SNR is
+  `add_noise` helper of the comparison suite (RistrettoBenchmarking) and matches how SNR is
   reported for the pseudo-replica method (Robson et al., MRM 60:895-907, 2008; see
   [`pseudo_replica`](@ref)).
 - `noise_std`: the absolute standard deviation `σ` of the complex noise, split evenly between

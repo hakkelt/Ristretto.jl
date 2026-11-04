@@ -26,7 +26,7 @@ for a in "$@"; do
     esac
 done
 IFS=, read -ra THREAD_LIST <<<"$THREADS"
-PROJECT_DIR=benchmark/comparison
+PROJECT_DIR=benchmark
 LOG_DIR="$BENCH_RESULTS/slurm/large_${SLURM_JOB_ID:-local}"
 mkdir -p "$LOG_DIR"
 

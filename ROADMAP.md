@@ -101,7 +101,7 @@ on the fork branch that owns the code.
 
 ### 4. README
 **Status:** done (`p2`, 2026-10-10): installation, three high-level examples, a
-low-level one, a benchmark table from `docs/benchmark_tables.jl`, badges; `test/test_readme.jl`
+low-level one, a benchmark table (replaced by a link to RistrettoBenchmarking on 2026-11-03), badges; `test/test_readme.jl`
 runs its code. **Tier:** P2. **After:** 5.
 
 Short and focused: what the package is, how to install Julia (one or two lines: juliaup), how to
@@ -215,19 +215,6 @@ the list.
   converts the other way: with the default flavour, `Literate.notebook` turns ```` ```math ````
   blocks and ``` ``x`` ``` into `$$…$$` and `$x$`. Writing the scripts in Documenter syntax would
   remove the post-processing step, at the cost of rewriting the math in every tutorial.
-- **Startup suite: BART in the common loop.** `benchmark/startup/run.jl` special-cases BART
-  (`tk.lang === :bart`) in five places. Its first and warm solves are both the end-to-end time,
-  and its NRMSE is read from the last run's output outside the loop. A small wrapper script that
-  runs `pics` and prints the same `RESULT` line as the other toolkits (with `pics`'s Total Time)
-  would remove the branches. The setup time every child prints in that line is never recorded;
-  either record it or drop it from the protocol.
-- **Startup suite: shared case and solver definitions.** `benchmark/startup/solve_ristretto.jl`
-  rewrites the acquisition, the FISTA/CGNR choice and the ℓ₁-wavelet regularizer instead of using
-  `ristretto_acquisition`, `ristretto_algorithm` and `ristretto_regularizer` (`benchmark/utils/`).
-  Those helpers take a `BenchCase` and bring the whole harness with them, which the child process
-  deliberately avoids loading. `prepare.jl` likewise parses the λ file itself instead of using
-  `_lambda_from` (`comparison/scripts/_methods.jl`). Possible fix: move the toolkit-independent
-  parts into a file that loads only Ristretto, or at least test that the two definitions agree.
 
 ## User-facing features
 
@@ -308,7 +295,10 @@ of BART, SigPy, Gadgetron, MRIReco.jl, MIRT.jl, MRpro and Ristretto re-verified 
 project's source and docs (October 2026), benchmark tables generated at build time from the
 committed snapshots by `docs/benchmark_tables.jl` (time to accuracy, matched effort, thread
 scaling, GPU, hardware), the Julia ecosystem and the pipelines. Snapshot schema 3 records
-dates, CPU, GPU, Julia and BLAS; the harness now stores the CPU model. **Tier:** P2. **After:** 31.
+dates, CPU, GPU, Julia and BLAS; the harness now stores the CPU model. On 2026-11-03 the feature
+matrix, the benchmark tables and the comparison suite moved to
+[RistrettoBenchmarking](https://github.com/hakkelt/RistrettoBenchmarking); the page keeps a short
+description of each toolbox and a link there. **Tier:** P2. **After:** 31.
 
 A documentation page "Related packages" with a feature comparison against other toolboxes (from
 the literature review, item 31, re-verified), the Julia MRI ecosystem (KomaMRI, MRIReco,

@@ -10,10 +10,10 @@
 # and filters/sorts the rows in plain Julia -- no database involved at all, so there is nothing to
 # keep in sync with the flat files, which stay the only source of truth.
 #
-# Two stores use this layout: the comparison suite's (`benchmark/comparison/results/runs/`, rows of
-# `category`/`method`/`framework`) and the Ristretto harness's (`benchmark/results/runs/`, rows keyed by
-# catalog case and method, with the git provenance of the checkout measured). Every function takes
-# the store's `root`; the default is the comparison suite's, which is what its scripts expect.
+# Two stores use this layout: the Ristretto harness's (`benchmark/results/runs/`, rows keyed by
+# catalog case and method, with the git provenance of the checkout measured) and the cross-toolkit
+# comparison suite's in RistrettoBenchmarking (rows of `category`/`method`/`framework`). Every
+# function takes the store's `root`; the default is the harness's.
 module ResultsStore
 
 using JSON, Dates
@@ -26,9 +26,8 @@ not the catalog's cases; 2: rows measured on catalog cases.
 """
 const SCHEMA_VERSION = 2
 
-const COMPARISON_RESULTS_DIR = normpath(joinpath(@__DIR__, "..", "comparison", "results"))
 const HARNESS_RESULTS_DIR = normpath(joinpath(@__DIR__, "..", "results"))
-const RESULTS_DIR = COMPARISON_RESULTS_DIR
+const RESULTS_DIR = HARNESS_RESULTS_DIR
 const RUNS_DIR = joinpath(RESULTS_DIR, "runs")
 runs_dir(root::AbstractString) = joinpath(root, "runs")
 

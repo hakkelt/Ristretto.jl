@@ -4,11 +4,8 @@
 #
 #   benchmark/slurm/submit.sh [--production] [--time=HH:MM:SS] [--array=SPEC] <script> [script args...]
 #
-#   benchmark/slurm/submit.sh matrix.sh --suite=harness --matrix-threads=1,8 --cases=shepp_logan_2d
-#   benchmark/slurm/submit.sh --production matrix.sh --suite=comparison
-#   benchmark/slurm/submit.sh calibrate.sh --cases=shepp_logan_2d_8ch_cartesian
-#   benchmark/slurm/submit.sh --array=0-6 calibrate.sh
-#   benchmark/slurm/submit.sh comparison_gpu.sh --sections=cgsense
+#   benchmark/slurm/submit.sh matrix.sh --matrix-threads=1,8 --cases=shepp_logan_2d
+#   benchmark/slurm/submit.sh --production large_datasets.sh --threads=1,4,8
 #
 # The test partition has a one-hour limit, so the script's own `--time` is capped at that there.
 # Production runs occupy a whole node for hours: submit them only when that has been agreed.
