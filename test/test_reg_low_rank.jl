@@ -241,6 +241,17 @@ end
         @test_throws ArgumentError Ristretto.materialize(reg, x; threaded = false)
         reg_wrong_rank = LocallyLowRank(0.1; block_size = (4, 4, 4), time_dim = 3)
         @test_throws ArgumentError Ristretto.materialize(reg_wrong_rank, x; threaded = false)
+        # an Integer block size skips singleton spatial dimensions (single-coil 2D+time image)
+        @test Ristretto._llr_block_size(8, (80, 80, 1)) == (8, 8, 1)
+        @test_throws ArgumentError Ristretto._llr_block_size((8, 8, 8), (80, 80, 1))
+        x1 = randn(ComplexF64, 8, 8, 1, 3)
+        λ = 0.3
+        reg1 = LocallyLowRank(λ; block_size = 4, time_dim = 4)
+        reg2 = LocallyLowRank(λ; block_size = 4, time_dim = 3)
+        x2 = reshape(copy(x1), 8, 8, 3)
+        (y1, f1), (y2, f2) = prox_of(reg1, x1), prox_of(reg2, x2)
+        @test reshape(y1, 8, 8, 3) ≈ y2
+        @test f1 ≈ f2
     end
 
     @testset "scale_regularization" begin

@@ -213,7 +213,8 @@ non-overlapping spatial blocks, and the nuclear norm of the Casorati matrix of e
 
 # Arguments
 - `λ`: Regularization parameter, must be a scalar.
-- `block_size`: Edge length of the blocks. Either an `Integer` (same length in every spatial dimension) or a
+- `block_size`: Edge length of the blocks. Either an `Integer` (same length in every spatial dimension of
+  extent > 1; singleton dimensions, such as the coil axis of a single-coil image, get blocks of 1) or a
   tuple with one entry per spatial dimension (the dimensions before `time_dim`). Typical values are 4-16.
 - `time_dim`: (optional) Dimension holding the frames / contrasts. Can be an `Integer` (1-based index) or a
   `Symbol` (dimension name). If not provided, it will be inferred as the dimension named `:time` if `x` is a
@@ -292,7 +293,10 @@ function bind_dimensions(reg::LocallyLowRank, image_dims)
 end
 
 function _llr_block_size(requested, spatial_size::NTuple{N, Int}) where {N}
-    block_size = requested isa Integer ? ntuple(_ -> Int(requested), Val(N)) : Int.(requested)
+    # The Integer shorthand applies to the real spatial dimensions; a singleton one (a kept coil or slice
+    # axis of extent 1, for example) gets blocks of 1. An explicit tuple is taken as given.
+    block_size = requested isa Integer ?
+        ntuple(d -> spatial_size[d] == 1 ? 1 : Int(requested), Val(N)) : Int.(requested)
     @argcheck length(block_size) == N "block_size must have one entry per spatial dimension ($N), got $(length(block_size))"
     @argcheck all(block_size .<= spatial_size) "block_size $(block_size) exceeds the spatial image size $(spatial_size)"
     return NTuple{N, Int}(block_size)

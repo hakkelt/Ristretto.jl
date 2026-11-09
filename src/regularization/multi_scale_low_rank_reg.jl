@@ -13,8 +13,8 @@ dynamics and large, globally correlated dynamics are penalized by the same term.
   scaling the other. Use a per-scale `λ` to give coarse/fine scales different thresholds directly;
   use `weights` to bias the average toward one scale while keeping every scale's own threshold equal.
 - `block_sizes`: Collection of block edge lengths, one entry per scale. Each entry is either an `Integer`
-  (same edge in every spatial dimension) or a tuple with one entry per spatial dimension. A geometric
-  progression such as `(4, 8, 16)` is the usual choice.
+  (same edge in every spatial dimension of extent > 1, as in [`LocallyLowRank`](@ref)) or a tuple with
+  one entry per spatial dimension. A geometric progression such as `(4, 8, 16)` is the usual choice.
 - `time_dim`: (optional) Dimension holding the frames / contrasts, as for [`LocallyLowRank`](@ref).
 - `weights`: (optional) Convex weights of the scales; defaults to uniform. Must be non-negative and sum to 1.
 - `shift`, `rng`: (optional) Grid-shift policy, as for [`LocallyLowRank`](@ref). Applied to every scale.
