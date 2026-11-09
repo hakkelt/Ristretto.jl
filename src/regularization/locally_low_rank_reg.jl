@@ -298,7 +298,7 @@ function _llr_block_size(requested, spatial_size::NTuple{N, Int}) where {N}
     block_size = requested isa Integer ?
         ntuple(d -> spatial_size[d] == 1 ? 1 : Int(requested), Val(N)) : Int.(requested)
     @argcheck length(block_size) == N "block_size must have one entry per spatial dimension ($N), got $(length(block_size))"
-    @argcheck all(block_size .<= spatial_size) "block_size $(block_size) exceeds the spatial image size $(spatial_size)"
+    @argcheck all(block_size .<= spatial_size) "block_size $(block_size) exceeds the spatial image size $(spatial_size) (every dimension before time_dim, including the :coil axis of an image reconstructed without sensitivity maps)"
     return NTuple{N, Int}(block_size)
 end
 

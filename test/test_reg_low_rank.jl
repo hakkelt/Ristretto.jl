@@ -411,6 +411,15 @@ end
         @test first(prox_of(mslr, x)) ≈ first(prox_of(llr, x))
     end
 
+    @testset "Integer block sizes skip a singleton spatial dimension" begin
+        x1 = randn(ComplexF64, 8, 8, 1, 3)
+        x2 = reshape(copy(x1), 8, 8, 3)
+        (y1, f1) = prox_of(MultiScaleLowRank(0.3; block_sizes = (2, 4), time_dim = 4), x1, 0.7)
+        (y2, f2) = prox_of(MultiScaleLowRank(0.3; block_sizes = (2, 4), time_dim = 3), x2, 0.7)
+        @test reshape(y1, 8, 8, 3) ≈ y2
+        @test f1 ≈ f2
+    end
+
     @testset "the prox is the weighted average of the per-scale proxes" begin
         x = randn(ComplexF64, 8, 8, 5)
         scales = (2, 4, 8)
