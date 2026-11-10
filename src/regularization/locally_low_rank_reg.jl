@@ -201,8 +201,8 @@ _block_stack_perm(::Val{N}) where {N} =
     (ntuple(i -> 2i - 1, Val(N))..., 2N + 1, ntuple(i -> 2i, Val(N))..., 2N + 2)
 
 """
-	LocallyLowRank(λ; block_size, time_dim=nothing, shift=:none, rng=Random.default_rng())
-	LLR(λ; block_size, time_dim=nothing, shift=:none, rng=Random.default_rng())
+	LocallyLowRank(λ; block_size, time_dim=nothing, coil_dim=:coil, shift=:none, rng=Random.default_rng())
+	LLR(λ; block_size, time_dim=nothing, coil_dim=:coil, shift=:none, rng=Random.default_rng())
 
 Create a locally low-rank (LLR) regularization term with parameter `λ`. `LLR` is an exported alias:
 BART, RegularizedLeastSquares.jl and the literature all use the acronym, and the two names are the
@@ -213,12 +213,19 @@ non-overlapping spatial blocks, and the nuclear norm of the Casorati matrix of e
 
 # Arguments
 - `λ`: Regularization parameter, must be a scalar.
-- `block_size`: Edge length of the blocks. Either an `Integer` (same length in every spatial dimension of
-  extent > 1; singleton dimensions, such as the coil axis of a single-coil image, get blocks of 1) or a
-  tuple with one entry per spatial dimension (the dimensions before `time_dim`). Typical values are 4-16.
+- `block_size`: Edge length of the blocks. Either an `Integer` (same length in every spatial dimension) or a
+  tuple with one entry per spatial dimension (the dimensions before `time_dim`, not counting a coil axis).
+  Typical values are 4-16.
 - `time_dim`: (optional) Dimension holding the frames / contrasts. Can be an `Integer` (1-based index) or a
   `Symbol` (dimension name). If not provided, it will be inferred as the dimension named `:time` if `x` is a
   `NamedDimsArray`.
+- `coil_dim`: (optional) Coil axis of an image reconstructed without sensitivity maps, which keeps one image
+  per coil. Can be an `Integer` or a `Symbol`; the default `:coil` finds the dimension named `:coil` and is
+  ignored when there is none. A coil axis before `time_dim` is never split into blocks: every block holds all
+  coils, and their voxels are stacked into one Casorati matrix (see Notes). To get one independent matrix
+  per coil instead, give a `block_size` tuple that includes an entry of `1` for the coil axis; a tuple with an
+  entry for every dimension before `time_dim` is taken as given. A coil axis after `time_dim` is a batch
+  dimension, so every coil is regularized separately.
 - `shift`: (optional) Where the tiling grid starts. `:none` (default) anchors it at the first voxel, `:fixed`
   draws one random origin when the term is materialized, and `:random` draws a new origin before every
   proximal evaluation. See the notes on block artifacts below.
@@ -243,25 +250,32 @@ non-overlapping spatial blocks, and the nuclear norm of the Casorati matrix of e
   objective. `shift=:fixed` keeps a single grid — the objective stays stationary and every algorithm remains
   valid — but merely moves the artifacts instead of removing them; it is mostly useful for averaging over
   independent runs.
+- Coil images without sensitivity maps are the same object weighted by smooth coil sensitivities, so within
+  one block they share their temporal dynamics. Stacking the coils into one Casorati matrix keeps its rank
+  close to that of a single coil while multiplying the number of rows, which separates signal from noise
+  better than thresholding every coil on its own. The singular values grow roughly with the square root of
+  the number of coils, so `λ` tuned on single-coil data acts weaker on many coils.
 - Cost is dominated by one SVD of a `(∏ block_size) × n_frames` matrix per block and iteration, so small
   blocks are cheaper but capture less spatial correlation.
 """
-struct LocallyLowRank{T, B, D, RNG} <: Regularization
+struct LocallyLowRank{T, B, D, C, RNG} <: Regularization
     λ::T
     block_size::B
     time_dim::D
+    coil_dim::C
     shift::Symbol
     rng::RNG
     function LocallyLowRank(
-            λ::T; block_size::B, time_dim::D = nothing,
+            λ::T; block_size::B, time_dim::D = nothing, coil_dim::C = :coil,
             shift::Symbol = :none, rng::RNG = Random.default_rng()
-        ) where {T, B, D, RNG}
+        ) where {T, B, D, C, RNG}
         @argcheck λ isa Real "LocallyLowRank requires a scalar λ"
         @argcheck block_size isa Integer || block_size isa Tuple{Vararg{Integer}} "block_size must be an Integer or a tuple of Integers"
         @argcheck all(block_size .> 0) "block_size must be positive"
         @argcheck shift in (:none, :fixed, :random) "shift must be :none, :fixed or :random, got :$shift"
         _check_dim_spec(time_dim, "time_dim")
-        return new{T, B, D, RNG}(λ, block_size, time_dim, shift, rng)
+        _check_dim_spec(coil_dim, "coil_dim")
+        return new{T, B, D, C, RNG}(λ, block_size, time_dim, coil_dim, shift, rng)
     end
 end
 
@@ -278,7 +292,8 @@ end
 function scale_regularization(reg::LocallyLowRank, factor::Real)
     return LocallyLowRank(
         reg.λ * factor;
-        block_size = reg.block_size, time_dim = reg.time_dim, shift = reg.shift, rng = reg.rng
+        block_size = reg.block_size, time_dim = reg.time_dim, coil_dim = reg.coil_dim,
+        shift = reg.shift, rng = reg.rng
     )
 end
 
@@ -287,18 +302,37 @@ function bind_dimensions(reg::LocallyLowRank, image_dims)
         reg.λ;
         block_size = reg.block_size,
         time_dim = get_time_dim(reg.time_dim, image_dims),
+        coil_dim = _resolve_coil_dim(reg.coil_dim, image_dims),
         shift = reg.shift,
         rng = reg.rng,
     )
 end
 
-function _llr_block_size(requested, spatial_size::NTuple{N, Int}) where {N}
-    # The Integer shorthand applies to the real spatial dimensions; a singleton one (a kept coil or slice
-    # axis of extent 1, for example) gets blocks of 1. An explicit tuple is taken as given.
-    block_size = requested isa Integer ?
-        ntuple(d -> spatial_size[d] == 1 ? 1 : Int(requested), Val(N)) : Int.(requested)
-    @argcheck length(block_size) == N "block_size must have one entry per spatial dimension ($N), got $(length(block_size))"
-    @argcheck all(block_size .<= spatial_size) "block_size $(block_size) exceeds the spatial image size $(spatial_size) (every dimension before time_dim, including the :coil axis of an image reconstructed without sensitivity maps)"
+# Index of the coil axis, or `nothing` when the image has none. Unlike `time_dim` a coil axis is optional,
+# so a name that is not found (or a name on an unnamed image) means "no coil axis" instead of an error.
+function _resolve_coil_dim(coil_dim, image_dims)
+    coil_dim isa Symbol || return coil_dim
+    image_dims[1] isa Symbol || return nothing
+    return findfirst(==(coil_dim), image_dims)
+end
+
+# Block size over the `N` dimensions before the temporal one. A coil axis among them (`coil_dim`) is
+# covered by a single block, so every block stacks all coils into one Casorati matrix; the requested size
+# then names only the other dimensions. A tuple with an entry for every dimension is taken as given (an
+# entry of 1 on the coil axis regularizes each coil on its own). A shifted grid stays exact on the coil
+# axis: the block spans the whole axis, so the circular shift only reorders the rows of each matrix.
+function _llr_block_size(requested, spatial_size::NTuple{N, Int}, coil_dim = nothing) where {N}
+    joint = coil_dim isa Integer && coil_dim <= N
+    if requested isa Integer
+        block_size = ntuple(d -> joint && d == coil_dim ? spatial_size[d] : Int(requested), Val(N))
+    elseif joint && length(requested) == N - 1
+        block_size = ntuple(d -> d == coil_dim ? spatial_size[d] : Int(requested[d < coil_dim ? d : d - 1]), Val(N))
+    else
+        block_size = Int.(requested)
+    end
+    expected = joint ? "$(N - 1) (or $N with the coil axis)" : "$N"
+    @argcheck length(block_size) == N "block_size must have one entry per spatial dimension ($expected), got $(length(requested))"
+    @argcheck all(block_size .<= spatial_size) "block_size $(block_size) exceeds the spatial image size $(spatial_size) (the dimensions before time_dim)"
     return NTuple{N, Int}(block_size)
 end
 
@@ -308,7 +342,7 @@ function materialize(reg::LocallyLowRank, x::Variable{T}; threaded::Bool) where 
     time_dim = get_time_dim(reg.time_dim, dims)
     @argcheck time_dim > 1 "LocallyLowRank needs at least one spatial dimension before the temporal one"
     spatial_size = NTuple{time_dim - 1, Int}(size(x_val)[1:(time_dim - 1)])
-    block_size = _llr_block_size(reg.block_size, spatial_size)
+    block_size = _llr_block_size(reg.block_size, spatial_size, _resolve_coil_dim(reg.coil_dim, dims))
     num_batch = prod(size(x_val)[(time_dim + 1):end]; init = 1)
     f = BlockNuclearNorm(
         real(T)(reg.λ), block_size, spatial_size, size(x_val, time_dim), num_batch, threaded;

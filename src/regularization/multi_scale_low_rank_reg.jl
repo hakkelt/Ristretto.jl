@@ -1,5 +1,5 @@
 """
-	MultiScaleLowRank(λ; block_sizes, time_dim=nothing, weights=nothing, shift=:none, rng=Random.default_rng())
+	MultiScaleLowRank(λ; block_sizes, time_dim=nothing, coil_dim=:coil, weights=nothing, shift=:none, rng=Random.default_rng())
 
 Create a multi-scale locally low-rank regularization term: the same block-wise nuclear norm as
 [`LocallyLowRank`](@ref), but evaluated over several block sizes at once so that both fine, localized
@@ -13,9 +13,11 @@ dynamics and large, globally correlated dynamics are penalized by the same term.
   scaling the other. Use a per-scale `λ` to give coarse/fine scales different thresholds directly;
   use `weights` to bias the average toward one scale while keeping every scale's own threshold equal.
 - `block_sizes`: Collection of block edge lengths, one entry per scale. Each entry is either an `Integer`
-  (same edge in every spatial dimension of extent > 1, as in [`LocallyLowRank`](@ref)) or a tuple with
-  one entry per spatial dimension. A geometric progression such as `(4, 8, 16)` is the usual choice.
+  (same edge in every spatial dimension) or a tuple with one entry per spatial dimension, as for
+  [`LocallyLowRank`](@ref). A geometric progression such as `(4, 8, 16)` is the usual choice.
 - `time_dim`: (optional) Dimension holding the frames / contrasts, as for [`LocallyLowRank`](@ref).
+- `coil_dim`: (optional) Coil axis of an image without sensitivity maps, as for [`LocallyLowRank`](@ref):
+  at every scale, each block holds all coils.
 - `weights`: (optional) Convex weights of the scales; defaults to uniform. Must be non-negative and sum to 1.
 - `shift`, `rng`: (optional) Grid-shift policy, as for [`LocallyLowRank`](@ref). Applied to every scale.
 
@@ -35,17 +37,18 @@ dynamics and large, globally correlated dynamics are penalized by the same term.
 - With a single entry in `block_sizes` and weight 1, the term reduces exactly to [`LocallyLowRank`](@ref).
 - Cost is the sum of the per-scale costs: one SVD per block per scale and iteration.
 """
-struct MultiScaleLowRank{T, B, D, W, RNG} <: Regularization
+struct MultiScaleLowRank{T, B, D, C, W, RNG} <: Regularization
     λ::T
     block_sizes::B
     time_dim::D
+    coil_dim::C
     weights::W
     shift::Symbol
     rng::RNG
     function MultiScaleLowRank(
-            λ::T; block_sizes::B, time_dim::D = nothing, weights::W = nothing,
+            λ::T; block_sizes::B, time_dim::D = nothing, coil_dim::C = :coil, weights::W = nothing,
             shift::Symbol = :none, rng::RNG = Random.default_rng()
-        ) where {T, B, D, W, RNG}
+        ) where {T, B, D, C, W, RNG}
         @argcheck λ isa Real || λ isa AbstractVector{<:Real} "MultiScaleLowRank requires λ to be a scalar or a vector of reals, one per scale"
         @argcheck !isempty(block_sizes) "block_sizes must contain at least one scale"
         if λ isa AbstractVector
@@ -60,7 +63,8 @@ struct MultiScaleLowRank{T, B, D, W, RNG} <: Regularization
         end
         @argcheck shift in (:none, :fixed, :random) "shift must be :none, :fixed or :random, got :$shift"
         _check_dim_spec(time_dim, "time_dim")
-        return new{T, B, D, W, RNG}(λ, block_sizes, time_dim, weights, shift, rng)
+        _check_dim_spec(coil_dim, "coil_dim")
+        return new{T, B, D, C, W, RNG}(λ, block_sizes, time_dim, coil_dim, weights, shift, rng)
     end
 end
 
@@ -76,8 +80,8 @@ end
 function scale_regularization(reg::MultiScaleLowRank, factor::Real)
     return MultiScaleLowRank(
         reg.λ .* factor;
-        block_sizes = reg.block_sizes, time_dim = reg.time_dim, weights = reg.weights,
-        shift = reg.shift, rng = reg.rng
+        block_sizes = reg.block_sizes, time_dim = reg.time_dim, coil_dim = reg.coil_dim,
+        weights = reg.weights, shift = reg.shift, rng = reg.rng
     )
 end
 
@@ -86,6 +90,7 @@ function bind_dimensions(reg::MultiScaleLowRank, image_dims)
         reg.λ;
         block_sizes = reg.block_sizes,
         time_dim = get_time_dim(reg.time_dim, image_dims),
+        coil_dim = _resolve_coil_dim(reg.coil_dim, image_dims),
         weights = reg.weights,
         shift = reg.shift,
         rng = reg.rng,
@@ -112,9 +117,10 @@ function materialize(reg::MultiScaleLowRank, x::Variable{T}; threaded::Bool) whe
     spatial_size = NTuple{time_dim - 1, Int}(size(x_val)[1:(time_dim - 1)])
     num_batch = prod(size(x_val)[(time_dim + 1):end]; init = 1)
     λs = _mslr_lambdas(reg, real(T))
+    coil_dim = _resolve_coil_dim(reg.coil_dim, dims)
     scales = Tuple(
         BlockNuclearNorm(
-            λ_j, _llr_block_size(block_size, spatial_size),
+            λ_j, _llr_block_size(block_size, spatial_size, coil_dim),
             spatial_size, size(x_val, time_dim), num_batch, threaded;
             shift = reg.shift, rng = reg.rng
         ) for (λ_j, block_size) in zip(λs, reg.block_sizes)
