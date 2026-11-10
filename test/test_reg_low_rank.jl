@@ -243,6 +243,50 @@ end
         @test_throws ArgumentError Ristretto.materialize(reg_wrong_rank, x; threaded = false)
     end
 
+    @testset "coil axis is stacked jointly, not split into blocks" begin
+        bs = Ristretto._llr_block_size
+        # the coil axis (3) always gets one full-extent block; the requested size names the other axes
+        @test bs(8, (80, 80, 1), 3) == (8, 8, 1)
+        @test bs(8, (80, 80, 4), 3) == (8, 8, 4)
+        @test bs((8, 4), (80, 80, 4), 3) == (8, 4, 4)
+        @test bs((8, 8, 1), (80, 80, 4), 3) == (8, 8, 1)   # full tuple taken as given: per-coil blocks
+        @test_throws ArgumentError bs(8, (80, 80, 4))      # without a coil axis every dimension is spatial
+        @test_throws ArgumentError bs((8,), (80, 80, 4), 3)
+
+        named = (:x, :y, :coil, :time)
+        reg = bind_dimensions(LocallyLowRank(0.3; block_size = 4), named)
+        @test reg.coil_dim == 3
+        @test bind_dimensions(LocallyLowRank(0.3; block_size = 4), (:x, :y, :time)).coil_dim === nothing
+        x = randn(ComplexF64, 8, 8, 5, 6)
+        # joint: every 4×4 tile stacks its voxels of all 5 coils into one Casorati matrix
+        (y, f) = prox_of(reg, x, 0.7)
+        (y_ref, f_ref) = prox_of(LocallyLowRank(0.3; block_size = (4, 4, 5), time_dim = 4, coil_dim = nothing), x, 0.7)
+        @test y ≈ y_ref
+        @test f ≈ f_ref
+        # batched: an explicit coil entry of 1 regularizes every coil on its own
+        reg_b = bind_dimensions(LocallyLowRank(0.3; block_size = (4, 4, 1)), named)
+        (y_b, f_b) = prox_of(reg_b, x, 0.7)
+        per_coil = [prox_of(LocallyLowRank(0.3; block_size = 4, time_dim = 3), x[:, :, c, :], 0.7) for c in 1:5]
+        @test y_b ≈ permutedims(cat((first(p) for p in per_coil)...; dims = 4), (1, 2, 4, 3))
+        @test f_b ≈ sum(last, per_coil)
+        # single coil: identical to the image without a coil axis
+        x1 = x[:, :, 1:1, :]
+        (y1, f1) = prox_of(reg, x1, 0.7)
+        (y2, f2) = prox_of(LocallyLowRank(0.3; block_size = 4, time_dim = 3), x[:, :, 1, :], 0.7)
+        @test dropdims(y1; dims = 3) ≈ y2
+        @test f1 ≈ f2
+        # a shifted grid wraps the coil block onto itself, which only reorders rows
+        # (same draws as an explicit full-extent coil block)
+        reg_s = bind_dimensions(LocallyLowRank(0.3; block_size = 4, shift = :fixed, rng = Xoshiro(5)), named)
+        ref_s = LocallyLowRank(
+            0.3; block_size = (4, 4, 5), time_dim = 4, coil_dim = nothing, shift = :fixed, rng = Xoshiro(5)
+        )
+        @test first(prox_of(reg_s, x, 0.7)) ≈ first(prox_of(ref_s, x, 0.7))
+        @test calculate(reg, NamedDimsArray{named}(x)) ≈ calculate(
+            LocallyLowRank(0.3; block_size = (4, 4, 5), time_dim = 4, coil_dim = nothing), x
+        )
+    end
+
     @testset "scale_regularization" begin
         reg = Ristretto.scale_regularization(
             LocallyLowRank(0.2; block_size = 4, time_dim = 3), 2.5
@@ -398,6 +442,15 @@ end
         @test Ristretto.calculate(mslr, x; threaded) ≈
             Ristretto.calculate(llr, x; threaded)
         @test first(prox_of(mslr, x)) ≈ first(prox_of(llr, x))
+    end
+
+    @testset "coil axis is stacked jointly at every scale" begin
+        x = randn(ComplexF64, 8, 8, 3, 4)
+        reg = bind_dimensions(MultiScaleLowRank(0.3; block_sizes = (2, 4)), (:x, :y, :coil, :time))
+        ref = MultiScaleLowRank(0.3; block_sizes = ((2, 2, 3), (4, 4, 3)), time_dim = 4, coil_dim = nothing)
+        (y, f), (y_ref, f_ref) = prox_of(reg, x, 0.7), prox_of(ref, x, 0.7)
+        @test y ≈ y_ref
+        @test f ≈ f_ref
     end
 
     @testset "the prox is the weighted average of the per-scale proxes" begin

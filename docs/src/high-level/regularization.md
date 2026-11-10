@@ -331,6 +331,8 @@ nothing # hide
 
 **Practical tip:** `block_size` trades locality against cost and stability: 4-8 voxels for strongly varying dynamics, 12-16 when the temporal signal is smooth over larger regions. Each iteration performs one SVD of a `(∏ block_size) × n_frames` matrix per block. A single fixed block grid can leave visible block boundaries at large λ; pass `shift = :random` to redraw the grid before every proximal step, which averages them out (see below).
 
+**Coil images without sensitivity maps:** the image then keeps a `:coil` axis. `LocallyLowRank` never splits it into blocks: every block stacks the voxels of all coils into one Casorati matrix, since the coil images share their temporal dynamics. `block_size` names only the other spatial dimensions; a tuple with a `1` on the coil axis (for example `(8, 8, 1)`) regularizes every coil on its own instead.
+
 ##### Shifting the Block Grid
 
 `LocallyLowRank` accepts a `shift` argument controlling where the tiling grid starts:
