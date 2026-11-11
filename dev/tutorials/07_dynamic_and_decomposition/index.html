@@ -112,7 +112,7 @@ report(&quot;L1TemporalFourier&quot;, x_tf)
 report(&quot;TemporalTotalVariation&quot;, x_ttv)
 report(&quot;spatial TV + temporal TV&quot;, x_spatiotemporal)</code></pre><pre><code class="nohighlight hljs">direct                     global: 0.2294, lv_blood: 0.0919, rv_blood: 0.0778, heart: 0.2003, lung: 0.7583, bones: 0.2569
 L1TemporalFourier          global: 0.1784, lv_blood: 0.0976, rv_blood: 0.0846, heart: 0.2283, lung: 0.747, bones: 0.2107
-TemporalTotalVariation     global: 0.0878, lv_blood: 0.043, rv_blood: 0.034, heart: 0.0805, lung: 0.3156, bones: 0.1093
+TemporalTotalVariation     global: 0.0878, lv_blood: 0.043, rv_blood: 0.0341, heart: 0.0805, lung: 0.3156, bones: 0.1093
 spatial TV + temporal TV   global: 0.0304, lv_blood: 0.0204, rv_blood: 0.0154, heart: 0.0536, lung: 0.0503, bones: 0.0432
 </code></pre><p>Read the columns, not just the first one. Every method improves the global number, but the ranking inside the <em>lung</em> — low signal, and moving with the diaphragm — is different from the ranking inside the blood pools, and the lung is where each method&#39;s error is largest.</p><pre><code class="language-julia hljs">frame = 8
 side_by_side(
@@ -265,9 +265,9 @@ Build Info:
   Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 4 × AMD EPYC 9V74 80-Core Processor
+  CPU: 4 × AMD EPYC 7763 64-Core Processor
   WORD_SIZE: 64
-  LLVM: libLLVM-20.1.8 (ORCJIT, znver4)
+  LLVM: libLLVM-20.1.8 (ORCJIT, znver3)
   GC: Built with stock GC
 Threads: 4 default, 1 interactive, 4 GC (on 4 virtual cores)
 Environment:
@@ -286,4 +286,4 @@ ProximalOperators       not loaded
 ProximalAlgorithms      not loaded
 OperatorCore            not loaded
 NestedThreading           0.1.4
-</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06_algorithms_and_configuration/">« Algorithms and configuration</a><a class="docs-footer-nextpage" href="../08_non_cartesian/">Non-Cartesian acquisitions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Tuesday 10 November 2026 17:36">Tuesday 10 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06_algorithms_and_configuration/">« Algorithms and configuration</a><a class="docs-footer-nextpage" href="../08_non_cartesian/">Non-Cartesian acquisitions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Wednesday 11 November 2026 17:55">Wednesday 11 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
