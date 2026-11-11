@@ -30,7 +30,9 @@ trajectory without frame axes is shared by every batch element, as before.
 For plain arrays the match is by size alone, so a trajectory whose trailing size also matches the
 axis right after the samples (a coil count equal to the frame count, or data without a coil axis)
 is read as sharing one trajectory over more sample axes, which is what such a trajectory always
-meant. Name the axes to make a per-frame trajectory unambiguous there.
+meant. Name the axes to make a per-frame trajectory unambiguous there. With names, a trailing
+`:time` trajectory axis is always a frame axis, also for single-coil k-space without a coil axis,
+`(:sample, :spoke, :time)`.
 
 `dcf` is forwarded to `NFFTOp` unchanged and follows its contract: `nothing` (the default)
 applies **no** density compensation, so the encoding operator's adjoint is the true adjoint; an
@@ -153,7 +155,14 @@ arrays are `NamedDimsArray`s and by size otherwise.
 function _trajectory_frame_dims_count(traj, ksp)
     isnothing(ksp) && return 0
     if traj isa NamedDimsArray && ksp isa NamedDimsArray
-        return _frame_dims_count(dimnames(traj)[2:end], dimnames(ksp))
+        names = dimnames(traj)[2:end]
+        # A trailing `:time` axis is a frame axis even when the k-space has no coil axis, i.e.
+        # `(:sample, :spoke, :time)`: read as shared, every frame's spokes would merge into one
+        # image. `:time` is never a sample axis of a single frame.
+        if length(names) >= 2 && last(names) === :time && dimnames(ksp) == names
+            return 1
+        end
+        return _frame_dims_count(names, dimnames(ksp))
     end
     return _frame_dims_count(size(traj)[2:end], size(ksp))
 end
