@@ -394,3 +394,44 @@ end
     @test plan !== nothing
     @test plan.variable_batch_dims == (3,)  # slice over :z
 end
+
+@testitem "reconstruct: POGM with components on a device" tags = [:components, :gpu] setup = [GpuEnvSetup, GpuHelpers] begin
+    using Test
+    using Random
+    using NamedDims
+    using Ristretto
+    using Ristretto: ProximalAlgorithms, Silent
+    using Ristretto: ArrayPartition
+
+    # The iterate of a decomposition is an `ArrayPartition` with one block per component. POGM's
+    # stepsize safeguard and restart test reduce over it; a broadcast over the partition indexes
+    # its blocks element by element, which a device array refuses, so both go block by block.
+    @testset "reductions over a partition ($(backend.name))" for backend in all_backends()
+        rng = Xoshiro(3)
+        whole = [randn(rng, ComplexF32, 30) for _ in 1:4]
+        split2(v) = ArrayPartition(to_device(backend, v[1:12]), to_device(backend, v[13:end]))
+        parts = split2.(whole)
+        for gamma in (10.0f0, 1.0f-3)
+            @test ProximalAlgorithms.lipschitz_safeguard(gamma, parts...) ≈
+                ProximalAlgorithms.lipschitz_safeguard(gamma, whole...)
+        end
+        @test ProximalAlgorithms._pogm_restart_sum(parts[1:3]...) ≈
+            ProximalAlgorithms._pogm_restart_sum(whole[1:3]...)
+    end
+
+    nx, ny, nt = 16, 16, 4
+    rng = Xoshiro(4)
+    img_true = NamedDimsArray{(:x, :y, :time)}(rand(rng, ComplexF32, nx, ny, nt))
+    smaps = NamedDimsArray{(:x, :y, :coil)}(rand(rng, ComplexF32, nx, ny, 2))
+    acq = AcquisitionInfo(is3D = false, sensitivity_maps = smaps)
+    ksp = simulate_acquisition(img_true, acq; inverse_crime_check = false, keep_sensitivity_maps = true).kspace_data
+    acq_data = AcquisitionInfo(acq, kspace_data = ksp)
+    method = IterativeReconstruction(
+        Component(:lowrank, LowRank(0.01; time_dim = :time)), Component(:sparse, L1Image(0.01));
+        algorithm = POGM(), maxit = 5,
+    )
+    test_on_devices(acq_data; rtol = 1.0e-3) do a
+        x = reconstruct(a, method; verbosity = Silent())
+        (unname(x), unname(x.lowrank), unname(x.sparse))
+    end
+end

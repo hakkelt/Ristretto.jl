@@ -23,7 +23,8 @@ _mul!(y, ::Nothing, x) = return
 
 # The squared norms the safeguard needs, `‖x - x'‖²`, `‖∇ - ∇'‖²`, `‖∇‖²`, `‖∇'‖²`, `‖x‖²` and
 # `‖x'‖²`, as one reduction over the four arrays: without materializing the differences, without
-# indexing scalars so that it works on device arrays, and with a single synchronization there. The
+# indexing scalars so that it works on device arrays, and with a single synchronization there (an
+# `ArrayPartition` adds the sums of its parts, in the RecursiveArrayTools extension). The
 # sums are at least double precision, as BLAS `nrm2` accumulates: a reduction that is not pairwise
 # rounds a single-precision sum enough to move the quotient across `1/gamma`.
 _safeguard_sums(::Type{R}, x, x_prev, grad, grad_prev) where {R} =
