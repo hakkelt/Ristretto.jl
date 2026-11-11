@@ -214,19 +214,22 @@ function _pogm_backtrack(iter, x, f_x, grad_f_x, gamma, y)
 end
 
 # `real(dot(w - z, z - x)) > 0`, without materializing either difference.
-function _pogm_restart(w::Array, z::Array, x::Array)
+_pogm_restart(w, z, x) = _pogm_restart_sum(w, z, x) > 0
+
+function _pogm_restart_sum(w::Array, z::Array, x::Array)
     acc = zero(real(eltype(z)))
     @inbounds @simd for i in eachindex(z)
         acc += real(conj(w[i] - z[i]) * (z[i] - x[i]))
     end
-    return acc > 0
+    return acc
 end
 
 # Any other storage reduces a lazy broadcast instead of indexing scalars, which a device array
-# does not allow.
-function _pogm_restart(w, z, x)
+# does not allow. A partitioned array (RecursiveArrayTools' `ArrayPartition`) is summed part by part
+# in the package extension instead, since a broadcast over the partition indexes its parts' elements.
+function _pogm_restart_sum(w, z, x)
     terms = Broadcast.instantiate(Broadcast.broadcasted(_pogm_restart_term, w, z, x))
-    return sum(terms) > 0
+    return sum(terms)
 end
 
 _pogm_restart_term(w, z, x) = real(conj(w - z) * (z - x))

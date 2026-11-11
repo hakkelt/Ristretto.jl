@@ -296,6 +296,8 @@ include("penalty_sequences/barzilai_borwein_penalty.jl")
 include("penalty_sequences/spectral_radius_approx_penalty.jl")
 include("penalty_sequences/spectral_radius_bound_penalty.jl")
 
+include("recursive_array_tools.jl")
+
 get_algorithms() = [
     CG(),
     CGNR(),
