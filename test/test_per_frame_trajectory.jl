@@ -177,3 +177,42 @@ end
     )
     @test size(simulate_acquisition(rand(ComplexF32, n, n, nsl), multislice; inverse_crime_check = false, keep_sensitivity_maps = true).kspace_data) == (ns, nsp, nc, nsl)
 end
+
+@testitem "Per-frame trajectory: single coil without a coil axis" tags = [:acquisition, :nfft, :reconstruction] setup = [PerFrameTrajectory] begin
+    using Ristretto
+    using Ristretto: NonCartesianAcquisitionInfo, get_image_dims, _get_sample_dims_count
+    using NamedDims
+
+    n, ns, nsp, nt = 32, 64, 24, 6
+    traj = NamedDimsArray{(:coord, :sample, :spoke, :time)}(rotating_series(ns, nsp, nt))
+    img = moving_square(n, nt)
+    one_coil = simulate_acquisition(
+        NamedDimsArray{(:x, :y, :time)}(img),
+        NonCartesianAcquisitionInfo(;
+            trajectory = traj, sensitivity_maps = NamedDimsArray{(:x, :y, :coil)}(ones(ComplexF32, n, n, 1)),
+            image_size = (n, n),
+        ); inverse_crime_check = false
+    )
+    ksp = parent(one_coil.kspace_data)
+
+    # k-space (:sample, :spoke, :time) with a per-frame trajectory: the trailing :time axis is a
+    # frame axis, so every frame keeps its own spokes instead of merging into one image.
+    acq = NonCartesianAcquisitionInfo(NamedDimsArray{(:sample, :spoke, :time)}(ksp[:, :, 1, :]); trajectory = traj, image_size = (n, n))
+    @test _get_sample_dims_count(acq) == 2
+    @test get_image_dims(acq) == (:x, :y, :time)
+    xc = reconstruct(acq, IterativeReconstruction(; maxit = 30); verbosity = Silent())
+    @test size(xc) == (n, n, nt)
+    @test align_nrmse(xc, img) < 0.15   # one coil: 0.103; the multi-coil item above reaches < 0.1
+
+    # With a singleton :coil axis and no maps, a temporal term leaves :coil to task splitting; each
+    # task's k-space then lacks a coil axis and must still be read per frame.
+    acq_c = NonCartesianAcquisitionInfo(NamedDimsArray{(:sample, :spoke, :coil, :time)}(ksp); trajectory = traj, image_size = (n, n))
+    xt = reconstruct(acq_c, IterativeReconstruction(TemporalTotalVariation(1.0e-3; time_dim = :time); maxit = 20); verbosity = Silent())
+    @test size(xt) == (n, n, 1, nt)
+    xt_whole = reconstruct(
+        acq_c, IterativeReconstruction(TemporalTotalVariation(1.0e-3; time_dim = :time); maxit = 20);
+        verbosity = Silent(), disable_task_splitting = true
+    )
+    @test parent(xt) ≈ parent(xt_whole) rtol = 1.0e-3
+    @test align_nrmse(xt[:, :, 1, :], img) < 0.15
+end
