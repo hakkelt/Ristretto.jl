@@ -23,7 +23,7 @@ ThreadPinning = "811555cd-349b-4f26-b7bc-1f208b848042"
 
 [compat]
 FFTW = "1"
-GPUEnv = "0.2.2"
+GPUEnv = "0.3.1"
 GeometricMedicalPhantoms = "1"
 JSON = "0.21, 1"
 MKL = "0.6 - 0.9"

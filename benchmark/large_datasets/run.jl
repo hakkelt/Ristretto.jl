@@ -46,7 +46,7 @@ end
 
 if ON_GPU
     using GPUEnv
-    GPUEnv.activate(; include_jlarrays = false, only_first = true, persist = true)
+    GPUEnv.activate(; include_cpu_backends = false, only_first = true, persist = true)
     using CUDA
     CUDA.functional() || error("--device=cuda but CUDA is not functional on $(gethostname())")
 end
