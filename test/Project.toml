@@ -51,3 +51,6 @@ Statistics = "1"
 Test = "1"
 Wavelets = "0.10"
 julia = "1"
+
+[preferences.Ristretto]
+precompile_workload = false
