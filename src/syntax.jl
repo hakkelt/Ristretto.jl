@@ -89,7 +89,7 @@ function Base.getindex(H::HCAT, idx::Union{AbstractArray, Int})
                 end
             end
         end
-        return HCAT(new_H, H.buf)
+        return HCAT(new_H, H.buf; threaded = is_block_threaded(H))
     end
 end
 
@@ -107,7 +107,7 @@ function Base.getindex(H::VCAT, idx::Union{AbstractArray, Int})
                 end
             end
         end
-        return VCAT(new_H, H.buf)
+        return VCAT(new_H, H.buf; threaded = is_block_threaded(H))
     end
 end
 

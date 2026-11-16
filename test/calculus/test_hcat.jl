@@ -357,7 +357,7 @@ end
         # indexed multi-element forms.
         big_n = 1 << 17
         H_big = build_hcat(big_n)
-        H_big = AbstractOperators.adapt_operator(H_big; threaded = true)
+        H_big = adapt_operator(H_big; threaded = true)
         @test AbstractOperators.is_block_threaded(H_big) == true
         xb = ArrayPartition(randn(big_n - 1), randn(big_n - 1), randn(big_n - 1), randn(big_n), randn(big_n))
         rb = randn(big_n - 1)
@@ -367,5 +367,32 @@ end
         @test AbstractOperators.is_block_threaded(H_big_perm) == true
         @test !AbstractOperators._hcat_has_natural_idxs(H_big_perm)
         test_op(H_big_perm, xb, rb, false)
+    end
+end
+
+@testitem "HCAT: Tuple mul! paths check their arguments" tags = [:calculus, :HCAT] setup = [TestUtils] begin
+    using AbstractOperators, Random
+    using RecursiveArrayTools: ArrayPartition
+    const AO = AbstractOperators
+    Random.seed!(0)
+
+    # A wrong size is a `DimensionMismatch` on every path: `ArrayPartition` or `Tuple`,
+    # threaded or not.
+    n = 1 << 17
+    H = HCAT([DiagOp(randn(n)) for _ in 1:4]...)
+    for op in (H, copy_operator(H; threaded = false))
+        bad = randn(n + 1)
+        @test_throws DimensionMismatch mul!(ntuple(_ -> zeros(n), 4), op', bad)
+        @test_throws DimensionMismatch mul!(zeros(n), op, (randn(n + 1), randn(n), randn(n), randn(n)))
+        @test_throws DimensionMismatch mul!(ntuple(_ -> zeros(n + 1), 4), op', randn(n))
+        @test_throws DimensionMismatch mul!(zeros(n + 1), op, ntuple(_ -> randn(n), 4))
+
+        x = ntuple(_ -> randn(n), 4)
+        r = randn(n)
+        @test mul!(zeros(n), op, x) == op * ArrayPartition(x...)
+        @test collect(mul!(ntuple(_ -> zeros(n), 4), op', r)) == collect((op' * r).x)
+    end
+    if Threads.nthreads() > 1
+        @test AO.is_block_threaded(H) == true
     end
 end

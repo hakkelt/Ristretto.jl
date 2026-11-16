@@ -77,7 +77,7 @@ function combine(L::Compose, R::Compose)
     return Compose(ops, bufs)
 end
 function combine(L::Scale{Th}, R::Compose) where {Th}
-    threaded = Th == FastBroadcast.True()
+    threaded = Th == FastBroadcast.Threaded()
     if can_be_combined(L.A, R.A[end])
         return Scale(L.coeff, L.coeff_conj, combine(L.A, R); threaded) # forward optimization task to combine function
     else
@@ -85,7 +85,7 @@ function combine(L::Scale{Th}, R::Compose) where {Th}
     end
 end
 function combine(L::AdjointOperator{<:Scale{Th}}, R::Compose) where {Th}
-    threaded = Th == FastBroadcast.True()
+    threaded = Th == FastBroadcast.Threaded()
     if can_be_combined(L.A.A', R.A[end])
         return Scale(L.A.coeff_conj, L.A.coeff, combine(L.A.A', R); threaded) # forward optimization task to combine function
     else
@@ -93,7 +93,7 @@ function combine(L::AdjointOperator{<:Scale{Th}}, R::Compose) where {Th}
     end
 end
 function combine(L::Compose, R::Scale{Th}) where {Th}
-    threaded = Th == FastBroadcast.True()
+    threaded = Th == FastBroadcast.Threaded()
     if can_be_combined(L.A[1], R.A)
         S = Scale(R.coeff, R.coeff_conj, combine(L.A[1], R.A); threaded) # forward optimization task to combine function
         return Compose((S, L.A[2:end]...), L.buf)
@@ -104,7 +104,7 @@ end
 function combine(
         L::Compose, R::AdjointOperator{<:Scale{Th}}
     ) where {Th}
-    threaded = Th == FastBroadcast.True()
+    threaded = Th == FastBroadcast.Threaded()
     if can_be_combined(L.A[1], R.A.A')
         S = Scale(R.A.coeff_conj, R.A.coeff, combine(L.A[1], R.A.A'); threaded) # forward optimization task to combine function
         return Compose((S, L.A[2:end]...), L.buf)
@@ -121,7 +121,10 @@ function can_be_combined(L::DCAT, R::DCAT)
 end
 
 function combine(L::DCAT, R::DCAT)
-    return DCAT([combine(L.A[i], R.A[i]) for i in 1:ndoms(L, 1)]...)
+    return DCAT(
+        [combine(L.A[i], R.A[i]) for i in 1:ndoms(L, 1)]...;
+        threaded = is_block_threaded(L) && is_block_threaded(R),
+    )
 end
 
 function can_be_combined(L1, L2::HCAT)
@@ -129,7 +132,7 @@ function can_be_combined(L1, L2::HCAT)
 end
 function combine(L1, L2::HCAT)
     combined = tuple([combine(L1, A) for A in L2.A]...)
-    return HCAT(combined, L2.idxs, L2.buf)
+    return HCAT(combined, L2.idxs, L2.buf; threaded = is_block_threaded(L2))
 end
 
 can_be_combined(L, R::Scale) = is_linear(L) && can_be_combined(L, R.A)

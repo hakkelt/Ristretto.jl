@@ -19,8 +19,8 @@ function Sin(
     ) where {T, N}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Sin, threaded, T, DomainDim, S) ?
-           Sin{T, N, S, FastBroadcast.True()}(DomainDim) :
-           Sin{T, N, S, FastBroadcast.False()}(DomainDim)
+           Sin{T, N, S, FastBroadcast.Threaded()}(DomainDim) :
+           Sin{T, N, S, FastBroadcast.Serial()}(DomainDim)
 end
 
 function Sin(
@@ -37,12 +37,12 @@ function Sin(
     ) where {T}
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(Sin, threaded, T, size(x), S) ?
-           Sin{T, ndims(x), S, FastBroadcast.True()}(size(x)) :
-           Sin{T, ndims(x), S, FastBroadcast.False()}(size(x))
+           Sin{T, ndims(x), S, FastBroadcast.Threaded()}(size(x)) :
+           Sin{T, ndims(x), S, FastBroadcast.Serial()}(size(x))
 end
 
 # One method per direction, parameterized by `Th`, rather than a `false`/`true` pair:
-# `Th` is `FastBroadcast.True()`/`False()` (see `_fbthread`), so `@.. thread = Th` resolves
+# `Th` is `FastBroadcast.Threaded()`/`Serial()` (see `_fbthread`), so `@.. thread = Th` resolves
 # to the same specialized code either way -- see `Scale`/`DiagOp` for the same pattern.
 function mul!(y::AbstractArray, L::Sin{T, N, S, Th}, x::AbstractArray) where {T, N, S, Th}
     check(y, L, x)

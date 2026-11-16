@@ -62,8 +62,10 @@
         serial = build(; threaded = false)
         threaded = build(; threaded = true)
 
+        # A single-threaded session resolves `threaded = true` to serial.
+        can_thread = Threads.nthreads() > 1
         @test is_threaded(serial) == false
-        @test is_threaded(threaded) == true
+        @test is_threaded(threaded) == can_thread
         @test supports_threading(serial) == true
 
         # Identical, not approximate.
@@ -75,13 +77,13 @@
         end
 
         # copy_operator round-trips the flag in both directions.
-        @test is_threaded(copy_operator(serial; threaded = true)) == true
+        @test is_threaded(copy_operator(serial; threaded = true)) == can_thread
         @test is_threaded(copy_operator(threaded; threaded = false)) == false
 
         # adapt_operator: share when satisfied, copy when not.
         @test adapt_operator(serial; threaded = false) === serial
         adapted = adapt_operator(serial; threaded = true)
-        @test is_threaded(adapted) == true
+        @test is_threaded(adapted) == can_thread
         @test is_threaded(serial) == false   # original untouched
         return nothing
     end

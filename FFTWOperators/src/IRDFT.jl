@@ -35,7 +35,7 @@ function IRDFT(
         x::AbstractArray{Complex{T}, N}, d::Int, dims::Int = 1;
         num_threads = nothing, threaded::Bool = true
     ) where {T <: Number, N}
-    nthr = _fftw_num_threads(:r2c, num_threads, threaded, length(x))
+    nthr = _fftw_num_threads(:r2c, num_threads, threaded, x)
     A = _with_fftw_threads(() -> plan_irfft(x, d, dims), nthr)
     dim_in = size(x)
     dim_out = ()
@@ -112,12 +112,10 @@ function _copy_operator_impl(
         op::IRDFT{T, N, D, T1, T2, T3, S}; storage_type = nothing, threaded = nothing
     ) where {T, N, D, T1, T2, T3, S}
     new_threaded = threaded === nothing ? is_threaded(op) : threaded
-    # No per-call scratch fields, so an unchanged storage type and thread count means the
-    # plans can be shared.
+    # The struct is immutable and has no per-call scratch fields, so with an unchanged storage
+    # type and thread count a copy would be `===` to `op` anyway.
     if storage_type === nothing && new_threaded == is_threaded(op)
-        return IRDFT{T, N, D, T1, T2, T3, S}(
-            op.dim_in, op.dim_out, op.A, op.At, op.idx, op.num_threads
-        )
+        return op
     end
     # No persistent data to carry over (IRDFT holds only plans), so the prototype can be
     # uninitialized.

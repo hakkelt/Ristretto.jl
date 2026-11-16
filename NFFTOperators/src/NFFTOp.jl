@@ -7,7 +7,7 @@ struct NFFTOp{
         K <: AbstractArray{Complex{T}},
         DC <: AbstractArray{T},
         IB <: Union{Nothing, AbstractArray{Complex{T}}},
-    } <: AbstractOperators.LinearOperator
+    } <: LinearOperator
     plan::P
     dim_in::NTuple{N, Int}
     dim_out::NTuple{M, Int}
@@ -300,7 +300,7 @@ end
 
 function mul!(
         img::AbstractArray,
-        adjop::AbstractOperators.AdjointOperator{<:NFFTOp},
+        adjop::AdjointOperator{<:NFFTOp},
         ksp::AbstractArray,
     )
     AbstractOperators.check(img, adjop, ksp)

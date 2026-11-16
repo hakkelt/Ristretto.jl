@@ -323,10 +323,25 @@ _pw_any_threaded(ops::Tuple) = any(is_threaded, ops)
 
 # ─── Execution ───────────────────────────────────────────────────────────────
 
+"""
+	POINTWISE_FUSION
+
+A `Ref{Bool}`, `true` by default: a `Compose` runs each run of consecutive pointwise operators
+as one fused loop. With `AbstractOperators.POINTWISE_FUSION[] = false`, every operator of a
+chain runs its own `mul!` and writes its own intermediate buffer, as operators that do not opt
+in always do.
+
+It is read each time a chain is applied, so a change takes effect at the next application,
+without recompiling. Both settings compute the same result bit for bit; the switch exists to
+measure what fusion is worth.
+"""
+const POINTWISE_FUSION = Ref(true)
+
 # Runs `ops` one after another on `x`: the output of `ops[k]` goes to `bufs[k]`, the output of
-# the last one to `y`. Leading pointwise runs are fused.
+# the last one to `y`. Leading pointwise runs are fused unless `POINTWISE_FUSION[]` is false.
 @inline _pw_chain!(y, ops::Tuple{Any}, ::Tuple{}, x) = mul!(y, first(ops), x)
 @inline function _pw_chain!(y, ops::Tuple, bufs::Tuple, x)
+    POINTWISE_FUSION[] || return _pw_chain!(y, ops, bufs, x, Val(1))
     return _pw_chain!(y, ops, bufs, x, Val(_pw_run_length(ops)))
 end
 

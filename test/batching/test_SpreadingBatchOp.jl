@@ -73,7 +73,7 @@
         num_ops = Threads.nthreads() + 5
         op = GetIndex(Float64, (m - 1,), 1:6) * FiniteDiff((m,))
         ops = [reshape(i * op, 2, 3) for i in 1:num_ops]
-        return @test_throws ArgumentError BatchOp(ops, n, (:b, :s, :_) => (:b, :s, :_, :_); threaded = true, threading_strategy = AbstractOperators.ThreadingStrategy.FIXED_OPERATOR)
+        return @test_throws ArgumentError BatchOp(ops, n, (:b, :s, :_) => (:b, :s, :_, :_); threaded = true, threading_strategy = ThreadingStrategy.FIXED_OPERATOR)
     end
 
     # Minimum over repetitions, and enough per-operator work (m) for the parallel gain to
@@ -174,14 +174,14 @@ end
 @testitem "SpreadingBatchOp non-threadsafe auto" tags = [:batching, :SpreadingBatchOp] setup = [TestUtils, SpreadingBatchOpHelpers] begin
     using Random, AbstractOperators
     Random.seed!(0)
-    SpreadingBatchOpHelpers.test_nonthreadsafe_spreading_batch_op(false, AbstractOperators.ThreadingStrategy.AUTO)
+    SpreadingBatchOpHelpers.test_nonthreadsafe_spreading_batch_op(false, ThreadingStrategy.AUTO)
 end
 
 @testitem "SpreadingBatchOp threaded copying" tags = [:batching, :SpreadingBatchOp] setup = [TestUtils, SpreadingBatchOpHelpers] begin
     using Random, AbstractOperators
     Random.seed!(0)
     if Threads.nthreads() > 1
-        SpreadingBatchOpHelpers.test_nonthreadsafe_spreading_batch_op(true, AbstractOperators.ThreadingStrategy.COPYING)
+        SpreadingBatchOpHelpers.test_nonthreadsafe_spreading_batch_op(true, ThreadingStrategy.COPYING)
     end
 end
 
@@ -189,7 +189,7 @@ end
     using Random, AbstractOperators
     Random.seed!(0)
     if Threads.nthreads() > 1
-        SpreadingBatchOpHelpers.test_nonthreadsafe_spreading_batch_op(true, AbstractOperators.ThreadingStrategy.LOCKING)
+        SpreadingBatchOpHelpers.test_nonthreadsafe_spreading_batch_op(true, ThreadingStrategy.LOCKING)
     end
 end
 
@@ -197,7 +197,7 @@ end
     using Random, AbstractOperators
     Random.seed!(0)
     if Threads.nthreads() > 1
-        SpreadingBatchOpHelpers.test_nonthreadsafe_spreading_batch_op(true, AbstractOperators.ThreadingStrategy.FIXED_OPERATOR)
+        SpreadingBatchOpHelpers.test_nonthreadsafe_spreading_batch_op(true, ThreadingStrategy.FIXED_OPERATOR)
         SpreadingBatchOpHelpers.test_failing_nonthreadsafe_spreading_batch_op()
     end
 end
@@ -220,9 +220,9 @@ end
     using Random, AbstractOperators
     Random.seed!(0)
     if Threads.nthreads() >= 4 && get(ENV, "CI", "false") == "false"
-        t_single_threaded = SpreadingBatchOpHelpers.benchmark_threading_strategy(false, AbstractOperators.ThreadingStrategy.AUTO)
-        t_copying = SpreadingBatchOpHelpers.benchmark_threading_strategy(true, AbstractOperators.ThreadingStrategy.COPYING)
-        t_fixed_operator = SpreadingBatchOpHelpers.benchmark_threading_strategy(true, AbstractOperators.ThreadingStrategy.FIXED_OPERATOR)
+        t_single_threaded = SpreadingBatchOpHelpers.benchmark_threading_strategy(false, ThreadingStrategy.AUTO)
+        t_copying = SpreadingBatchOpHelpers.benchmark_threading_strategy(true, ThreadingStrategy.COPYING)
+        t_fixed_operator = SpreadingBatchOpHelpers.benchmark_threading_strategy(true, ThreadingStrategy.FIXED_OPERATOR)
         @test t_copying < t_single_threaded
         @test t_fixed_operator < t_single_threaded
     end
@@ -237,7 +237,7 @@ end
         # substituted in by the size policy -- see `test_nonthreadsafe_spreading_batch_op`.
         n = 8192
         ops = [DiagOp(rand(n - 1)) * FiniteDiff((n,)) for i in 1:3]
-        bop = BatchOp(ops, 4, (:_, :s, :b); threaded = true, threading_strategy = AbstractOperators.ThreadingStrategy.COPYING)
+        bop = BatchOp(ops, 4, (:_, :s, :b); threaded = true, threading_strategy = ThreadingStrategy.COPYING)
         @test bop isa AbstractOperators.SpreadingBatchOpCopying
         io = IOBuffer(); show(io, bop); s = String(take!(io)); @test occursin("⟳", s)
         @test domain_array_type(bop) == domain_array_type(ops[1])
@@ -266,7 +266,7 @@ end
         x = randn(n, 3, 4)
         @test AbstractOperators.get_normal_op(bop) * x ≈ bop' * (bop * x)
         ops2 = [DiagOp(rand(n)) for i in 1:3]
-        bop2 = BatchOp(ops2, 4, (:_, :s, :b); threaded = true, threading_strategy = AbstractOperators.ThreadingStrategy.COPYING)
+        bop2 = BatchOp(ops2, 4, (:_, :s, :b); threaded = true, threading_strategy = ThreadingStrategy.COPYING)
         @test size(diag(bop2)) == (n, 3, 4)
         @test size(diag_AcA(bop2)) == (n, 3, 4)
         @test size(diag_AAc(bop2)) == (n, 3, 4)
@@ -280,7 +280,7 @@ end
         n = 8192
         op = DiagOp(rand(n - 1)) * FiniteDiff((n,))
         ops = [op, op, DiagOp(rand(n - 1)) * FiniteDiff((n,))]
-        bop = BatchOp(ops, 4, (:_, :s, :b); threaded = true, threading_strategy = AbstractOperators.ThreadingStrategy.LOCKING)
+        bop = BatchOp(ops, 4, (:_, :s, :b); threaded = true, threading_strategy = ThreadingStrategy.LOCKING)
         @test bop isa AbstractOperators.SpreadingBatchOpLocking
         y = bop * rand(n, 3, 4)
         @test size(y) == (n - 1, 3, 4)
@@ -293,7 +293,7 @@ end
     if Threads.nthreads() > 1
         n = 8192
         ops = [DiagOp(rand(n - 1)) * FiniteDiff((n,)) for i in 1:3]
-        bop = BatchOp(ops, 4, (:_, :s, :b); threaded = true, threading_strategy = AbstractOperators.ThreadingStrategy.FIXED_OPERATOR)
+        bop = BatchOp(ops, 4, (:_, :s, :b); threaded = true, threading_strategy = ThreadingStrategy.FIXED_OPERATOR)
         @test bop isa AbstractOperators.SpreadingBatchOpFixedOperator
         y = bop * rand(n, 3, 4)
         @test size(y) == (n - 1, 3, 4)
@@ -319,7 +319,7 @@ end
     if Threads.nthreads() > 1
         n = 8192
         ops = [FiniteDiff((n,)) for i in 1:3]
-        bop = BatchOp(ops, 4, (:_, :s, :b); threaded = true, threading_strategy = AbstractOperators.ThreadingStrategy.AUTO)
+        bop = BatchOp(ops, 4, (:_, :s, :b); threaded = true, threading_strategy = ThreadingStrategy.AUTO)
         @test is_threaded(bop) == true
         @test size(bop * rand(n, 3, 4)) == (n - 1, 3, 4)
     end
@@ -432,9 +432,9 @@ end
         # Sized above MIN_BATCH_WORK_FOR_PARALLEL (2^12) so `threaded = true` actually
         # resolves to threaded rather than being declined by the policy for being too small.
         big_ops = [i * DiagOp(randn(ComplexF64, 8192)) for i in 1:3]
-        bop_threaded = BatchOp(big_ops, 4; threaded = true, threading_strategy = AbstractOperators.ThreadingStrategy.COPYING)
+        bop_threaded = BatchOp(big_ops, 4; threaded = true, threading_strategy = ThreadingStrategy.COPYING)
         @test is_threaded(bop_threaded) == true
-        @test bop_threaded == BatchOp(big_ops, 4; threaded = true, threading_strategy = AbstractOperators.ThreadingStrategy.COPYING)
+        @test bop_threaded == BatchOp(big_ops, 4; threaded = true, threading_strategy = ThreadingStrategy.COPYING)
         @test bop_threaded != bop_serial
 
         big_x = rand(ComplexF64, 8192, 3, 4)
@@ -442,4 +442,19 @@ end
         @test is_threaded(bop_threaded_copy) == false
         @test bop_threaded_copy * big_x ≈ bop_threaded * big_x
     end
+end
+
+@testitem "SpreadingBatchOp: == compares the batch dimensions" tags = [:batching, :SpreadingBatchOp] setup = [TestUtils] begin
+    using AbstractOperators, Random
+    Random.seed!(0)
+
+    # Same operators, same sizes, batch and plain axes swapped: different operators.
+    ops = [DiagOp(randn(4)) for _ in 1:3]
+    S1 = BatchOp(ops, 4, (:_, :s, :b))
+    S2 = BatchOp(ops, 4, (:b, :s, :_))
+    @test size(S1) == size(S2)
+    x = randn(4, 3, 4)
+    @test S1 * x != S2 * x
+    @test S1 != S2
+    @test S1 == BatchOp(ops, 4, (:_, :s, :b))
 end

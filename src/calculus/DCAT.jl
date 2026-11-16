@@ -42,11 +42,26 @@ struct DCAT{
         th = _resolve_threaded(threaded) do
             default_block_threaded(DCAT, A)
         end
-        # The block loop is the parallel layer, so the blocks themselves must not thread --
-        # same nesting rule as the batch operators.
-        blocks = th ? map(a -> adapt_operator(a; threaded = false), A) : A
+        # The block loop is the parallel layer; see `_block_loop_operators`.
+        blocks = th ? _block_loop_operators(A) : A
         return new{length(blocks), typeof(blocks), P1, P2, DS, CS, th}(blocks, idxD, idxC)
     end
+    # For blocks already prepared for `th`.
+    function DCAT(A::L, idxD::P1, idxC::P2, ::Val{th}) where {L, P1, P2, th}
+        DS = _compute_dcat_ds(A, idxD)
+        CS = _compute_dcat_cs(A, idxC)
+        return new{length(A), L, P1, P2, DS, CS, th}(A, idxD, idxC)
+    end
+end
+
+# For blocks that share no scratch with each other, such as operators derived one per block
+# from a DCAT's blocks: a threaded loop only needs them serial, not copied.
+function _dcat_unshared(A, idxD, idxC, threaded::Bool)
+    th = _resolve_threaded(threaded) do
+        default_block_threaded(DCAT, A)
+    end
+    blocks = th ? map(b -> adapt_operator(b; threaded = false), A) : A
+    return DCAT(blocks, idxD, idxC, Val(th))
 end
 
 function _compute_dcat_ds(A, idxD)
@@ -230,7 +245,7 @@ end
 has_optimized_normalop(L::DCAT) = any(has_optimized_normalop.(L.A))
 function get_normal_op(H::DCAT)
     idxs = tuple((1:length(H.A))...)
-    return DCAT(tuple([get_normal_op(H.A[i]) for i in eachindex(H.A)]...), idxs, idxs)
+    return _dcat_unshared(map(get_normal_op, H.A), idxs, idxs, is_block_threaded(H))
 end
 
 # Apply inverse permutation encoded in idxs to natural, using only tuple
@@ -361,10 +376,10 @@ function permute(H::DCAT{N, L, P1, P2}, p::AbstractVector{Int}) where {N, L, P1,
         cnt += z
     end
 
-    return DCAT(H.A, new_part, H.idxC; threaded = is_block_threaded(H))
+    return DCAT(H.A, new_part, H.idxC, Val(is_block_threaded(H)))
 end
 
-remove_displacement(D::DCAT) = DCAT(remove_displacement.(D.A), D.idxD, D.idxC; threaded = is_block_threaded(D))
+remove_displacement(D::DCAT) = _dcat_unshared(map(remove_displacement, D.A), D.idxD, D.idxC, is_block_threaded(D))
 
 # special cases
 # Eye constructor
@@ -399,8 +414,16 @@ function _copy_operator_impl(
         op::DCAT{N, L, P1, P2, DS, CS, Th}; storage_type = nothing, threaded = nothing
     ) where {N, L, P1, P2, DS, CS, Th}
     new_threaded = threaded === nothing ? Th : threaded
-    # When the block loop threads, the blocks are forced serial by the constructor, so only
-    # the storage request is forwarded to them here.
-    new_ops = map(a -> copy_operator(a; storage_type, threaded = new_threaded ? false : threaded), op.A)
-    return DCAT(new_ops, op.idxD, op.idxC; threaded = new_threaded)
+    # Deciding the block loop before copying copies each block once, in its final form.
+    # A threaded loop needs serial blocks with their own scratch, which a fresh copy has.
+    # Otherwise `threaded` goes to the blocks: the loop may stay serial despite it.
+    th = _resolve_threaded(new_threaded) do
+        _default_block_threaded(DCAT, op.A, storage_type)
+    end
+    if th
+        new_ops = map(a -> copy_operator(a; storage_type, threaded = false), op.A)
+        return DCAT(new_ops, op.idxD, op.idxC, Val(true))
+    end
+    new_ops = map(a -> copy_operator(a; storage_type, threaded), op.A)
+    return DCAT(new_ops, op.idxD, op.idxC, Val(false))
 end

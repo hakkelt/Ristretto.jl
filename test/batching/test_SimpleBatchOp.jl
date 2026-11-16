@@ -91,7 +91,7 @@
         batch_op = BatchOp(op, (2,); threaded)
         io = IOBuffer(); show(io, batch_op); s = String(take!(io))
         @test occursin("⟳", s)
-        batch_op_copy = AbstractOperators.copy_operator(batch_op)
+        batch_op_copy = copy_operator(batch_op)
         @test batch_op == batch_op_copy
         @test isequal(batch_op, batch_op_copy)
         @test domain_array_type(batch_op) == domain_array_type(op)
@@ -317,4 +317,18 @@ end
         mul!(y_gpu2, batch_op, x)
         @test Array(y_gpu2) ≈ Array(y_gpu)
     end
+end
+
+@testitem "SimpleBatchOp: == compares the batch dimensions" tags = [:batching, :SimpleBatchOp] setup = [TestUtils] begin
+    using AbstractOperators, Random
+    Random.seed!(0)
+
+    # Same operator, same sizes, different batch axis: different operators.
+    op = DiagOp(randn(4))
+    B1 = BatchOp(op, (4,), (:_, :b))
+    B2 = BatchOp(op, (4,), (:b, :_))
+    x = randn(4, 4)
+    @test B1 * x != B2 * x
+    @test B1 != B2
+    @test B1 == BatchOp(op, (4,), (:_, :b))
 end

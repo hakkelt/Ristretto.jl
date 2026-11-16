@@ -138,7 +138,7 @@ function DFT(
         threaded::Bool = true,
     ) where {N, D <: Real}
     x = similar(x, Complex{D})
-    num_threads = _fftw_num_threads(:c2c, num_threads, threaded, length(x))
+    num_threads = _fftw_num_threads(:c2c, num_threads, threaded, x)
     A, At = _with_fftw_threads(num_threads) do
         plan_fft(x, dims; flags, timelimit), plan_bfft(x, dims; flags, timelimit)
     end
@@ -162,7 +162,7 @@ function DFT(
     if flags != FFTW.ESTIMATE
         x = similar(x) # FFTW.MEASURE and FFTW.PATIENT may cause the input array to be modified
     end
-    num_threads = _fftw_num_threads(:c2c, num_threads, threaded, length(x))
+    num_threads = _fftw_num_threads(:c2c, num_threads, threaded, x)
     A, At = _with_fftw_threads(num_threads) do
         plan_fft(x, dims; flags, timelimit), plan_bfft(x, dims; flags, timelimit)
     end
@@ -456,10 +456,9 @@ function _copy_operator_impl(
     ) where {N, C, D, Dir, S, T1, T2, R}
     new_threaded = threaded === nothing ? is_threaded(op) : threaded
     if storage_type === nothing && new_threaded == is_threaded(op)
-        # Plans are immutable and hold no per-call scratch, so a copy shares them.
-        return DFT{N, C, D, Dir, S, T1, T2, R}(
-            op.dim_in, op.A, op.At, op.normalization, op.scale, op.num_threads, op.flags, op.timelimit
-        )
+        # The struct is immutable and its plans hold no per-call scratch, so a copy would
+        # be `===` to `op` anyway.
+        return op
     end
     # Changing the storage type or thread count means replanning. The prototype must use
     # the *domain* element type -- type parameter `D`, not the codomain `C`: for a

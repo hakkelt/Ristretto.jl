@@ -190,3 +190,43 @@ end
         end
     end
 end
+
+@testitem "Pointwise fusion: POINTWISE_FUSION switches it off at run time" tags = [:calculus, :Compose, :pointwise] setup = [TestUtils] begin
+    using Random, LinearAlgebra, AbstractOperators
+    const AO = AbstractOperators
+    Random.seed!(1)
+    for T in (Float64, ComplexF32), threaded in (false, true)
+        n = threaded ? (128, 64, 16) : (6, 5, 4)
+        E = BroadCast(Eye(T, n[1:2]), n; threaded)
+        D1 = DiagOp(randn(T, n); threaded)
+        D2 = DiagOp(randn(T, n); threaded)
+        M = AO.get_normal_op(GetIndex(T, n, (rand(n...) .> 0.5,)))
+        S = Scale(T(2.5), AO.get_normal_op(GetIndex(T, n, (:, :, rand(n[3]) .> 0.5))); threaded)
+        candidates = (M * D1, S * D1', M * D1 * E, D2' * S * E, E' * D2 * D1, E' * S * M)
+        # chains that stay a `Compose` of one fused run, so that every buffer lies inside it
+        chains = filter(C -> C isa Compose && AO._pw_run_length(C.A) == length(C.A), candidates)
+        @test length(chains) >= 3
+        for C in chains
+            x = randn(T, size(C, 2))
+            r = randn(T, size(C, 1))
+            # A fused run leaves the buffers between its operators untouched; the unfused path
+            # writes every one of them.
+            sentinel() = foreach(b -> fill!(b, T(NaN)), C.buf)
+            sentinel()
+            y_on = C * x
+            @test all(b -> all(isnan, b), C.buf)
+            try
+                AO.POINTWISE_FUSION[] = false
+                sentinel()
+                y_off = C * x
+                @test !any(b -> any(isnan, b), C.buf)
+                @test y_off == y_on
+                r_off = C' * r
+                AO.POINTWISE_FUSION[] = true
+                @test r_off == C' * r
+            finally
+                AO.POINTWISE_FUSION[] = true
+            end
+        end
+    end
+end

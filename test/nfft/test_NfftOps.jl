@@ -226,7 +226,7 @@ end
     using AbstractOperators, NFFTOperators, NFFT, GPUEnv, LinearAlgebra, Random
     using AbstractOperators: get_normal_op
 
-    for backend in gpu_backends(; include_jlarrays = false, supports_fftw = true)
+    for backend in gpu_backends(; include_cpu_backends = false, supports_fftw = true)
         Random.seed!(0)
         traj = Float32.(rand(2, 64, 20) .- 0.5)
         dcf = rand(Float32, 64, 20)
@@ -246,7 +246,7 @@ end
 @testitem "NFFTOp (GPU)" tags = [:gpu, :nfft, :NFFTOp] setup = [TestUtils, GpuEnvSetup] begin
     using AbstractOperators, NFFTOperators, NFFT, GPUEnv, LinearAlgebra, Random
 
-    for backend in gpu_backends(; include_jlarrays = false, supports_fftw = true), D in (2, 3)
+    for backend in gpu_backends(; include_cpu_backends = false, supports_fftw = true), D in (2, 3)
         Random.seed!(0)
         n = D == 2 ? 32 : 12
         traj = Float32.(rand(D, 64, 20) .- 0.5)
@@ -316,7 +316,7 @@ end
 
 @testitem "NFFTOp stacks (GPU)" tags = [:gpu, :nfft, :NFFTOp] setup = [TestUtils, GpuEnvSetup, NFFTStackHelper] begin
     using GPUEnv
-    for backend in gpu_backends(; include_jlarrays = false, supports_fftw = true)
+    for backend in gpu_backends(; include_cpu_backends = false, supports_fftw = true)
         A = typeof(to_gpu(backend, zeros(Float32, 1)))
         NFFTStackHelper.test_stack(x -> to_gpu(backend, x), A; rtol = 1.0e-4)
     end

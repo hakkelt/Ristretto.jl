@@ -25,7 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-struct NfftNormalOp{N, T, A <: AbstractArray, L <: AbstractArray, F, I, P, X} <: AbstractOperators.LinearOperator
+struct NfftNormalOp{N, T, A <: AbstractArray, L <: AbstractArray, F, I, P, X} <: LinearOperator
     array_type::Type{T}
     shape::NTuple{N, Int}
     λ::L

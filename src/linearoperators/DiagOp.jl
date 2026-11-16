@@ -35,8 +35,8 @@ function DiagOp(
     dS = _normalize_array_type(array_type, D)
     cS = _normalize_array_type(array_type, C)
     return _elementwise_threaded(DiagOp, threaded, D, domain_dim, dS0) ?
-           DiagOp{FastBroadcast.True(),D, C, N, dS, cS, T}(domain_dim, d) :
-           DiagOp{FastBroadcast.False(),D, C, N, dS, cS, T}(domain_dim, d)
+           DiagOp{FastBroadcast.Threaded(),D, C, N, dS, cS, T}(domain_dim, d) :
+           DiagOp{FastBroadcast.Serial(),D, C, N, dS, cS, T}(domain_dim, d)
 end
 
 ###standard constructor with Scalar
@@ -50,8 +50,8 @@ function DiagOp(
     dS = _normalize_array_type(array_type, D)
     cS = _normalize_array_type(array_type, C)
     return _elementwise_threaded(DiagOp, threaded, D, domain_dim, dS0) ?
-           DiagOp{FastBroadcast.True(),D, C, N, dS, cS, T}(domain_dim, d) :
-           DiagOp{FastBroadcast.False(),D, C, N, dS, cS, T}(domain_dim, d)
+           DiagOp{FastBroadcast.Threaded(),D, C, N, dS, cS, T}(domain_dim, d) :
+           DiagOp{FastBroadcast.Serial(),D, C, N, dS, cS, T}(domain_dim, d)
 end
 
 # other constructors
@@ -63,8 +63,8 @@ function DiagOp(
     S0 = _normalize_array_type(array_type, T)
     S = _normalize_array_type(array_type, T)
     return _elementwise_threaded(DiagOp, threaded, T, size(d), S0) ?
-           DiagOp{FastBroadcast.True(),eltype(d), C, N, S, S, typeof(d)}(size(d), d) :
-           DiagOp{FastBroadcast.False(),eltype(d), C, N, S, S, typeof(d)}(size(d), d)
+           DiagOp{FastBroadcast.Threaded(),eltype(d), C, N, S, S, typeof(d)}(size(d), d) :
+           DiagOp{FastBroadcast.Serial(),eltype(d), C, N, S, S, typeof(d)}(size(d), d)
 end
 function DiagOp(
         domain_dim::NTuple{N, Int}, d::A; threaded::Bool = true, array_type::Type = Array{Float64}
@@ -143,13 +143,13 @@ codomain_type(::DiagOp{<:Any, <:Any, C}) where {C} = C
 is_thread_safe(::DiagOp) = true
 
 function _copy_operator_impl(op::DiagOp{B}; storage_type = nothing, threaded = nothing) where {B}
-    new_threaded = threaded === nothing ? (B == FastBroadcast.True()) : threaded
+    new_threaded = threaded === nothing ? _fbbool(B) : threaded
     # `d` is the operator's actual diagonal data, not a scratch buffer: a storage-type
     # switch must carry its values over, so this goes through `copyto!` rather than
     # `_convert_buffer` (which allocates uninitialized memory for buffers that `mul!`
     # overwrites on the next call anyway).
     new_d = _copy_diag(op.d, storage_type)
-    new_at = storage_type === nothing ? _array_wrapper(op.d) : storage_type
+    new_at = storage_type === nothing ? _array_wrapper_type(domain_array_type(op)) : storage_type
     return DiagOp(domain_type(op), op.dim_in, new_d; threaded = new_threaded, array_type = new_at)
 end
 
