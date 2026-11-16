@@ -199,7 +199,6 @@ for id in CASES
         t = (time_ns() - t0) / 1.0e9
         img = Array(unname(x))
         err = Float64(mag_nrmse(img, c.reference))
-        mem = ON_GPU ? CUDA.memory_status : nothing
         @printf("%-32s %-8s %10.2f s  NRMSE %.4f\n", id, method, t, err)
         record!(
             Dict(
