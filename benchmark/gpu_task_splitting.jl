@@ -7,7 +7,7 @@
 # Needs a CUDA device; run it through benchmark/slurm/gpu_task_splitting.sh on an A100.
 
 using GPUEnv
-GPUEnv.activate(; include_jlarrays = false)
+GPUEnv.activate(; include_cpu_backends = false)
 using CUDA, NamedDims, Printf, Statistics, Random
 using Ristretto
 const Adapt = Ristretto.Adapt

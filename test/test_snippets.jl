@@ -173,10 +173,11 @@ end
 end
 
 @testmodule GpuEnvSetup begin
-    # Loads every GPU backend the machine has (JLArrays always, CUDA and friends where a device
-    # is present) into this test process, which makes `RistrettoGPUExt` load too.
+    # Loads every GPU backend the machine has (JLArrays always, a CPU OpenCL runtime when one is
+    # installed, CUDA and friends where a device is present) into this test process, which makes
+    # `RistrettoGPUExt` load too.
     using GPUEnv
-    GPUEnv.activate(; include_jlarrays = true, persist = true)
+    GPUEnv.activate(; include_cpu_backends = true, persist = true)
 end
 
 @testsnippet GpuHelpers begin
@@ -187,9 +188,9 @@ end
     const Adapt = Ristretto.Adapt
 
     # The backends a case can run on: anything with an FFT (and an NFFT) needs a real device, as
-    # JLArrays has no FFT; the rest runs on JLArrays too, which is also what CI has.
-    fft_backends() = gpu_backends(; include_jlarrays = false, supports_fftw = true)
-    all_backends() = gpu_backends(; include_jlarrays = true)
+    # JLArrays has no FFT; the rest runs on the CPU backends too (JLArrays is what CI has).
+    fft_backends() = gpu_backends(; include_cpu_backends = false, supports_fftw = true)
+    all_backends() = gpu_backends(; include_cpu_backends = true)
 
     to_device(backend, x) = Adapt.adapt(backend.array_type, x)
 

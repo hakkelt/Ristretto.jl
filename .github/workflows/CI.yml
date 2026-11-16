@@ -37,8 +37,11 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
+      # Precompiled with the test run's `--check-bounds=yes`: a cache built with the default flag
+      # does not match it, and the test process would then compile every package a second time.
+      # The coverage flags do not take part in the cache key.
       - name: Instantiate the test environment
-        run: julia --color=yes --project=test -e 'using Pkg; Pkg.instantiate()'
+        run: julia --color=yes --check-bounds=yes --project=test -e 'using Pkg; Pkg.instantiate()'
       # Coverage is counted in src/ and ext/ only. `--code-coverage=user` would instrument the
       # vendored packages under deps/ and every dependency as well, which makes the solver loops
       # several times slower; a path restricts it to one directory, so ext/ gets a run of its own
