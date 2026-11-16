@@ -41,7 +41,7 @@ include("harness.jl")
 include("results_store.jl")
 
 export load_site_env!, env_flag, ensure_download_path!
-export BenchCase, get_case, case_ids, filter_case_ids, SYNTHETIC_CASES, HARNESS_ONLY_CASES, REAL_CASES, small_mode, cine_frames
+export BenchCase, get_case, case_ids, filter_case_ids, SYNTHETIC_CASES, HARNESS_ONLY_CASES, REAL_CASES, small_mode, image_n, cine_frames
 export ncoils, acceleration, zero_filled, ristretto_acquisition, applicable_methods, METHODS, PDHG_METHODS, RISTRETTO_ONLY_METHODS, penalty_of
 export norm_ksp, add_noise, nrmse, mag_nrmse, centred_fft, centred_ifft, multicoil_phantom
 export ristretto_reconstructor, ristretto_regularizer, ristretto_algorithm, DEFAULT_LAMBDA, OUTER_ITERATIONS, CG_ITERATIONS, ADMM_RHO
