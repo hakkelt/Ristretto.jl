@@ -451,6 +451,14 @@ branch = "chore/contourlets-master"
 parent = "add-contourlet-operators"
 pr = "hakkelt/AbstractOperators.jl#59"
 
+# An odd-length FFTShift/IFFTShift next to a DFT becomes a phase-ramp DiagOp on the other side of
+# the transform, and the even-length rules carry the (-1)^(N/2) sign of a shift passing a
+# SignAlternation.
+[[AbstractOperators.stack]]
+branch = "feat/odd-fftshift-phase-ramp"
+parent = "unified-threading"
+pr = "hakkelt/AbstractOperators.jl#61"
+
 [ProximalOperators]
 fork = "https://github.com/hakkelt/ProximalOperators.jl.git"
 upstream = "https://github.com/JuliaFirstOrder/ProximalOperators.jl.git"
