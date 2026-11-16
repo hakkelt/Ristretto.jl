@@ -340,12 +340,17 @@ end
     c4 = combine(sh, idft)
     @test (c4 * x) ≈ (idft * (SignAlternation(domain_type(idft), size(idft, 2), (1,)) * x))
 
-    # Odd length → cannot be combined
+    # Odd length → combined into a DFT and a phase-ramp DiagOp
     n = 7
+    x = randn(ComplexF64, n)
     dft = DFT(ComplexF64, n)
     sh = FFTShift(ComplexF64, (n,), (1,))
-    @test !can_be_combined(dft, sh)
-    @test !can_be_combined(sh, dft)
+    @test can_be_combined(dft, sh)
+    @test can_be_combined(sh, dft)
+    @test combine(dft, sh) * x ≈ dft * (sh * x)
+    @test combine(sh, dft) * x ≈ sh * (dft * x)
+    # a real-input DFT cannot take the complex ramp on its input
+    @test !can_be_combined(sh, DFT(Float64, n))
 
     # Multi-dim dirs
     n, m = 6, 10
@@ -401,6 +406,86 @@ end
     S2 = SignAlternation(ComplexF64, sz, (2,); threaded = true)
     @test is_threaded(combine(S1, S2)) == (is_threaded(S1) || is_threaded(S2))
     @test !is_threaded(combine(S1, SignAlternation(ComplexF64, sz, (2,); threaded = false)))
+end
+
+@testitem "Odd-length shifts next to a DFT become phase ramps" tags = [:fftw, :FFTShift, :CombinationRules] setup = [TestUtils] begin
+    using AbstractOperators, FFTW, FFTWOperators, LinearAlgebra, Random
+    Random.seed!(3)
+    has_shift(op) = op isa FFTWOperators.ShiftOp ||
+        (op isa AbstractOperators.Compose && any(has_shift, AbstractOperators.get_operators(op)))
+    shifted(f, x, dims) = isempty(dims) ? x : f(x, dims)
+    inverse_of(f) = f === fftshift ? ifftshift : fftshift
+    for dims in ((5,), (7,), (15,), (5, 6), (7, 9), (4, 5)),
+            make in (d -> DFT(ComplexF64, d), d -> IDFT(ComplexF64, d), d -> DFT(ComplexF64, d)'),
+            normalization in (FFTWOperators.UNNORMALIZED, FFTWOperators.ORTHO)
+        F = make(dims)
+        nd = length(dims)
+        for (shift_op, f) in ((fftshift_op, fftshift), (ifftshift_op, ifftshift)),
+                ds in ((), Tuple(1:nd), (nd,)), cs in ((), Tuple(1:nd), (1,))
+            isempty(ds) && isempty(cs) && continue
+            all(iseven, dims[collect((ds..., cs...))]) && continue
+            T = shift_op(F; domain_shifts = ds, codomain_shifts = cs)
+            x, y = randn(ComplexF64, dims), randn(ComplexF64, dims)
+            @test T * x ≈ shifted(f, F * shifted(f, x, ds), cs)
+            @test T' * y ≈ shifted(inverse_of(f), F' * shifted(inverse_of(f), y, cs), ds)
+            @test !has_shift(T)
+        end
+    end
+
+    # the ramp may thread only when the transform it sits next to does; `threaded = true` leaves
+    # the decision to DiagOp's own size threshold
+    for threaded in (false, true)
+        F = DFT(ComplexF64, (301, 301); threaded)
+        ramps = filter(op -> op isa DiagOp, collect(AbstractOperators.get_operators(fftshift_op(F; domain_shifts = (1, 2)))))
+        @test length(ramps) == 1
+        expected = AbstractOperators.is_threaded(DiagOp(ComplexF64, (301, 301), ones(ComplexF64, 301, 301); threaded = AbstractOperators.is_threaded(F)))
+        @test AbstractOperators.is_threaded(only(ramps)) == expected
+    end
+
+    # the ramp merges with a diagonal next to it
+    n = 9
+    F = DFT(ComplexF64, n)
+    d = randn(ComplexF64, n)
+    T = fftshift_op(F; domain_shifts = (1,)) |> op -> DiagOp(d) * op
+    x = randn(ComplexF64, n)
+    @test T * x ≈ d .* (F * fftshift(x))
+
+    # the DFT does not transform the shifted dimension: the shift stays
+    F = DFT(ComplexF64, (5, 4), (2,))
+    T = fftshift_op(F; domain_shifts = (1,))
+    x = randn(ComplexF64, 5, 4)
+    @test has_shift(T)
+    @test T * x ≈ F * fftshift(x, 1)
+
+    # real input: an output shift cannot become a ramp on the input
+    F = DFT(Float64, 7)
+    T = fftshift_op(F; codomain_shifts = (1,))
+    x = randn(7)
+    @test has_shift(T)
+    @test T * x ≈ fftshift(F * x)
+    T = fftshift_op(F; domain_shifts = (1,))
+    @test !has_shift(T)
+    @test T * x ≈ F * fftshift(x)
+end
+
+@testitem "Even-length shifts on both sides of a DFT" tags = [:fftw, :FFTShift, :CombinationRules] setup = [TestUtils] begin
+    using AbstractOperators, FFTW, FFTWOperators, Random
+    Random.seed!(4)
+    # a shift by N/2 and a sign alternation along a dimension of length N anticommute when N/2 is
+    # odd, so these sizes are where a dropped sign shows
+    for dims in ((4,), (6,), (10,), (6, 8), (6, 6), (4, 6)), (shift_op, f) in ((fftshift_op, fftshift), (ifftshift_op, ifftshift))
+        nd = length(dims)
+        F = DFT(ComplexF64, dims)
+        T = shift_op(F; domain_shifts = Tuple(1:nd), codomain_shifts = Tuple(1:nd))
+        x = randn(ComplexF64, dims)
+        @test T * x ≈ f(F * f(x))
+        @test T' * x ≈ (f === fftshift ? ifftshift : fftshift)(F' * (f === fftshift ? ifftshift : fftshift)(x))
+    end
+    # the DFT does not transform the shifted (even) dimension: the shift stays
+    F = DFT(ComplexF64, (6, 4), (2,))
+    x = randn(ComplexF64, 6, 4)
+    @test fftshift_op(F; domain_shifts = (1,)) * x ≈ F * fftshift(x, 1)
+    @test fftshift_op(F; codomain_shifts = (1,)) * x ≈ fftshift(F * x, 1)
 end
 
 @testitem "FFTShift/IFFTShift (GPU)" tags = [:gpu, :fftw, :FFTShift] setup = [TestUtils, GpuEnvSetup] begin

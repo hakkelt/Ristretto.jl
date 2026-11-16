@@ -733,18 +733,104 @@ function _is_dft_op(op, side)
     end
 end
 
-# A sign alternation standing in for a shift threads exactly when the operator it wraps does,
-# so a transform built with `threaded = false` stays serial once it is shifted.
+# ─── Shifts absorbed into a DFT as phase ramps ────────────────────────────────
+#
+# A circular shift by s along a dimension of length N next to a transform with kernel
+# exp(σ·2πi·n·k/N) moves to the other side of the transform as a diagonal phase ramp:
+#   F ∘ S_s = diag(exp(σ·2πi·s·k/N)) ∘ F        (shift of the input; ramp over the output index k)
+#   S_s ∘ F = F ∘ diag(exp(-σ·2πi·s·n/N))       (shift of the output; ramp over the input index n)
+# with σ = -1 for `DFT` and σ = +1 for its adjoint. For even N and s = ±N/2 the ramp is (-1)^k,
+# which `SignAlternation` applies without storing it; odd N needs the complex ramp, stored as a
+# `DiagOp` over the whole array. A ramp over the input of the transform is complex, so it
+# needs a complex domain.
+
+_dft_sign(::DFT) = -1
+_dft_sign(::AdjointOperator{<:DFT}) = 1
+
+_dft_dirs(::DFT{N, C, D, Dir}) where {N, C, D, Dir} = Dir
+_dft_dirs(op::AdjointOperator{<:DFT}) = _dft_dirs(op.A)
+
+_shift_dirs(S::ShiftOp) = S.dirs
+_shift_dirs(S::AdjointOperator{<:ShiftOp}) = S.A.dirs
+
+# Circular shift of each shift operator along a dimension of length `n`, as `circshift` counts it.
+_shift_amount(::Type{<:FFTShift}, n::Integer) = n ÷ 2
+_shift_amount(::Type{<:IFFTShift}, n::Integer) = -(n ÷ 2)
+_shift_amount(S::ShiftOp, n::Integer) = _shift_amount(typeof(S), n)
+_shift_amount(S::AdjointOperator{<:ShiftOp}, n::Integer) = -_shift_amount(S.A, n)
+
+# The DFT-like operator next to a shift on `side` of `op`, which `_is_dft_op(op, side)` accepted.
+function _dft_part(op, side)
+    op isa Compose || return op
+    subops = AbstractOperators.get_operators(op)
+    return side == :domain ? first(subops) : last(subops)
+end
+
+# `exp(σ·2πi·s·(k - offset)/n)` for k = 0:n-1; the argument is reduced mod n before scaling.
+_ramp_vector(n, s, σ, offset) = [cispi(2 * σ * mod(s * (k - offset), n) / n) for k in 0:(n - 1)]
+
+# The phase ramp along `dirs` as a `DiagOp` on an array like `like` (allocated with its type and
+# size). `amount(n)` is the shift along a dimension of length `n`, `offsets[i]` an index offset
+# along `dirs[i]`. A ramp standing in for a shift threads exactly when the operator it sits
+# next to does (`threaded`), so a transform built with `threaded = false` stays serial.
+function _phase_ramp_op(like::AbstractArray, dirs, amount, σ, offsets = map(_ -> 0, dirs); threaded::Bool)
+    host = ones(eltype(like), size(like))
+    for (dir, offset) in zip(dirs, offsets)
+        n = size(like, dir)
+        v = _ramp_vector(n, amount(n), σ, offset)
+        host .*= reshape(v, ntuple(i -> i == dir ? n : 1, ndims(like)))
+    end
+    d = copyto!(like, host)
+    return DiagOp(eltype(like), size(like), d; threaded)
+end
+
+# Whether a shift by `dirs` on `side` of the DFT-like `F` can become a ramp on its other side.
+function _ramp_absorbs(F, dirs, side)
+    all(in(_dft_dirs(F)), dirs) || return false
+    side == :codomain && !(domain_type(F) <: Complex) && return false
+    return true
+end
+
+_all_even(dims::Tuple, dirs) = all(iseven, dims[collect(dirs)])
+
+# A shift of odd length on both sides of a bare DFT: S_a ∘ F ∘ S_b = (c·D_b) ∘ F ∘ M_a, where the
+# codomain shift moved past the ramp D_b multiplies it by c = exp(-σ·2πi·a·b/N) in every
+# dimension shifted on both sides; that is D_b evaluated at k - a.
+function _shift_both_sides(shift_op_type, F, domain_shifts, codomain_shifts)
+    σ = _dft_sign(F)
+    amount = n -> _shift_amount(shift_op_type, n)
+    offsets = map(d -> d in codomain_shifts ? amount(size(F, 1)[d]) : 0, domain_shifts)
+    threaded = is_threaded(F)
+    D = _phase_ramp_op(allocate_in_codomain(F), domain_shifts, amount, σ, offsets; threaded)
+    M = _phase_ramp_op(allocate_in_domain(F), codomain_shifts, amount, -σ; threaded)
+    return D * F * M
+end
+
+# A sign alternation or phase ramp standing in for a shift threads exactly when the operator it
+# wraps does, so a transform built with `threaded = false` stays serial once it is shifted.
 function _shift_op(
         shift_op_type, op::AbstractOperator, domain_shifts::Tuple = (), codomain_shifts::Tuple = ()
     )
     threaded = is_threaded(op)
+    if !isempty(domain_shifts) && !isempty(codomain_shifts) &&
+            (op isa DFT || op isa AdjointOperator{<:DFT}) &&
+            !(_all_even(size(op, 2), domain_shifts) && _all_even(size(op, 1), codomain_shifts))
+        _check_shift_dirs(size(op, 2), domain_shifts)
+        _check_shift_dirs(size(op, 1), codomain_shifts)
+        if _ramp_absorbs(op, domain_shifts, :domain) && _ramp_absorbs(op, codomain_shifts, :codomain)
+            return _shift_both_sides(shift_op_type, op, domain_shifts, codomain_shifts)
+        end
+    end
     if !isempty(domain_shifts)
         _check_shift_dirs(size(op, 2), domain_shifts)
         shifted_domain_dims_shape = size(op, 2)[collect(domain_shifts)]
-        if all(iseven, shifted_domain_dims_shape) && _is_dft_op(op, :domain)
+        if all(iseven, shifted_domain_dims_shape) && _is_dft_op(op, :domain) &&
+                all(in(_dft_dirs(_dft_part(op, :domain))), domain_shifts)
             domain_op = SignAlternation(codomain_type(op), size(op, 1), domain_shifts; threaded, array_type = codomain_array_type(op))
             op = domain_op * op
+        elseif _is_dft_op(op, :domain) && _ramp_absorbs(_dft_part(op, :domain), domain_shifts, :domain)
+            σ = _dft_sign(_dft_part(op, :domain))
+            op = _phase_ramp_op(allocate_in_codomain(op), domain_shifts, n -> _shift_amount(shift_op_type, n), σ; threaded) * op
         else
             domain_op = shift_op_type(domain_type(op), size(op, 2), domain_shifts; array_type = domain_array_type(op))
             op = op * domain_op
@@ -753,9 +839,13 @@ function _shift_op(
     if !isempty(codomain_shifts)
         _check_shift_dirs(size(op, 1), codomain_shifts)
         shifted_codomain_dims_shape = size(op, 1)[collect(codomain_shifts)]
-        if all(iseven, shifted_codomain_dims_shape) && _is_dft_op(op, :codomain)
+        if all(iseven, shifted_codomain_dims_shape) && _is_dft_op(op, :codomain) &&
+                all(in(_dft_dirs(_dft_part(op, :codomain))), codomain_shifts)
             codomain_op = SignAlternation(domain_type(op), size(op, 2), codomain_shifts; threaded, array_type = domain_array_type(op))
             op = op * codomain_op
+        elseif _is_dft_op(op, :codomain) && _ramp_absorbs(_dft_part(op, :codomain), codomain_shifts, :codomain)
+            σ = _dft_sign(_dft_part(op, :codomain))
+            op = op * _phase_ramp_op(allocate_in_domain(op), codomain_shifts, n -> _shift_amount(shift_op_type, n), -σ; threaded)
         else
             codomain_op = shift_op_type(codomain_type(op), size(op, 1), codomain_shifts; array_type = codomain_array_type(op))
             op = codomain_op * op
@@ -768,8 +858,10 @@ end
     fftshift_op(op::AbstractOperator; domain_shifts::Tuple=(), codomain_shifts::Tuple=())
 
 Applies `FFTShift` to the domain and/or codomain of `op`, depending on `domain_shifts` and `codomain_shifts`.
-If the shifted dimensions all have even length and `op` is a (possibly modified) DFT/IDFT, the `FFTShift` is replaced by a `SignAlternation`
-on the other side of the DFT/IDFT.
+If `op` is a (possibly modified) DFT/IDFT that transforms the shifted dimensions, the shift is replaced by a
+phase ramp on the other side of the DFT/IDFT: a `SignAlternation` when every shifted dimension has even length,
+otherwise a `DiagOp` holding the complex ramp. A ramp on the input side needs a complex domain; for a real one
+the shift is kept.
 
 # Examples
 ```jldoctest
@@ -777,8 +869,8 @@ julia> using FFTWOperators, FFTW
 
 julia> x = rand(15);
 
-julia> F = fftshift_op(DFT(15); domain_shifts=(1,))
-ℱ*⇉  ℝ^15 -> ℂ^15
+julia> F = fftshift_op(DFT(15); domain_shifts=(1,)) # 15 is odd, so the shift becomes a phase ramp (╲)
+╲*ℱ  ℝ^15 -> ℂ^15
 
 julia> F * x ≈ FFTW.fft(FFTW.fftshift(x))
 true
@@ -811,8 +903,10 @@ end
     ifftshift_op(op::AbstractOperator; domain_shifts::Tuple=(), codomain_shifts::Tuple=())
 
 Applies `IFFTShift` to the domain and/or codomain of `op`, depending on `domain_shifts` and `codomain_shifts`.
-If the shifted dimensions all have even length and `op` is a (possibly modified) DFT/IDFT, the `IFFTShift` is replaced by a `SignAlternation`
-on the other side of the DFT/IDFT.
+If `op` is a (possibly modified) DFT/IDFT that transforms the shifted dimensions, the shift is replaced by a
+phase ramp on the other side of the DFT/IDFT: a `SignAlternation` when every shifted dimension has even length,
+otherwise a `DiagOp` holding the complex ramp. A ramp on the input side needs a complex domain; for a real one
+the shift is kept.
 
 # Examples
 ```jldoctest
@@ -821,13 +915,13 @@ julia> using FFTWOperators, FFTW
 julia> x = rand(ComplexF64, 15);
 
 julia> F = ifftshift_op(IDFT(15); domain_shifts=(1,))
-ℱ⁻¹*⇇  ℂ^15 -> ℂ^15
+╲*ℱ⁻¹  ℂ^15 -> ℂ^15
 
 julia> F * x ≈ FFTW.ifft(FFTW.ifftshift(x))
 true
 
 julia> F = ifftshift_op(IDFT(15); codomain_shifts=(1,))
-⇇*ℱ⁻¹  ℂ^15 -> ℂ^15
+ℱ⁻¹*╲  ℂ^15 -> ℂ^15
 
 julia> F * x ≈ FFTW.ifftshift(FFTW.ifft(x))
 true
