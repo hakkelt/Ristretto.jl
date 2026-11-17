@@ -36,104 +36,102 @@ function combine(T1::AdjointOperator{<:DFT}, T2::DFT{N, C, D, Dir}) where {N, C,
     return scaling * Eye(domain_type(T2), T2.dim_in; array_type = domain_array_type(T2))
 end
 
-# FFTShift/IFFTShift with DFT
-function can_be_combined(T1::DFT, T2::ShiftOp)
-    return all(iseven, size(T1, 2)[collect(T2.dirs)])
+# FFTShift/IFFTShift with DFT: the shift becomes a phase ramp on the other side of the DFT
+# (`SignAlternation` when every shifted length is even, a `DiagOp` otherwise; see Shift.jl).
+# `F ∘ S`: a shift of the DFT's input.
+function _can_absorb_input_shift(F, S)
+    return _ramp_absorbs(F, _shift_dirs(S), :domain)
 end
-function can_be_combined(T1::ShiftOp, T2::DFT)
-    return all(iseven, size(T2, 1)[collect(T1.dirs)])
+function _absorb_input_shift(F, S)
+    dirs = _shift_dirs(S)
+    if _all_even(size(F, 2), dirs)
+        return SignAlternation(codomain_type(F), size(F, 1), dirs; threaded = is_threaded(F), array_type = codomain_array_type(F)) * F
+    end
+    return _phase_ramp_op(allocate_in_codomain(F), dirs, n -> _shift_amount(S, n), _dft_sign(F); threaded = is_threaded(F)) * F
 end
-function can_be_combined(T1::AdjointOperator{<:DFT}, T2::ShiftOp)
-    return all(iseven, size(T1, 2)[collect(T2.dirs)])
+# `S ∘ F`: a shift of the DFT's output.
+function _can_absorb_output_shift(S, F)
+    dirs = _shift_dirs(S)
+    return all(in(_dft_dirs(F)), dirs) && (_all_even(size(F, 1), dirs) || domain_type(F) <: Complex)
 end
-function can_be_combined(T1::ShiftOp, T2::AdjointOperator{<:DFT})
-    return all(iseven, size(T2, 1)[collect(T1.dirs)])
+function _absorb_output_shift(S, F)
+    dirs = _shift_dirs(S)
+    if _all_even(size(F, 1), dirs)
+        return F * SignAlternation(domain_type(F), size(F, 2), dirs; threaded = is_threaded(F), array_type = domain_array_type(F))
+    end
+    return F * _phase_ramp_op(allocate_in_domain(F), dirs, n -> _shift_amount(S, n), -_dft_sign(F); threaded = is_threaded(F))
 end
-function can_be_combined(T1::DFT, T2::AdjointOperator{<:ShiftOp})
-    return all(iseven, size(T1, 2)[collect(T2.A.dirs)])
+# Every shifted length even and every shifted dimension transformed: the rules with a
+# `SignAlternation` between the shift and the DFT below need both.
+function _even_shift_next_to_dft(F, S)
+    dirs = _shift_dirs(S)
+    return all(in(_dft_dirs(F)), dirs) && _all_even(size(F, 1), dirs)
 end
-function can_be_combined(T1::AdjointOperator{<:ShiftOp}, T2::DFT)
-    return all(iseven, size(T2, 1)[collect(T1.A.dirs)])
+
+# Moving a shift by N/2 past a sign alternation along the same dimension of even length N
+# multiplies by (-1)^(N/2): the rules below that swap the two carry this sign.
+function _sign_past_alternation(S, A::SignAlternation, op)
+    m = sum((A.dim_in[d] ÷ 2 for d in _shift_dirs(S) if d in A.dirs); init = 0)
+    return iseven(m) ? op : -one(real(codomain_type(op))) * op
 end
-function can_be_combined(T1::AdjointOperator{<:DFT}, T2::AdjointOperator{<:ShiftOp})
-    return all(iseven, size(T1, 2)[collect(T2.A.dirs)])
-end
-function can_be_combined(T1::AdjointOperator{<:ShiftOp}, T2::AdjointOperator{<:DFT})
-    return all(iseven, size(T2, 1)[collect(T1.A.dirs)])
-end
-function combine(T1::DFT, T2::ShiftOp)
-    return SignAlternation(codomain_type(T1), size(T1, 1), T2.dirs; threaded = is_threaded(T1), array_type = codomain_array_type(T1)) * T1
-end
-function combine(T1::ShiftOp, T2::DFT)
-    return T2 * SignAlternation(domain_type(T2), size(T2, 2), T1.dirs; threaded = is_threaded(T2), array_type = domain_array_type(T2))
-end
-function combine(T1::AdjointOperator{<:DFT}, T2::ShiftOp)
-    return SignAlternation(codomain_type(T1), size(T1, 1), T2.dirs; threaded = is_threaded(T1), array_type = codomain_array_type(T1)) * T1
-end
-function combine(T1::ShiftOp, T2::AdjointOperator{<:DFT})
-    return T2 * SignAlternation(domain_type(T2), size(T2, 2), T1.dirs; threaded = is_threaded(T2), array_type = domain_array_type(T2))
-end
-function combine(T1::DFT, T2::AdjointOperator{<:ShiftOp})
-    return SignAlternation(codomain_type(T1), size(T1, 1), T2.A.dirs; threaded = is_threaded(T1), array_type = codomain_array_type(T1)) * T1
-end
-function combine(T1::AdjointOperator{<:ShiftOp}, T2::DFT)
-    return T2 * SignAlternation(domain_type(T2), size(T2, 2), T1.A.dirs; threaded = is_threaded(T2), array_type = domain_array_type(T2))
-end
-function combine(T1::AdjointOperator{<:DFT}, T2::AdjointOperator{<:ShiftOp})
-    return SignAlternation(codomain_type(T1), size(T1, 1), T2.A.dirs; threaded = is_threaded(T1), array_type = codomain_array_type(T1)) * T1
-end
-function combine(T1::AdjointOperator{<:ShiftOp}, T2::AdjointOperator{<:DFT})
-    return T2 * SignAlternation(domain_type(T2), size(T2, 2), T1.A.dirs; threaded = is_threaded(T2), array_type = domain_array_type(T2))
+
+for TF in (DFT, AdjointOperator{<:DFT}), TS in (ShiftOp, AdjointOperator{<:ShiftOp})
+    @eval begin
+        can_be_combined(T1::$TF, T2::$TS) = _can_absorb_input_shift(T1, T2)
+        can_be_combined(T1::$TS, T2::$TF) = _can_absorb_output_shift(T1, T2)
+        combine(T1::$TF, T2::$TS) = _absorb_input_shift(T1, T2)
+        combine(T1::$TS, T2::$TF) = _absorb_output_shift(T1, T2)
+    end
 end
 
 # FFTShift/IFFTShift with DFT and SignAlternation
 function can_be_combined(T1::ShiftOp, ::SignAlternation, T3::DFT)
-    return can_be_combined(T1, T3)
+    return _even_shift_next_to_dft(T3, T1)
 end
 function can_be_combined(T1::DFT, ::SignAlternation, T3::ShiftOp)
-    return can_be_combined(T1, T3)
+    return _even_shift_next_to_dft(T1, T3)
 end
 function can_be_combined(T1::AdjointOperator{<:ShiftOp}, ::SignAlternation, T3::DFT)
-    return can_be_combined(T1, T3)
+    return _even_shift_next_to_dft(T3, T1)
 end
 function can_be_combined(T1::DFT, ::SignAlternation, T3::AdjointOperator{<:ShiftOp})
-    return can_be_combined(T1, T3)
+    return _even_shift_next_to_dft(T1, T3)
 end
 function can_be_combined(T1::ShiftOp, ::SignAlternation, T3::AdjointOperator{<:DFT})
-    return can_be_combined(T1, T3)
+    return _even_shift_next_to_dft(T3, T1)
 end
 function can_be_combined(T1::AdjointOperator{<:DFT}, ::SignAlternation, T3::ShiftOp)
-    return can_be_combined(T1, T3)
+    return _even_shift_next_to_dft(T1, T3)
 end
 function can_be_combined(T1::AdjointOperator{<:ShiftOp}, ::SignAlternation, T3::AdjointOperator{<:DFT})
-    return can_be_combined(T1, T3)
+    return _even_shift_next_to_dft(T3, T1)
 end
 function can_be_combined(T1::AdjointOperator{<:DFT}, ::SignAlternation, T3::AdjointOperator{<:ShiftOp})
-    return can_be_combined(T1, T3)
+    return _even_shift_next_to_dft(T1, T3)
 end
 function combine(T1::ShiftOp, T2::SignAlternation, T3::DFT)
-    return T2 * combine(T1, T3)
+    return _sign_past_alternation(T1, T2, T2 * combine(T1, T3))
 end
 function combine(T1::DFT, T2::SignAlternation, T3::ShiftOp)
-    return combine(T1, T3) * T2
+    return _sign_past_alternation(T3, T2, combine(T1, T3) * T2)
 end
 function combine(T1::AdjointOperator{<:ShiftOp}, T2::SignAlternation, T3::DFT)
-    return T2 * combine(T1, T3)
+    return _sign_past_alternation(T1, T2, T2 * combine(T1, T3))
 end
 function combine(T1::DFT, T2::SignAlternation, T3::AdjointOperator{<:ShiftOp})
-    return combine(T1, T3) * T2
+    return _sign_past_alternation(T3, T2, combine(T1, T3) * T2)
 end
 function combine(T1::ShiftOp, T2::SignAlternation, T3::AdjointOperator{<:DFT})
-    return T2 * combine(T1, T3)
+    return _sign_past_alternation(T1, T2, T2 * combine(T1, T3))
 end
 function combine(T1::AdjointOperator{<:DFT}, T2::SignAlternation, T3::ShiftOp)
-    return combine(T1, T3) * T2
+    return _sign_past_alternation(T3, T2, combine(T1, T3) * T2)
 end
 function combine(T1::AdjointOperator{<:ShiftOp}, T2::SignAlternation, T3::AdjointOperator{<:DFT})
-    return T2 * combine(T1, T3)
+    return _sign_past_alternation(T1, T2, T2 * combine(T1, T3))
 end
 function combine(T1::AdjointOperator{<:DFT}, T2::SignAlternation, T3::AdjointOperator{<:ShiftOp})
-    return combine(T1, T3) * T2
+    return _sign_past_alternation(T3, T2, combine(T1, T3) * T2)
 end
 
 # FFTShift/IFFTShift with FFTShift/IFFTShift

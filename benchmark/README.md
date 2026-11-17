@@ -203,6 +203,7 @@ Logs go to `results/slurm/`.
 | variable | default | meaning |
 |---|---|---|
 | `RISTRETTO_BENCH_SMALL` | `0` | shrink every case (smoke runs) |
+| `RISTRETTO_BENCH_N` | `128` (`32` small) | in-plane image size of the synthetic cases (`image_n` in `utils/cases.jl`) |
 | `RISTRETTO_BENCH_REAL_DATA` | `0` | include the real-data analogues in `run.jl` (same as `--real`) |
 | `RISTRETTO_BENCH_SNR_DB` | `30` | noise level of the synthetic cases |
 | `RISTRETTO_BENCH_CINE_FRAMES` | `30` | frames of the cine cases |

@@ -160,10 +160,28 @@ cine_frames() = small_mode() ? 8 : parse(Int, get(ENV, "RISTRETTO_BENCH_CINE_FRA
 
 snr_db() = parse(Float64, get(ENV, "RISTRETTO_BENCH_SNR_DB", "30"))
 
+"""
+    image_n() -> Int
+
+In-plane image size `n` of the synthetic cases (`n × n`, and `n³` for the volume):
+`RISTRETTO_BENCH_N`, default 128 (32 in small mode). It also sets the calibration block
+(`n ÷ 8` lines) and the radial readout and spoke counts (`2n` samples, `n ÷ 2` spokes; the radial
+cine keeps 34 spokes per frame); coils, slices, frames and the sampling density do not change.
+Odd sizes are allowed.
+"""
+function image_n()
+    v = get(ENV, "RISTRETTO_BENCH_N", "")
+    isempty(v) && return small_mode() ? 32 : 128
+    n = parse(Int, v)
+    n >= 16 || throw(ArgumentError("RISTRETTO_BENCH_N must be at least 16, got $n"))
+    return n
+end
+
 function _dims()
+    n = image_n()
     return small_mode() ?
-        (n = 32, slices = 3, radial_slices = 3, coils = 4, acs = 8, calib3d = 8, radial = (64, 16), cine_radial = (64, 9), cine_lines = (4, 4)) :
-        (n = 128, slices = 12, radial_slices = 8, coils = 8, acs = 16, calib3d = 24, radial = (256, 64), cine_radial = (256, 34), cine_lines = (8, 24))
+        (n, slices = 3, radial_slices = 3, coils = 4, acs = n ÷ 4, calib3d = 8, radial = (2n, n ÷ 2), cine_radial = (2n, 9), cine_lines = (4, 4)) :
+        (n, slices = 12, radial_slices = 8, coils = 8, acs = n ÷ 8, calib3d = 24, radial = (2n, n ÷ 2), cine_radial = (2n, 34), cine_lines = (8, 24))
 end
 
 const _CASE_CACHE = Dict{String, BenchCase}()
@@ -175,7 +193,7 @@ Build (or return the memoised) case `id`, synthetic or real. Memoised per proces
 `small_mode()`, since the heavy cases take seconds to generate and every method of a case reuses it.
 """
 function get_case(id::AbstractString; pattern::Symbol = :catalog)
-    key = string(id, small_mode() ? "#small" : "", "#", cine_frames(), "#", snr_db(), "#", pattern)
+    key = string(id, small_mode() ? "#small" : "", "#", image_n(), "#", cine_frames(), "#", snr_db(), "#", pattern)
     return get!(_CASE_CACHE, key) do
         pattern === :catalog || return _build_synthetic(String(id); pattern)
         id in SYNTHETIC_CASES && return _build_synthetic(String(id))

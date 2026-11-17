@@ -126,7 +126,7 @@ const ENV_VARIANT = something(_arg("env-variant"), "")
 @info "Ristretto harness" ref = REF_NAME commit = RISTRETTO_REF.commit[1:min(end, 12)] dirty = !CLEAN ristretto = RISTRETTO_DIR nested_threading = NT_DIR threads = NUM_THREADS backend = BACKEND node = NODE small = small_mode()
 CLEAN || @warn "the measured code has uncommitted changes: results are recorded but never reused"
 
-config_key(case, method) = (CODE_KEY, NODE, case, string(method), NUM_THREADS, BACKEND, small_mode(), cine_frames(), ENV_VARIANT)
+config_key(case, method) = (CODE_KEY, NODE, case, string(method), NUM_THREADS, BACKEND, small_mode(), image_n(), cine_frames(), ENV_VARIANT)
 
 const STORED = let keys = Set{Tuple}()
     for d in ResultsStore.load_run_files(ResultsStore.HARNESS_RESULTS_DIR)
@@ -134,7 +134,8 @@ const STORED = let keys = Set{Tuple}()
         isempty(k) && continue
         for r in get(d, "benchmarks", [])
             get(r, "status", "") == "ok" || continue
-            push!(keys, (k, get(d, "node_class", ""), r["case"], r["method"], d["threads"], d["backend"], get(d, "small", false), get(d, "cine_frames", 0), get(d, "env_variant", "")))
+            small = get(d, "small", false)
+            push!(keys, (k, get(d, "node_class", ""), r["case"], r["method"], d["threads"], d["backend"], small, get(d, "image_n", small ? 32 : 128), get(d, "cine_frames", 0), get(d, "env_variant", "")))
         end
     end
     keys
@@ -147,7 +148,7 @@ const RUN_META = (;
     nested_threading_branch = NT_REF.branch, nested_threading_hash = NT_HASH,
     code_key = CODE_KEY, node_class = NODE, hostname = gethostname(), pinned_cpus = join(PINNED_CPUS, ","),
     julia_version = string(VERSION), blas_vendor = string(BLAS.get_config().loaded_libs[1].libname),
-    env = recorded_env(), env_variant = ENV_VARIANT, small = small_mode(), cine_frames = cine_frames(),
+    env = recorded_env(), env_variant = ENV_VARIANT, small = small_mode(), image_n = image_n(), cine_frames = cine_frames(),
     harness_commit = git_ref(@__DIR__).commit,
 )
 
