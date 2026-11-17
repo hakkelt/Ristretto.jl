@@ -155,10 +155,10 @@ report(&quot;LocallyLowRank(8)&quot;, x_llr)
 report(&quot;MultiScaleLowRank&quot;, x_mslr)</code></pre><pre><code class="nohighlight hljs">best λ (interior optimum unless noted):
 LowRank              λ = 0.002  NRMSE 0.116  (EDGE — widen the sweep)
 LocallyLowRank(8)    λ = 0.01  NRMSE 0.1016
-MultiScaleLowRank    λ = 0.02  NRMSE 0.1034
+MultiScaleLowRank    λ = 0.02  NRMSE 0.1035
 LowRank                    global: 0.116, lv_blood: 0.0499, rv_blood: 0.0448, heart: 0.1069, lung: 0.4059, bones: 0.1549
 LocallyLowRank(8)          global: 0.1016, lv_blood: 0.038, rv_blood: 0.033, heart: 0.087, lung: 0.3193, bones: 0.1459
-MultiScaleLowRank          global: 0.1034, lv_blood: 0.0423, rv_blood: 0.0353, heart: 0.0923, lung: 0.3068, bones: 0.1526
+MultiScaleLowRank          global: 0.1035, lv_blood: 0.0424, rv_blood: 0.0354, heart: 0.0925, lung: 0.3074, bones: 0.1528
 </code></pre><p><code>MultiScaleLowRank</code> also accepts one λ per scale instead of a single shared one — coarser blocks capture more of the signal energy, so they often want a different threshold than fine blocks. Comparing a per-scale λ against the best shared one shows what the extra degree of freedom buys.</p><pre><code class="language-julia hljs">x_mslr_per_scale = reconstruct(
     data_dyn,
     IterativeReconstruction(
@@ -166,7 +166,7 @@ MultiScaleLowRank          global: 0.1034, lv_blood: 0.0423, rv_blood: 0.0353, h
     )
 )
 report(&quot;MultiScaleLowRank, shared λ&quot;, x_mslr)
-report(&quot;MultiScaleLowRank, per-scale λ&quot;, x_mslr_per_scale)</code></pre><pre><code class="nohighlight hljs">MultiScaleLowRank, shared λ global: 0.1034, lv_blood: 0.0423, rv_blood: 0.0353, heart: 0.0923, lung: 0.3068, bones: 0.1526
+report(&quot;MultiScaleLowRank, per-scale λ&quot;, x_mslr_per_scale)</code></pre><pre><code class="nohighlight hljs">MultiScaleLowRank, shared λ global: 0.1035, lv_blood: 0.0424, rv_blood: 0.0354, heart: 0.0925, lung: 0.3074, bones: 0.1528
 MultiScaleLowRank, per-scale λ global: 0.1079, lv_blood: 0.0479, rv_blood: 0.0407, heart: 0.1016, lung: 0.2924, bones: 0.1627
 </code></pre><pre><code class="language-julia hljs"># `shift = :random` redraws the block grid before every proximal step, which averages out the
 # block boundaries a fixed grid can leave at large λ. It changes the objective from iteration to
@@ -259,15 +259,15 @@ catch e
 end</code></pre><pre><code class="nohighlight hljs">ArgumentError: Image decomposition needs at least two components; use the plain regularization API for a single component.
 length(components) &gt;= 2 must hold. Got
 length(components) =&gt; 1
-</code></pre><h2 id="Further-reading"><a class="docs-heading-anchor" href="#Further-reading">Further reading</a><a id="Further-reading-1"></a><a class="docs-heading-anchor-permalink" href="#Further-reading" title="Permalink"></a></h2><p>The acquisitions these temporal models are built for, from <em>Questions and Answers in MRI</em>:</p><ul><li><a href="https://mriquestions.com/real-time-cine.html">Real-time cine</a> — the regime where every frame is drastically undersampled, which is what the temporal priors here exploit.</li><li><a href="https://mriquestions.com/cine-parameters.html">SSFP cardiac cine</a> — the segmented alternative, and the temporal-resolution budget it works under.</li><li><a href="https://mriquestions.com/compressed-sensing.html">Compressed sensing</a> — why a different sampling pattern per frame is what makes these priors work.</li></ul><p>Lectures and tutorials elsewhere:</p><ul><li>Stanford EE369C lecture notes on <a href="https://web.stanford.edu/class/ee369c/Lectures/L18_Low_Rank.pdf">low-rank methods</a> — the Casorati matrix and why dynamic series are low rank.</li></ul><h2 id="Environment"><a class="docs-heading-anchor" href="#Environment">Environment</a><a id="Environment-1"></a><a class="docs-heading-anchor-permalink" href="#Environment" title="Permalink"></a></h2><pre><code class="language-julia hljs">print_versions()</code></pre><pre><code class="nohighlight hljs">Julia Version 1.13.3
-Commit 67ac47b9cd8 (2026-10-25 15:28 UTC)
+</code></pre><h2 id="Further-reading"><a class="docs-heading-anchor" href="#Further-reading">Further reading</a><a id="Further-reading-1"></a><a class="docs-heading-anchor-permalink" href="#Further-reading" title="Permalink"></a></h2><p>The acquisitions these temporal models are built for, from <em>Questions and Answers in MRI</em>:</p><ul><li><a href="https://mriquestions.com/real-time-cine.html">Real-time cine</a> — the regime where every frame is drastically undersampled, which is what the temporal priors here exploit.</li><li><a href="https://mriquestions.com/cine-parameters.html">SSFP cardiac cine</a> — the segmented alternative, and the temporal-resolution budget it works under.</li><li><a href="https://mriquestions.com/compressed-sensing.html">Compressed sensing</a> — why a different sampling pattern per frame is what makes these priors work.</li></ul><p>Lectures and tutorials elsewhere:</p><ul><li>Stanford EE369C lecture notes on <a href="https://web.stanford.edu/class/ee369c/Lectures/L18_Low_Rank.pdf">low-rank methods</a> — the Casorati matrix and why dynamic series are low rank.</li></ul><h2 id="Environment"><a class="docs-heading-anchor" href="#Environment">Environment</a><a id="Environment-1"></a><a class="docs-heading-anchor-permalink" href="#Environment" title="Permalink"></a></h2><pre><code class="language-julia hljs">print_versions()</code></pre><pre><code class="nohighlight hljs">Julia Version 1.13.4
+Commit c1ac32ab733 (2026-11-13 17:30 UTC)
 Build Info:
   Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 4 × AMD EPYC 7763 64-Core Processor
+  CPU: 4 × AMD EPYC 9V45 96-Core Processor
   WORD_SIZE: 64
-  LLVM: libLLVM-20.1.8 (ORCJIT, znver3)
+  LLVM: libLLVM-20.1.8 (ORCJIT, znver5)
   GC: Built with stock GC
 Threads: 4 default, 1 interactive, 4 GC (on 4 virtual cores)
 Environment:
@@ -285,5 +285,5 @@ StructuredOptimization  not loaded
 ProximalOperators       not loaded
 ProximalAlgorithms      not loaded
 OperatorCore            not loaded
-NestedThreading           0.1.4
-</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06_algorithms_and_configuration/">« Algorithms and configuration</a><a class="docs-footer-nextpage" href="../08_non_cartesian/">Non-Cartesian acquisitions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Wednesday 11 November 2026 17:55">Wednesday 11 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+NestedThreading           0.1.5
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06_algorithms_and_configuration/">« Algorithms and configuration</a><a class="docs-footer-nextpage" href="../08_non_cartesian/">Non-Cartesian acquisitions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Tuesday 17 November 2026 17:13">Tuesday 17 November 2026</span>. Using Julia version 1.13.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
